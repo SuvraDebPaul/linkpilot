@@ -1,0 +1,379 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth (NextAuth v4 required tables) ────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+
+  accounts      Account[]
+  sessions      Session[]
+  workspaces    WorkspaceMember[]
+  links         Link[]
+  campaigns     Campaign[]
+  customDomains CustomDomain[]
+  clientAccesses ClientAccess[]
+
+  // Stripe billing
+  stripeCustomerId       String?  @unique
+  stripeSubscriptionId   String?  @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  lifetimeAccess         Boolean  @default(false)
+
+  // Lifetime usage counters — never decrease on delete
+  totalLinksCreated     Int @default(0)
+  totalCampaignsCreated Int @default(0)
+
+  // Onboarding
+  onboardingCompleted Boolean @default(false)
+
+  // Onboarding email sequence tracking
+  onboardingDay1SentAt DateTime?
+  onboardingDay3SentAt DateTime?
+  onboardingDay7SentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Workspaces ─────────────────────────────────────────────────────────────
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Workspace {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Report white-labelling (Starter/Pro)
+  brandLogoUrl String?
+  brandColor   String?
+  hideBranding Boolean @default(false)
+
+  members        WorkspaceMember[]
+  links          Link[]
+  campaigns      Campaign[]
+  customDomains  CustomDomain[]
+  clientAccesses ClientAccess[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole @default(MEMBER)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, workspaceId])
+  @@index([userId])
+  @@index([workspaceId])
+}
+
+// ─── Custom Domains ──────────────────────────────────────────────────────────
+
+enum DomainStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+model CustomDomain {
+  id          String       @id @default(cuid())
+  userId      String
+  workspaceId String
+  domain      String       @unique
+  status      DomainStatus @default(PENDING)
+  verifiedAt  DateTime?
+  lastChecked DateTime?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([domain])
+}
+
+// ─── Link enums ─────────────────────────────────────────────────────────────
+
+enum DeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+  BOT
+  UNKNOWN
+}
+
+// ─── Campaigns ──────────────────────────────────────────────────────────────
+
+model Campaign {
+  id          String  @id @default(cuid())
+  userId      String
+  workspaceId String
+  name        String
+  description String?
+  shareToken  String? @unique
+
+  // Scheduled report emails
+  reportEmailEnabled    Boolean  @default(false)
+  reportEmailFrequency  String?  // "weekly" | "monthly"
+  reportEmailRecipients String[]
+  reportEmailLastSentAt DateTime?
+
+  links          Link[]
+  clientAccesses ClientCampaignAccess[]
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([workspaceId])
+}
+
+// ─── Managed Links ──────────────────────────────────────────────────────────
+
+model Link {
+  id          String  @id @default(cuid())
+  userId      String
+  workspaceId String
+  campaignId  String?
+  title       String?
+
+  originalUrl String
+  shortCode   String  @unique
+
+  passwordHash        String?
+  isPasswordProtected Boolean @default(false)
+
+  expiresAt   DateTime?
+  maxClicks   Int?
+  notes       String?
+  tags        String[]
+  isActive    Boolean   @default(true)
+  geoTargets  Json?     // [{ country: "US", url: "https://..." }]
+  abVariants        Json?     // [{ url: "https://...", weight: 50 }] — weights must sum to 100
+  retargetingPixels Json?     // [{ type: "meta"|"google"|"tiktok"|"linkedin", id: "..." }]
+  isFavorite        Boolean   @default(false)
+  isCloaked         Boolean   @default(false)
+  hideReferrer      Boolean   @default(false)
+  redirectType      String    @default("302")  // "301" | "302" | "307"
+  ogTitle           String?
+  ogDescription     String?
+  ogImage           String?
+
+  qrFgColor  String  @default("#000000")
+  qrBgColor  String  @default("#ffffff")
+  qrEcLevel  String  @default("M")
+  qrMargin   Int     @default(2)
+  qrLogoUrl  String?
+
+  clicks LinkClickEvent[]
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign  Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([campaignId])
+  @@index([shortCode])
+  @@index([createdAt])
+}
+
+model LinkClickEvent {
+  id     String @id @default(cuid())
+  linkId String
+
+  ipHash    String?
+  country   String?
+  city      String?
+  device    DeviceType @default(UNKNOWN)
+  browser   String?
+  os        String?
+  referrer  String?
+  userAgent String?
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([linkId])
+  @@index([createdAt])
+  @@index([device])
+  @@index([country])
+  @@index([utmSource])
+  @@index([utmMedium])
+  @@index([utmCampaign])
+}
+
+// ─── Client Portal ──────────────────────────────────────────────────────────
+
+model ClientAccess {
+  id          String  @id @default(cuid())
+  token       String  @unique @default(cuid())
+  clientName  String?
+  clientEmail String
+
+  createdByUserId String
+  workspaceId     String
+
+  createdBy  User      @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaigns  ClientCampaignAccess[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([token])
+  @@index([createdByUserId])
+  @@index([workspaceId])
+}
+
+model ClientCampaignAccess {
+  id             String @id @default(cuid())
+  clientAccessId String
+  campaignId     String
+
+  clientAccess ClientAccess @relation(fields: [clientAccessId], references: [id], onDelete: Cascade)
+  campaign     Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([clientAccessId, campaignId])
+  @@index([clientAccessId])
+  @@index([campaignId])
+}
+
+// ─── Guest Links ─────────────────────────────────────────────────────────────
+
+model GuestLink {
+  id String @id @default(cuid())
+
+  originalUrl String
+  shortCode   String @unique
+
+  passwordHash        String?
+  isPasswordProtected Boolean @default(false)
+
+  expiresAt   DateTime
+  deleteAfter DateTime
+
+  isActive Boolean @default(true)
+
+  creatorIpHash    String?
+  creatorUserAgent String?
+
+  clicks GuestClickEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shortCode])
+  @@index([expiresAt])
+  @@index([deleteAfter])
+  @@index([creatorIpHash])
+  @@index([createdAt])
+}
+
+model GuestClickEvent {
+  id String @id @default(cuid())
+
+  guestLinkId String
+
+  ipHash    String?
+  country   String?
+  city      String?
+  device    DeviceType @default(UNKNOWN)
+  browser   String?
+  os        String?
+  referrer  String?
+  userAgent String?
+
+  guestLink GuestLink @relation(fields: [guestLinkId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([guestLinkId])
+  @@index([createdAt])
+  @@index([ipHash])
+  @@index([device])
+  @@index([country])
+}

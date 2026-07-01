@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/delete-expired-guest-links",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/onboarding-emails",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/send-report-emails",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

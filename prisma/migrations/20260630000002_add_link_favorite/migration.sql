@@ -1,0 +1,1 @@
+ALTER TABLE "Link" ADD COLUMN "isFavorite" BOOLEAN NOT NULL DEFAULT false;

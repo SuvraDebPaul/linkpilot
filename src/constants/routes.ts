@@ -1,0 +1,18 @@
+export const RESERVED_SLUGS = new Set([
+  "api",
+  "login",
+  "register",
+  "dashboard",
+  "unlock",
+  "report",
+  "features",
+  "pricing",
+  "free-tool",
+  "use-cases",
+  "blog",
+  "link-expired",
+  "link-unavailable",
+  "favicon.ico",
+  "robots.txt",
+  "sitemap.xml",
+]);
