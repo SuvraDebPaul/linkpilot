@@ -24,7 +24,11 @@ export default async function LinksPage() {
   if (!session?.user?.id) redirect("/login");
 
   if (IS_DEMO) {
-    const links = getDemoLinks().map((l) => ({ ...l, customDomain: null }));
+    const links = getDemoLinks().map((l, i) => ({
+      ...l,
+      customDomain: i === 1 ? { domain: "links.mystore.com" } : null,
+      campaign: i < 3 ? { id: "dc-01", name: "Summer Sale 2024" } : null,
+    }));
     return (
       <div className="space-y-6">
         <PageHeader

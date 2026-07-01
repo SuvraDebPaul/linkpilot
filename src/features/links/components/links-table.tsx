@@ -6,23 +6,26 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Link2,
+  ExternalLink,
   Search,
   PenLine,
   BarChart2,
-  Share2,
-  CopyPlus,
-  Trash2,
-  ToggleLeft,
-  ToggleRight,
-  X,
-  ChevronDown,
-  ChevronUp,
-  ChevronsUpDown,
   Copy,
   Calendar,
   Tag,
   Lock,
   Star,
+  Globe,
+  FolderKanban,
+  ToggleLeft,
+  ToggleRight,
+  MoreHorizontal,
+  CopyPlus,
+  Trash2,
+  X,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -44,8 +47,10 @@ import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -62,6 +67,7 @@ type LinkRow = {
   createdAt: Date;
   tags: string[];
   customDomain: { domain: string } | null;
+  campaign: { id: string; name: string } | null;
   _count: { clicks: number };
 };
 
@@ -69,6 +75,23 @@ type StatusFilter = "all" | "active" | "inactive" | "expired" | "favorites";
 type SortKey = "newest" | "oldest" | "clicks-desc" | "clicks-asc";
 
 const PER_PAGE_OPTIONS = [10, 20, 30, 50] as const;
+
+const STATUS_TABS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+  { value: "expired", label: "Expired" },
+  { value: "favorites", label: "Favorites" },
+];
+
+function faviconUrl(originalUrl: string): string | null {
+  try {
+    const host = new URL(originalUrl).hostname;
+    return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+  } catch {
+    return null;
+  }
+}
 
 export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
   const router = useRouter();
@@ -82,8 +105,12 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
   const [page, setPage] = useState(1);
 
   // Optimistic state
-  const [optimisticActive, setOptimisticActive] = useState<Record<string, boolean>>({});
-  const [optimisticFavorite, setOptimisticFavorite] = useState<Record<string, boolean>>({});
+  const [optimisticActive, setOptimisticActive] = useState<
+    Record<string, boolean>
+  >({});
+  const [optimisticFavorite, setOptimisticFavorite] = useState<
+    Record<string, boolean>
+  >({});
 
   // Selection
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -112,23 +139,32 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
       list = list.filter((l) => {
         const expired = l.expiresAt ? l.expiresAt < now : false;
         if (statusFilter === "favorites") return l.isFavorite;
-        if (statusFilter === "expired")  return expired;
-        if (statusFilter === "active")   return !expired && l.isActive;
+        if (statusFilter === "expired") return expired;
+        if (statusFilter === "active") return !expired && l.isActive;
         if (statusFilter === "inactive") return !expired && !l.isActive;
         return true;
       });
     }
 
     list = [...list].sort((a, b) => {
-      if (sort === "newest")      return b.createdAt.getTime() - a.createdAt.getTime();
-      if (sort === "oldest")      return a.createdAt.getTime() - b.createdAt.getTime();
+      if (sort === "newest")
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      if (sort === "oldest")
+        return a.createdAt.getTime() - b.createdAt.getTime();
       if (sort === "clicks-desc") return b._count.clicks - a._count.clicks;
-      if (sort === "clicks-asc")  return a._count.clicks - b._count.clicks;
+      if (sort === "clicks-asc") return a._count.clicks - b._count.clicks;
       return 0;
     });
 
     return list;
-  }, [initialLinks, optimisticActive, optimisticFavorite, search, statusFilter, sort]);
+  }, [
+    initialLinks,
+    optimisticActive,
+    optimisticFavorite,
+    search,
+    statusFilter,
+    sort,
+  ]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
@@ -149,13 +185,14 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
     setPage(1);
   }
 
-  function handleStatusChange(val: string) {
-    setStatusFilter(val as StatusFilter);
+  function handleStatusChange(val: StatusFilter) {
+    setStatusFilter(val);
     setPage(1);
   }
 
   // Selection helpers
-  const allPageSelected = links.length > 0 && links.every((l) => selected.has(l.id));
+  const allPageSelected =
+    links.length > 0 && links.every((l) => selected.has(l.id));
   const someSelected = selected.size > 0;
 
   function toggleAll() {
@@ -177,7 +214,11 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
   function toggleOne(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -216,7 +257,10 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
     }
   }
 
-  function copyShortUrl(shortCode: string, customDomain: { domain: string } | null) {
+  function copyShortUrl(
+    shortCode: string,
+    customDomain: { domain: string } | null,
+  ) {
     navigator.clipboard.writeText(getShortUrl(shortCode, customDomain));
     toast.success("Short URL copied.");
   }
@@ -226,7 +270,10 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
     const ids = Array.from(selected);
     const result = await bulkDeleteLinksAction(ids);
     if (!result.success) toast.error(result.message);
-    else { toast.success(result.message); setSelected(new Set()); }
+    else {
+      toast.success(result.message);
+      setSelected(new Set());
+    }
   }
 
   async function handleBulkToggle(active: boolean) {
@@ -248,7 +295,12 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
     } else {
       pages.push(1);
       if (safePage > 3) pages.push("…");
-      for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) pages.push(i);
+      for (
+        let i = Math.max(2, safePage - 1);
+        i <= Math.min(totalPages - 1, safePage + 1);
+        i++
+      )
+        pages.push(i);
       if (safePage < totalPages - 2) pages.push("…");
       pages.push(totalPages);
     }
@@ -256,7 +308,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
   }, [totalPages, safePage]);
 
   const from = filtered.length === 0 ? 0 : (safePage - 1) * perPage + 1;
-  const to   = Math.min(safePage * perPage, filtered.length);
+  const to = Math.min(safePage * perPage, filtered.length);
 
   // Status tab counts (based on all links, ignoring search)
   const now = new Date();
@@ -266,23 +318,17 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
       isActive: optimisticActive[l.id] ?? l.isActive,
       isFavorite: optimisticFavorite[l.id] ?? l.isFavorite,
     }));
+    const notExpired = (l: (typeof all)[number]) =>
+      !l.expiresAt || l.expiresAt >= now;
     return {
-      all:       all.length,
-      active:    all.filter((l) => !l.expiresAt || l.expiresAt >= now).filter((l) => l.isActive && (!l.expiresAt || l.expiresAt >= now)).length,
-      inactive:  all.filter((l) => !l.isActive && (!l.expiresAt || l.expiresAt >= now)).length,
-      expired:   all.filter((l) => l.expiresAt && l.expiresAt < now).length,
+      all: all.length,
+      active: all.filter((l) => notExpired(l) && l.isActive).length,
+      inactive: all.filter((l) => notExpired(l) && !l.isActive).length,
+      expired: all.filter((l) => l.expiresAt && l.expiresAt < now).length,
       favorites: all.filter((l) => l.isFavorite).length,
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLinks, optimisticActive, optimisticFavorite]);
-
-  const STATUS_TABS: { value: StatusFilter; label: string; icon?: string }[] = [
-    { value: "all",       label: "All" },
-    { value: "active",    label: "Active" },
-    { value: "inactive",  label: "Inactive" },
-    { value: "expired",   label: "Expired" },
-    { value: "favorites", label: "Favorites", icon: "⭐" },
-  ];
 
   if (initialLinks.length === 0) {
     return (
@@ -299,6 +345,44 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
   return (
     <div className="space-y-3">
+      {/* ── Status pills ── */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => handleStatusChange(tab.value)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors",
+              statusFilter === tab.value
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+            )}
+          >
+            {tab.value === "favorites" && (
+              <Star
+                className={cn(
+                  "h-3 w-3",
+                  statusFilter === tab.value
+                    ? "fill-primary-foreground"
+                    : "fill-amber-400 text-amber-400",
+                )}
+              />
+            )}
+            {tab.label}
+            <span
+              className={cn(
+                "rounded py-1 px-1.5 text-[10px] font-bold tabular-nums",
+                statusFilter === tab.value
+                  ? "bg-primary-foreground/15"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
+              {statusCounts[tab.value]}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* ── Toolbar — single row ── */}
       <div className="flex items-center gap-1 rounded-xl border border-border bg-card px-4 py-3">
         {/* Search */}
@@ -323,41 +407,43 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
         {/* Divider */}
         <div className="h-4 w-px bg-border shrink-0 mx-1" />
 
-        {/* Status filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex h-9 items-center gap-1 rounded-md border border-border/60 bg-transparent px-2.5 text-sm outline-none hover:bg-muted transition-colors">
-            <span className="text-muted-foreground">Status:</span>
-            <span className="font-medium text-foreground">
-              {STATUS_TABS.find((t) => t.value === statusFilter)?.label ?? "All"}
-            </span>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="bottom" className="min-w-[140px]">
-            <DropdownMenuRadioGroup value={statusFilter} onValueChange={handleStatusChange}>
-              <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="active">Active</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="inactive">Inactive</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="expired">Expired</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="favorites">⭐ Favorites</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         {/* Sort */}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex h-9 items-center gap-1 rounded-md border border-border/60 bg-transparent px-2.5 text-sm outline-none hover:bg-muted transition-colors">
             <span className="text-muted-foreground">Sort:</span>
             <span className="font-medium text-foreground">
-              {{ newest: "Newest", oldest: "Oldest", "clicks-desc": "Most clicks", "clicks-asc": "Fewest clicks" }[sort]}
+              {
+                {
+                  newest: "Newest",
+                  oldest: "Oldest",
+                  "clicks-desc": "Most clicks",
+                  "clicks-asc": "Fewest clicks",
+                }[sort]
+              }
             </span>
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="bottom" className="min-w-[140px]">
-            <DropdownMenuRadioGroup value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-              <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="clicks-desc">Most clicks</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="clicks-asc">Fewest clicks</DropdownMenuRadioItem>
+          <DropdownMenuContent
+            align="start"
+            side="bottom"
+            className="min-w-[140px]"
+          >
+            <DropdownMenuRadioGroup
+              value={sort}
+              onValueChange={(v) => setSort(v as SortKey)}
+            >
+              <DropdownMenuRadioItem value="newest">
+                Newest
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="oldest">
+                Oldest
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="clicks-desc">
+                Most clicks
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="clicks-asc">
+                Fewest clicks
+              </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -369,17 +455,33 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
             <span className="font-medium text-foreground">{perPage}</span>
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="bottom" className="min-w-[120px]">
-            <DropdownMenuRadioGroup value={String(perPage)} onValueChange={handlePerPageChange}>
+          <DropdownMenuContent
+            align="start"
+            side="bottom"
+            className="min-w-[120px]"
+          >
+            <DropdownMenuRadioGroup
+              value={String(perPage)}
+              onValueChange={handlePerPageChange}
+            >
               {PER_PAGE_OPTIONS.map((n) => (
-                <DropdownMenuRadioItem key={n} value={String(n)} className="whitespace-nowrap">{n} / page</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem
+                  key={n}
+                  value={String(n)}
+                  className="whitespace-nowrap"
+                >
+                  {n} / page
+                </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
         {/* Clear — only when filters are non-default */}
-        {(statusFilter !== "all" || sort !== "newest" || perPage !== 20 || search) && (
+        {(statusFilter !== "all" ||
+          sort !== "newest" ||
+          perPage !== 20 ||
+          search) && (
           <>
             <div className="h-4 w-px bg-border shrink-0 mx-1" />
             <button
@@ -399,22 +501,40 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
       </div>
 
       {/* ── Bulk action bar ── */}
-      <div className={cn(
-        "overflow-hidden transition-all duration-200",
-        someSelected ? "max-h-16 opacity-100" : "max-h-0 opacity-0",
-      )}>
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-200",
+          someSelected ? "max-h-16 opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5">
-          <span className="text-sm font-medium text-foreground">{selected.size} selected</span>
+          <span className="text-sm font-medium text-foreground">
+            {selected.size} selected
+          </span>
           <div className="h-4 w-px bg-border" />
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleBulkToggle(true)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={() => handleBulkToggle(true)}
+          >
             <ToggleRight className="mr-1.5 h-3.5 w-3.5" /> Activate
           </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleBulkToggle(false)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={() => handleBulkToggle(false)}
+          >
             <ToggleLeft className="mr-1.5 h-3.5 w-3.5" /> Deactivate
           </Button>
           <ConfirmDialog
             trigger={
-              <Button size="sm" variant="outline" className="h-7 text-xs text-destructive hover:text-destructive">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs text-destructive hover:text-destructive"
+              >
                 <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete all
               </Button>
             }
@@ -423,7 +543,10 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
             confirmLabel="Delete all"
             onConfirm={handleBulkDelete}
           />
-          <button onClick={() => setSelected(new Set())} className="ml-auto text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => setSelected(new Set())}
+            className="ml-auto text-muted-foreground hover:text-foreground"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -437,32 +560,42 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/60">
+            <thead className="bg-primary text-primary-foreground">
               <tr>
                 <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
                     checked={allPageSelected}
                     onChange={toggleAll}
-                    className="h-4 w-4 cursor-pointer accent-primary"
+                    className="h-4 w-4 cursor-pointer accent-primary-foreground"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                   Link
                 </th>
                 <th className="hidden px-4 py-3 text-left sm:table-cell">
                   <button
-                    onClick={() => setSort(sort === "clicks-desc" ? "clicks-asc" : "clicks-desc")}
-                    className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() =>
+                      setSort(
+                        sort === "clicks-desc" ? "clicks-asc" : "clicks-desc",
+                      )
+                    }
+                    className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide opacity-90 hover:opacity-100 transition-opacity"
                   >
                     Clicks
-                    {sort === "clicks-desc" ? <ChevronDown className="h-3 w-3" /> : sort === "clicks-asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronsUpDown className="h-3 w-3 opacity-40" />}
+                    {sort === "clicks-desc" ? (
+                      <ChevronDown className="h-3 w-3" />
+                    ) : sort === "clicks-asc" ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronsUpDown className="h-3 w-3 opacity-60" />
+                    )}
                   </button>
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide md:table-cell">
                   Status
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide">
                   Actions
                 </th>
               </tr>
@@ -470,11 +603,15 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
             <tbody className="divide-y divide-border">
               {links.map((link) => {
-                const isActive   = optimisticActive[link.id]   ?? link.isActive;
-                const isFavorite = optimisticFavorite[link.id] ?? link.isFavorite;
-                const shortUrl   = getShortUrl(link.shortCode, link.customDomain);
-                const isExpired  = link.expiresAt ? link.expiresAt < new Date() : false;
+                const isActive = optimisticActive[link.id] ?? link.isActive;
+                const isFavorite =
+                  optimisticFavorite[link.id] ?? link.isFavorite;
+                const shortUrl = getShortUrl(link.shortCode, link.customDomain);
+                const isExpired = link.expiresAt
+                  ? link.expiresAt < new Date()
+                  : false;
                 const isSelected = selected.has(link.id);
+                const favicon = faviconUrl(link.originalUrl);
 
                 return (
                   <tr
@@ -485,7 +622,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                     )}
                   >
                     {/* Checkbox */}
-                    <td className="w-10 px-4 py-3">
+                    <td className="w-10 px-4 py-3 align-top">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -496,88 +633,153 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
                     {/* ── Link cell ── */}
                     <td className="px-4 py-3.5 min-w-0">
-                      <Link
-                        href={`/dashboard/links/${link.id}`}
-                        className="font-semibold text-foreground hover:underline truncate block max-w-sm"
-                      >
-                        {link.title || link.shortCode}
-                      </Link>
-
-                      <div className="mt-0.5 flex items-center gap-1.5">
-                        <a
-                          href={shortUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="truncate text-xs font-medium text-primary hover:underline max-w-[200px]"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {shortUrl.replace(/^https?:\/\//, "")}
-                        </a>
-                        <button
-                          onClick={() => copyShortUrl(link.shortCode, link.customDomain)}
-                          className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                          title="Copy short URL"
-                        >
-                          <Copy className="h-3 w-3" />
-                        </button>
-                      </div>
-
-                      <div className="mt-0.5 flex items-start gap-1">
-                        <span className="mt-px shrink-0 text-xs text-muted-foreground">↳</span>
-                        <p className="truncate text-xs text-muted-foreground max-w-sm">{link.originalUrl}</p>
-                      </div>
-
-                      {/* Meta row */}
-                      <div className="mt-2 flex flex-wrap items-center gap-3">
-                        {link.isPasswordProtected && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Lock className="h-3 w-3" /> Password
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {link.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      <div className="flex items-start gap-2.5">
+                        {/* Favicon chip */}
+                        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted/40">
+                          {favicon ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={favicon} alt="" className="h-3.5 w-3.5" />
+                          ) : (
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Tag className="h-3 w-3" />
-                          {link.tags.length > 0 ? link.tags.join(", ") : "No tags"}
-                        </span>
+
+                        <div className="min-w-0 flex-1">
+                          {/* Title + favorite */}
+                          <div className="flex items-center gap-1.5">
+                            <Link
+                              href={`/dashboard/links/${link.id}`}
+                              className="font-semibold text-foreground hover:underline truncate max-w-sm"
+                            >
+                              {link.title || link.shortCode}
+                            </Link>
+                            <button
+                              onClick={() =>
+                                toggleFavorite(link.id, isFavorite)
+                              }
+                              className={cn(
+                                "shrink-0 transition-colors",
+                                isFavorite
+                                  ? "text-amber-400 hover:text-amber-500"
+                                  : "text-muted-foreground/40 opacity-0 group-hover:opacity-100 hover:text-amber-400",
+                              )}
+                              title={
+                                isFavorite
+                                  ? "Remove from favorites"
+                                  : "Add to favorites"
+                              }
+                            >
+                              <Star
+                                className={cn(
+                                  "h-3.5 w-3.5",
+                                  isFavorite && "fill-amber-400",
+                                )}
+                              />
+                            </button>
+                          </div>
+
+                          {/* Short URL */}
+                          <div className="mt-0.5 flex items-center gap-1.5">
+                            <a
+                              href={shortUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="truncate text-xs font-medium text-primary hover:underline max-w-[200px]"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {shortUrl.replace(/^https?:\/\//, "")}
+                            </a>
+                            <button
+                              onClick={() =>
+                                copyShortUrl(link.shortCode, link.customDomain)
+                              }
+                              className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                              title="Copy short URL"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                            {link.customDomain && (
+                              <span className="flex shrink-0 items-center gap-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-700 dark:bg-sky-950 dark:text-sky-400">
+                                <Globe className="h-2.5 w-2.5" /> custom
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Destination */}
+                          <div className="mt-0.5 flex items-start gap-1">
+                            <span className="mt-px shrink-0 text-xs text-muted-foreground">
+                              ↳
+                            </span>
+                            <p className="truncate text-xs text-muted-foreground max-w-sm">
+                              {link.originalUrl}
+                            </p>
+                          </div>
+
+                          {/* Meta row */}
+                          <div className="mt-2 flex flex-wrap items-center gap-3">
+                            {link.campaign && (
+                              <Link
+                                href={`/dashboard/campaigns/${link.campaign.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                              >
+                                <FolderKanban className="h-3 w-3" />{" "}
+                                {link.campaign.name}
+                              </Link>
+                            )}
+                            {link.isPasswordProtected && (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Lock className="h-3 w-3" /> Password
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {link.createdAt.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                            {link.tags.length > 0 && (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Tag className="h-3 w-3" />
+                                {link.tags.join(", ")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </td>
 
                     {/* Clicks */}
-                    <td className="hidden px-4 py-3 text-sm text-foreground sm:table-cell whitespace-nowrap">
+                    <td className="hidden px-4 py-3 text-sm text-foreground sm:table-cell whitespace-nowrap align-top">
                       {link._count.clicks.toLocaleString()}
                     </td>
 
                     {/* Status */}
-                    <td className="hidden px-4 py-3 md:table-cell">
+                    <td className="hidden px-4 py-3 md:table-cell align-top">
                       {isExpired ? (
-                        <Badge variant="secondary" className="bg-destructive/10 text-destructive">Expired</Badge>
+                        <Badge
+                          variant="secondary"
+                          className="bg-destructive/10 text-destructive"
+                        >
+                          Expired
+                        </Badge>
                       ) : isActive ? (
-                        <Badge variant="secondary" className="bg-primary/10 text-primary">Active</Badge>
+                        <Badge
+                          variant="secondary"
+                          className="bg-primary/10 text-primary"
+                        >
+                          Active
+                        </Badge>
                       ) : (
                         <Badge variant="secondary">Inactive</Badge>
                       )}
                     </td>
 
                     {/* ── Action icons ── */}
-                    <td className="px-3 py-3">
+                    <td className="px-3 py-3 align-top">
                       <div className="flex items-center justify-end gap-0.5">
-                        {/* Favorite star — hidden on mobile */}
-                        <button
-                          onClick={() => toggleFavorite(link.id, isFavorite)}
-                          className={cn(
-                            "hidden h-8 w-8 items-center justify-center rounded-md transition-colors sm:flex",
-                            isFavorite
-                              ? "text-amber-400 hover:text-amber-500"
-                              : "text-muted-foreground hover:text-amber-400",
-                          )}
-                          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-                        >
-                          <Star className={cn("h-3.5 w-3.5", isFavorite && "fill-amber-400")} />
-                        </button>
-
                         {/* Edit */}
                         <Link
                           href={`/dashboard/links/${link.id}/edit`}
@@ -596,24 +798,6 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                           <BarChart2 className="h-3.5 w-3.5" />
                         </Link>
 
-                        {/* Share — hidden on mobile (copy already in link cell) */}
-                        <button
-                          onClick={() => copyShortUrl(link.shortCode, link.customDomain)}
-                          className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
-                          title="Copy short URL"
-                        >
-                          <Share2 className="h-3.5 w-3.5" />
-                        </button>
-
-                        {/* Duplicate — hidden on mobile */}
-                        <button
-                          onClick={() => handleDuplicate(link.id)}
-                          className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
-                          title="Duplicate"
-                        >
-                          <CopyPlus className="h-3.5 w-3.5" />
-                        </button>
-
                         {/* Toggle active */}
                         <button
                           onClick={() => toggleActive(link.id, isActive)}
@@ -625,24 +809,46 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                           )}
                           title={isActive ? "Deactivate" : "Activate"}
                         >
-                          {isActive ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
+                          {isActive ? (
+                            <ToggleRight className="h-3.5 w-3.5" />
+                          ) : (
+                            <ToggleLeft className="h-3.5 w-3.5" />
+                          )}
                         </button>
 
-                        {/* Delete */}
-                        <ConfirmDialog
-                          trigger={
+                        {/* More menu */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                             <button
-                              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                              title="Delete"
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              title="More"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <MoreHorizontal className="h-3.5 w-3.5" />
                             </button>
-                          }
-                          title="Delete link?"
-                          description="This cannot be undone. The short URL will stop working immediately."
-                          confirmLabel="Delete"
-                          onConfirm={() => handleDelete(link.id)}
-                        />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleDuplicate(link.id)}
+                            >
+                              <CopyPlus className="h-3.5 w-3.5" /> Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <ConfirmDialog
+                              trigger={
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onSelect={(e) => e.preventDefault()}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" /> Delete
+                                </DropdownMenuItem>
+                              }
+                              title="Delete link?"
+                              description="This cannot be undone. The short URL will stop working immediately."
+                              confirmLabel="Delete"
+                              onConfirm={() => handleDelete(link.id)}
+                            />
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>
@@ -657,9 +863,13 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
       {filtered.length > 0 && (
         <div className="flex items-center justify-between gap-4 pt-1">
           <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{from}–{to}</span>
+            <span className="font-medium text-foreground">
+              {from}–{to}
+            </span>
             {" of "}
-            <span className="font-medium text-foreground">{filtered.length}</span>
+            <span className="font-medium text-foreground">
+              {filtered.length}
+            </span>
             {" links"}
             {filtered.length !== initialLinks.length && (
               <span className="ml-1 text-muted-foreground/70">
@@ -686,7 +896,10 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
               {/* Desktop */}
               {pageNumbers.map((p, i) =>
                 p === "…" ? (
-                  <span key={`ellipsis-${i}`} className="hidden h-8 w-6 items-center justify-center text-xs text-muted-foreground sm:flex">
+                  <span
+                    key={`ellipsis-${i}`}
+                    className="hidden h-8 w-6 items-center justify-center text-xs text-muted-foreground sm:flex"
+                  >
                     …
                   </span>
                 ) : (
