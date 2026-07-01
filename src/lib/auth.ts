@@ -6,8 +6,6 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/server/db/prisma";
 
-const isSecure = process.env.NEXTAUTH_URL?.startsWith("https://");
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
   session: {
@@ -17,24 +15,6 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
-  // Share the session cookie across subdomains (e.g. app.localhost, app.linkpilot.com)
-  // Set NEXTAUTH_COOKIE_DOMAIN=.localhost in .env.local (or .yourdomain.com in production)
-  ...(process.env.NEXTAUTH_COOKIE_DOMAIN && {
-    cookies: {
-      sessionToken: {
-        name: isSecure
-          ? "__Secure-next-auth.session-token"
-          : "next-auth.session-token",
-        options: {
-          httpOnly: true,
-          sameSite: "lax" as const,
-          path: "/",
-          domain: process.env.NEXTAUTH_COOKIE_DOMAIN,
-          secure: !!isSecure,
-        },
-      },
-    },
-  }),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
