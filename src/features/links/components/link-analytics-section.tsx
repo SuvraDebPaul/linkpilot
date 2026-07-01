@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClicksLineChart } from "@/components/charts/clicks-line-chart";
 import { LinkDevicesCard } from "@/features/links/components/link-devices-card";
-import { DeviceBarChart } from "@/components/charts/device-bar-chart";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
 import { WorldMap } from "@/components/charts/world-map";
 import { LinkReferrersCard } from "@/features/links/components/link-referrers-card";
+import { LinkUtmBarList } from "@/features/links/components/link-utm-bar-list";
+import { LinkUtmCampaignsCard } from "@/features/links/components/link-utm-campaigns-card";
 import { cn } from "@/lib/utils";
 
 type Analytics = {
@@ -56,6 +57,10 @@ export function LinkAnalyticsSection({ analytics }: Props) {
     .map((c) => ({ name: c.country, count: c.count }));
   const totalCountryClicks = countries.reduce((s, c) => s + c.count, 0);
   const [countriesLeft, countriesRight] = twoColumns(countries);
+
+  const totalUtmSources   = data.utmSources.reduce((s, u) => s + u.count, 0);
+  const totalUtmMediums   = data.utmMediums.reduce((s, u) => s + u.count, 0);
+  const totalUtmCampaigns = data.utmCampaigns.reduce((s, u) => s + u.count, 0);
 
   return (
     <div className="space-y-4">
@@ -301,49 +306,55 @@ export function LinkAnalyticsSection({ analytics }: Props) {
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Sources
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm font-semibold">Sources</CardTitle>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">By utm_source</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-bold tabular-nums text-foreground">{totalUtmSources.toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">total clicks</p>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <DeviceBarChart
-                  data={data.utmSources.map((u) => ({
-                    device: u.label,
-                    count: u.count,
-                  }))}
-                />
+              <CardContent className="pt-0">
+                <LinkUtmBarList data={data.utmSources} kind="source" />
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Mediums
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm font-semibold">Mediums</CardTitle>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">By utm_medium</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-bold tabular-nums text-foreground">{totalUtmMediums.toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">total clicks</p>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <DeviceBarChart
-                  data={data.utmMediums.map((u) => ({
-                    device: u.label,
-                    count: u.count,
-                  }))}
-                />
+              <CardContent className="pt-0">
+                <LinkUtmBarList data={data.utmMediums} kind="medium" />
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Campaigns
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm font-semibold">Campaigns</CardTitle>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">By utm_campaign</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-bold tabular-nums text-foreground">{totalUtmCampaigns.toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">total clicks</p>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <DeviceBarChart
-                  data={data.utmCampaigns.map((u) => ({
-                    device: u.label,
-                    count: u.count,
-                  }))}
-                />
+              <CardContent className="pt-0">
+                <LinkUtmCampaignsCard data={data.utmCampaigns} />
               </CardContent>
             </Card>
           </div>
