@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { FileText, FolderKanban, Zap } from "lucide-react";
 
 import { updateLinkAction } from "@/features/links/actions/link.actions";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type LinkData = {
   id: string;
@@ -19,10 +27,19 @@ type LinkData = {
   maxClicks: number | null;
   notes: string | null;
   tags: string[];
+  campaignId: string | null;
 };
 
-export function EditLinkForm({ link }: { link: LinkData }) {
+type Campaign = { id: string; name: string };
+
+type Props = {
+  link: LinkData;
+  campaigns: Campaign[];
+};
+
+export function EditLinkForm({ link, campaigns }: Props) {
   const [isPending, setIsPending] = useState(false);
+  const [campaignId, setCampaignId] = useState(link.campaignId ?? "");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,6 +56,7 @@ export function EditLinkForm({ link }: { link: LinkData }) {
       clearMaxClicks: formData.get("clearMaxClicks") === "on",
       notes: formData.get("notes") as string,
       tags: formData.get("tags") as string,
+      campaignId,
     });
 
     setIsPending(false);
@@ -47,17 +65,77 @@ export function EditLinkForm({ link }: { link: LinkData }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Edit link</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileText className="h-4 w-4 text-primary" />
+            Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="edit-title">Title</Label>
             <Input id="edit-title" name="title" defaultValue={link.title ?? ""} placeholder="Link title" disabled={isPending} />
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-tags">Tags <span className="text-muted-foreground text-xs">(comma-separated)</span></Label>
+            <Input
+              id="edit-tags"
+              name="tags"
+              defaultValue={link.tags.join(", ")}
+              placeholder="e.g. social, launch, q4"
+              disabled={isPending}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-notes">Notes</Label>
+            <Textarea
+              id="edit-notes"
+              name="notes"
+              defaultValue={link.notes ?? ""}
+              placeholder="Internal notes about this link"
+              className="min-h-20 resize-none"
+              disabled={isPending}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FolderKanban className="h-4 w-4 text-primary" />
+            Campaign
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={campaignId || "none"} onValueChange={(v) => setCampaignId(v === "none" ? "" : v)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="No campaign" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No campaign</SelectItem>
+              {campaigns.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Zap className="h-4 w-4 text-primary" />
+            Security &amp; limits
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="edit-password">New password</Label>
             <Input
@@ -116,35 +194,12 @@ export function EditLinkForm({ link }: { link: LinkData }) {
               </label>
             )}
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-tags">Tags <span className="text-muted-foreground text-xs">(comma-separated)</span></Label>
-            <Input
-              id="edit-tags"
-              name="tags"
-              defaultValue={link.tags.join(", ")}
-              placeholder="e.g. social, launch, q4"
-              disabled={isPending}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-notes">Notes</Label>
-            <Textarea
-              id="edit-notes"
-              name="notes"
-              defaultValue={link.notes ?? ""}
-              placeholder="Internal notes about this link"
-              className="min-h-20 resize-none"
-              disabled={isPending}
-            />
-          </div>
-
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Saving…" : "Save changes"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? "Saving…" : "Save changes"}
+      </Button>
+    </form>
   );
 }

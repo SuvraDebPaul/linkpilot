@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import { COUNTRIES } from "@/constants/countries";
 import { updateGeoTargetsAction, type GeoTarget } from "@/features/links/actions/geo-targets.actions";
 
@@ -60,25 +61,14 @@ export function GeoTargetsForm({ linkId, isPaidPlan, initialTargets }: Props) {
 
   if (!isPaidPlan) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Globe className="h-4 w-4" /> Geo targeting
-          </CardTitle>
-          <CardDescription>Redirect visitors to different URLs based on their country.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border border-border bg-muted/40 p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Geo targeting is available on{" "}
-              <a href="/dashboard/settings/billing" className="font-semibold text-foreground underline underline-offset-2">
-                Starter & Pro plans
-              </a>
-              .
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <PlanGateCard
+        icon={Globe}
+        title="Geo targeting"
+        description="Redirect visitors to different URLs based on their country."
+        lockedTitle="Country-based redirects"
+        lockedDescription="Send visitors to different destination URLs depending on where they're browsing from."
+        requiredPlanLabel="Starter+"
+      />
     );
   }
 
@@ -86,7 +76,7 @@ export function GeoTargetsForm({ linkId, isPaidPlan, initialTargets }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <Globe className="h-4 w-4" /> Geo targeting
+          <Globe className="h-4 w-4 text-primary" /> Geo targeting
         </CardTitle>
         <CardDescription>
           Redirect visitors to a different URL based on their country. Falls back to the main URL for

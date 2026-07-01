@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import { updateAbVariantsAction, type AbVariant } from "@/features/links/actions/ab-variants.actions";
 
 const LABELS = ["A", "B", "C", "D", "E"];
@@ -86,25 +87,14 @@ export function AbVariantsForm({ linkId, plan, originalUrl, initialVariants }: P
 
   if (plan === "free") {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <FlaskConical className="h-4 w-4" /> A/B split testing
-          </CardTitle>
-          <CardDescription>Split traffic between two or more destination URLs.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border border-border bg-muted/40 p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              A/B testing is available on{" "}
-              <a href="/dashboard/settings/billing" className="font-semibold text-foreground underline underline-offset-2">
-                Starter & Pro plans
-              </a>
-              .
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <PlanGateCard
+        icon={FlaskConical}
+        title="A/B split testing"
+        description="Split traffic between two or more destination URLs."
+        lockedTitle="Weighted traffic splitting"
+        lockedDescription="Test multiple landing pages against each other and let the data pick the winner."
+        requiredPlanLabel="Starter+"
+      />
     );
   }
 
@@ -112,7 +102,7 @@ export function AbVariantsForm({ linkId, plan, originalUrl, initialVariants }: P
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <FlaskConical className="h-4 w-4" /> A/B split testing
+          <FlaskConical className="h-4 w-4 text-primary" /> A/B split testing
         </CardTitle>
         <CardDescription>
           Traffic is split randomly by weight. Geo rules take priority — A/B applies to unmatched countries.

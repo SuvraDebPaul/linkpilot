@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Repeat } from "lucide-react";
 import { updateRedirectTypeAction } from "@/features/links/actions/redirect-type.actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import type { PlanTier } from "@/lib/plans";
 
 const REDIRECT_OPTIONS = [
@@ -48,64 +49,62 @@ export function RedirectTypeForm({ linkId, plan, initialType }: Props) {
     else toast.error(result.message);
   }
 
+  if (!isPaidPlan) {
+    return (
+      <PlanGateCard
+        icon={Repeat}
+        title="HTTP Status"
+        description="Choose which redirect status code your link responds with."
+        lockedTitle="Custom redirect type"
+        lockedDescription="Choose between 301 permanent, 302 temporary, and 307 strict redirects."
+        requiredPlanLabel="Starter+"
+      />
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">HTTP Status</CardTitle>
-          {!isPaidPlan && (
-            <Badge variant="secondary" className="text-xs">Starter+</Badge>
-          )}
-        </div>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Repeat className="h-4 w-4 text-primary" />
+          HTTP Status
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {!isPaidPlan ? (
-          <div className="rounded-lg border border-dashed border-border p-4 text-center space-y-2">
-            <p className="text-sm font-medium text-foreground">Custom redirect type</p>
-            <p className="text-xs text-muted-foreground">
-              Choose between 301 permanent, 302 temporary, and 307 strict redirects.
-              Available on Starter and Pro.
-            </p>
-            <Button variant="outline" size="sm" asChild>
-              <a href="/dashboard/settings/billing">Upgrade</a>
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {REDIRECT_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors ${
-                  selected === opt.value
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/40"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="redirectType"
-                  value={opt.value}
-                  checked={selected === opt.value}
-                  onChange={() => setSelected(opt.value)}
-                  className="mt-0.5 accent-primary"
-                />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">{opt.label}</p>
-                  <p className="text-xs text-muted-foreground">{opt.description}</p>
-                </div>
-              </label>
-            ))}
-
-            <Button
-              onClick={handleSave}
-              disabled={isPending}
-              className="w-full"
-              size="sm"
+        <div className="space-y-3">
+          {REDIRECT_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors ${
+                selected === opt.value
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/40"
+              }`}
             >
-              {isPending ? "Saving…" : "Save"}
-            </Button>
-          </div>
-        )}
+              <input
+                type="radio"
+                name="redirectType"
+                value={opt.value}
+                checked={selected === opt.value}
+                onChange={() => setSelected(opt.value)}
+                className="mt-0.5 accent-primary"
+              />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                <p className="text-xs text-muted-foreground">{opt.description}</p>
+              </div>
+            </label>
+          ))}
+
+          <Button
+            onClick={handleSave}
+            disabled={isPending}
+            className="w-full"
+            size="sm"
+          >
+            {isPending ? "Saving…" : "Save"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

@@ -63,6 +63,8 @@ export const updateLinkSchema = z.object({
   clearMaxClicks: z.boolean().optional(),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
   tags: z.string().trim().max(200).optional().or(z.literal("")),
+  campaignId: z.string().trim().optional().or(z.literal("")),
+  customDomainId: z.string().trim().optional().or(z.literal("")),
 });
 
 export type CreateLinkInput = z.infer<typeof createLinkSchema>;

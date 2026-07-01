@@ -2,29 +2,22 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BarChart2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import { getLinkById } from "@/server/queries/link.queries";
 import { getUserPlan } from "@/lib/subscription";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
+import { getWorkspaceCampaignsForSelect } from "@/server/queries/campaign.queries";
+import { getVerifiedDomainsForWorkspace } from "@/server/queries/domain.queries";
 import { prisma } from "@/server/db/prisma";
 import { generateQrCodeDataUrl } from "@/server/services/qr.service";
-import { getDemoLinkDetail } from "@/lib/demo-stats";
+import { getDemoLinkDetail, getDemoCampaigns } from "@/lib/demo-stats";
 import { getShortUrl } from "@/lib/short-url";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { QrPreview } from "@/components/shared/qr-preview";
-import { QrDownloadButton } from "@/features/links/components/qr-download-button";
-import { QrCustomizerDialog } from "@/features/links/components/qr-customizer-dialog";
-import { EditLinkForm } from "@/features/links/components/edit-link-form";
-import { GeoTargetsForm } from "@/features/links/components/geo-targets-form";
-import { AbVariantsForm } from "@/features/links/components/ab-variants-form";
-import { RetargetingPixelsForm } from "@/features/links/components/retargeting-pixels-form";
-import { CloakingForm } from "@/features/links/components/cloaking-form";
-import { RedirectTypeForm } from "@/features/links/components/redirect-type-form";
-import { OgTagsForm } from "@/features/links/components/og-tags-form";
+import { LinkEditSidebar } from "@/features/links/components/link-edit-sidebar";
+import { LinkEditTabs } from "@/features/links/components/link-edit-tabs";
 import type { GeoTarget } from "@/features/links/actions/geo-targets.actions";
 import type { AbVariant } from "@/features/links/actions/ab-variants.actions";
 import type { RetargetingPixel } from "@/features/links/actions/retargeting-pixels.actions";
@@ -44,13 +37,16 @@ export default async function EditLinkPage({
 
   let link: Awaited<ReturnType<typeof getLinkById>>;
   let plan: Awaited<ReturnType<typeof getUserPlan>>;
-
+  let campaigns: Awaited<ReturnType<typeof getWorkspaceCampaignsForSelect>>;
+  let verifiedDomains: Awaited<ReturnType<typeof getVerifiedDomainsForWorkspace>>;
   let workspace: { brandLogoUrl: string | null; brandColor: string | null } | null;
 
   if (IS_DEMO) {
-    link      = getDemoLinkDetail(id) as unknown as Awaited<ReturnType<typeof getLinkById>>;
-    plan      = "pro";
-    workspace = { brandLogoUrl: null, brandColor: null };
+    link            = getDemoLinkDetail(id) as unknown as Awaited<ReturnType<typeof getLinkById>>;
+    plan            = "pro";
+    campaigns       = getDemoCampaigns().map((c) => ({ id: c.id, name: c.name }));
+    verifiedDomains = [{ id: "demo-domain-1", domain: "links.mystore.com" }];
+    workspace       = { brandLogoUrl: null, brandColor: null };
   } else {
     const [fetchedLink, fetchedPlan, workspaceId] = await Promise.all([
       getLinkById(id, session.user.id),
@@ -58,19 +54,26 @@ export default async function EditLinkPage({
       ensureWorkspace(session.user.id),
     ]);
     if (!fetchedLink) notFound();
-    link      = fetchedLink;
-    plan      = fetchedPlan;
-    workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: { brandLogoUrl: true, brandColor: true },
-    });
+    link = fetchedLink;
+    plan = fetchedPlan;
+
+    const [fetchedCampaigns, fetchedDomains, fetchedWorkspace] = await Promise.all([
+      getWorkspaceCampaignsForSelect(workspaceId),
+      getVerifiedDomainsForWorkspace(workspaceId),
+      prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: { brandLogoUrl: true, brandColor: true },
+      }),
+    ]);
+    campaigns       = fetchedCampaigns;
+    verifiedDomains = fetchedDomains;
+    workspace       = fetchedWorkspace;
   }
 
   if (!link) notFound();
 
-  const isPaidPlan = plan === "starter" || plan === "pro";
-  const shortUrl   = getShortUrl(link.shortCode, link.customDomain);
-  const qrDataUrl  = await generateQrCodeDataUrl(shortUrl, {
+  const shortUrl  = getShortUrl(link.shortCode, link.customDomain);
+  const qrDataUrl = await generateQrCodeDataUrl(shortUrl, {
     fg:      link.qrFgColor,
     bg:      link.qrBgColor,
     ecLevel: link.qrEcLevel,
@@ -78,102 +81,71 @@ export default async function EditLinkPage({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* ── Back link ── */}
+      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
+        <Link href={`/dashboard/links/${id}`}>
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+          Back to link
+        </Link>
+      </Button>
 
-      {/* ── Header ── */}
-      <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon" className="shrink-0">
-          <Link href={`/dashboard/links/${id}`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-bold text-foreground">
-            Edit — {link.title || link.shortCode}
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground truncate">{link.originalUrl}</p>
+      {/* ── Two-column layout ── */}
+      <div className="grid gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
+        <div className="lg:sticky lg:top-6">
+          <LinkEditSidebar
+            id={link.id}
+            title={link.title}
+            shortCode={link.shortCode}
+            shortUrl={shortUrl}
+            originalUrl={link.originalUrl}
+            isActive={link.isActive}
+            isPasswordProtected={link.isPasswordProtected}
+            isFavorite={link.isFavorite}
+            expiresAt={link.expiresAt}
+            createdAt={link.createdAt}
+            maxClicks={link.maxClicks}
+            totalClicks={link._count.clicks}
+            tags={link.tags}
+          />
         </div>
 
-        <Button asChild variant="outline" size="sm" className="shrink-0">
-          <Link href={`/dashboard/links/${id}`}>
-            <BarChart2 className="mr-1.5 h-3.5 w-3.5" />
-            View analytics
-          </Link>
-        </Button>
-      </div>
-
-      {/* ── Settings grid ── */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <EditLinkForm link={link} />
-
-        {/* QR Code customizer */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">QR Code</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <QrPreview src={qrDataUrl} size={160} />
-            {isPaidPlan ? (
-              <QrCustomizerDialog
-                url={shortUrl}
-                shortCode={link.shortCode}
-                linkId={link.id}
-                savedFgColor={link.qrFgColor}
-                savedBgColor={link.qrBgColor}
-                savedEcLevel={link.qrEcLevel}
-                savedMargin={link.qrMargin}
-                savedLogoUrl={link.qrLogoUrl ?? ""}
-                brandColor={workspace?.brandColor}
-                brandLogoUrl={workspace?.brandLogoUrl}
-              />
-            ) : (
-              <QrDownloadButton dataUrl={qrDataUrl} shortCode={link.shortCode} />
-            )}
-          </CardContent>
-        </Card>
-
-        <OgTagsForm
-          linkId={link.id}
+        <LinkEditTabs
+          link={{
+            id: link.id,
+            title: link.title,
+            isActive: link.isActive,
+            isPasswordProtected: link.isPasswordProtected,
+            expiresAt: link.expiresAt,
+            maxClicks: link.maxClicks,
+            notes: link.notes,
+            tags: link.tags,
+            campaignId: link.campaignId,
+            customDomainId: link.customDomainId,
+            originalUrl: link.originalUrl,
+            shortCode: link.shortCode,
+            isCloaked: link.isCloaked ?? false,
+            hideReferrer: link.hideReferrer ?? false,
+            redirectType: link.redirectType ?? "302",
+            ogTitle: link.ogTitle ?? null,
+            ogDescription: link.ogDescription ?? null,
+            ogImage: link.ogImage ?? null,
+            qrFgColor: link.qrFgColor,
+            qrBgColor: link.qrBgColor,
+            qrEcLevel: link.qrEcLevel,
+            qrMargin: link.qrMargin,
+            qrLogoUrl: link.qrLogoUrl ?? null,
+            geoTargets: (link.geoTargets as GeoTarget[] | null) ?? [],
+            abVariants: (link.abVariants as AbVariant[] | null) ?? [],
+            retargetingPixels: (link.retargetingPixels as RetargetingPixel[] | null) ?? [],
+          }}
           plan={plan}
-          initialTitle={link.ogTitle ?? null}
-          initialDescription={link.ogDescription ?? null}
-          initialImage={link.ogImage ?? null}
-        />
-
-        <RetargetingPixelsForm
-          linkId={link.id}
-          plan={plan}
-          initialPixels={(link.retargetingPixels as RetargetingPixel[] | null) ?? []}
-        />
-
-        <GeoTargetsForm
-          linkId={link.id}
-          isPaidPlan={isPaidPlan}
-          initialTargets={(link.geoTargets as GeoTarget[] | null) ?? []}
-        />
-
-        <AbVariantsForm
-          linkId={link.id}
-          plan={plan}
-          originalUrl={link.originalUrl}
-          initialVariants={(link.abVariants as AbVariant[] | null) ?? []}
-        />
-
-        <CloakingForm
-          linkId={link.id}
-          plan={plan}
-          initialCloaked={link.isCloaked ?? false}
-          initialHideReferrer={link.hideReferrer ?? false}
-        />
-
-        <RedirectTypeForm
-          linkId={link.id}
-          plan={plan}
-          initialType={link.redirectType ?? "302"}
+          campaigns={campaigns}
+          verifiedDomains={verifiedDomains}
+          qrDataUrl={qrDataUrl}
+          workspace={workspace}
         />
       </div>
-
     </div>
   );
 }

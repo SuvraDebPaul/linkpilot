@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import {
   updateRetargetingPixelsAction,
   type RetargetingPixel,
@@ -64,25 +65,14 @@ export function RetargetingPixelsForm({ linkId, plan, initialPixels }: Props) {
 
   if (plan === "free") {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Crosshair className="h-4 w-4" /> Retargeting pixels
-          </CardTitle>
-          <CardDescription>Cookie every clicker for Meta, Google, TikTok & LinkedIn ads.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border border-border bg-muted/40 p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Retargeting pixels are available on{" "}
-              <a href="/dashboard/settings/billing" className="font-semibold text-foreground underline underline-offset-2">
-                Starter & Pro plans
-              </a>
-              .
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <PlanGateCard
+        icon={Crosshair}
+        title="Retargeting pixels"
+        description="Cookie every clicker for Meta, Google, TikTok & LinkedIn ads."
+        lockedTitle="Fire pixels on every click"
+        lockedDescription="Build retargeting audiences automatically — no code on the destination site needed."
+        requiredPlanLabel="Starter+"
+      />
     );
   }
 
@@ -90,7 +80,7 @@ export function RetargetingPixelsForm({ linkId, plan, initialPixels }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <Crosshair className="h-4 w-4" /> Retargeting pixels
+          <Crosshair className="h-4 w-4 text-primary" /> Retargeting pixels
         </CardTitle>
         <CardDescription>
           Every click fires your pixel before the visitor lands on the destination. No JS on the destination site needed.

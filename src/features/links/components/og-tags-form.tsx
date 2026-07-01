@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Share2 } from "lucide-react";
 import { updateOgTagsAction } from "@/features/links/actions/og-tags.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import type { PlanTier } from "@/lib/plans";
 
 type Props = {
@@ -38,30 +39,30 @@ export function OgTagsForm({ linkId, plan, initialTitle, initialDescription, ini
 
   const hasPreview = ogTitle || ogDescription || ogImage;
 
+  if (!isPro) {
+    return (
+      <PlanGateCard
+        icon={Share2}
+        title="Social Preview"
+        description="Control what shows up when your link is shared on social media."
+        lockedTitle="Custom OG tags"
+        lockedDescription="Set the title, description, and image shown when your link is shared on social media."
+        requiredPlanLabel="Pro"
+        upgradeLabel="Upgrade to Pro"
+      />
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Social Preview</CardTitle>
-          {!isPro && (
-            <Badge variant="secondary" className="text-xs">Pro</Badge>
-          )}
-        </div>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Share2 className="h-4 w-4 text-primary" />
+          Social Preview
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {!isPro ? (
-          <div className="rounded-lg border border-dashed border-border p-4 text-center space-y-2">
-            <p className="text-sm font-medium text-foreground">Custom OG tags</p>
-            <p className="text-xs text-muted-foreground">
-              Control the title, description, and image shown when your link is shared
-              on social media. Available on Pro.
-            </p>
-            <Button variant="outline" size="sm" asChild>
-              <a href="/dashboard/settings/billing">Upgrade to Pro</a>
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs text-muted-foreground">
               These tags are shown when your short link is shared on Facebook, Twitter,
               LinkedIn, and other social platforms.
@@ -137,7 +138,6 @@ export function OgTagsForm({ linkId, plan, initialTitle, initialDescription, ini
               {isPending ? "Saving…" : "Save preview"}
             </Button>
           </form>
-        )}
       </CardContent>
     </Card>
   );

@@ -83,8 +83,10 @@ export async function updateLinkService(params: {
   id: string;
   userId: string;
   input: UpdateLinkInput;
+  campaignId?: string | null;
+  customDomainId?: string | null;
 }) {
-  const { id, userId, input } = params;
+  const { id, userId, input, campaignId, customDomainId } = params;
 
   const link = await prisma.link.findFirst({
     where: { id, workspace: { members: { some: { userId } } } },
@@ -121,6 +123,8 @@ export async function updateLinkService(params: {
           ? input.tags.split(",").map((t) => t.trim()).filter(Boolean)
           : [],
       }),
+      ...(campaignId !== undefined && { campaignId }),
+      ...(customDomainId !== undefined && { customDomainId }),
     },
   });
 }
