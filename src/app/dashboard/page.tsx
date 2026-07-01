@@ -824,120 +824,177 @@ export default async function DashboardPage() {
         stats.clicksByCountry.length > 0) && (
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Browsers — ranked card */}
-          {stats.clicksByBrowser.length > 0 && (() => {
-            const browsers = stats.clicksByBrowser.slice(0, 6);
-            const total    = browsers.reduce((s, r) => s + r.count, 0) || 1;
+          {stats.clicksByBrowser.length > 0 &&
+            (() => {
+              const browsers = stats.clicksByBrowser.slice(0, 6);
+              const total = browsers.reduce((s, r) => s + r.count, 0) || 1;
 
-            return (
-              <Card className="flex flex-col">
-                <CardHeader className="pb-2 shrink-0">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-base font-semibold">Browsers</CardTitle>
-                      <p className="text-xs text-muted-foreground mt-0.5">Top browsers by clicks</p>
+              return (
+                <Card className="flex flex-col">
+                  <CardHeader className="pb-2 shrink-0">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-base font-semibold">
+                          Browsers
+                        </CardTitle>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Top browsers by clicks
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold tabular-nums text-foreground">
+                          {total.toLocaleString()}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          total clicks
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold tabular-nums text-foreground">{total.toLocaleString()}</p>
-                      <p className="text-[10px] text-muted-foreground">total clicks</p>
+                  </CardHeader>
+                  <CardContent className="flex flex-col flex-1 pt-2 px-4 pb-4 gap-3">
+                    {/* Gradient area chart with tooltip */}
+                    <div className="flex-1 min-h-0">
+                      <BrowserAreaChart data={browsers} total={total} />
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 pt-2 px-4 pb-4 gap-3">
-                  {/* Gradient area chart with tooltip */}
-                  <div className="flex-1 min-h-0">
-                    <BrowserAreaChart data={browsers} total={total} />
-                  </div>
 
-                  {/* 2 × 3 table */}
-                  <div className="border-t border-border/60 shrink-0">
-                    <div className="grid grid-cols-2 divide-x divide-border/60">
-                      {[browsers.slice(0, 3), browsers.slice(3, 6)].map((col, ci) => (
-                        <div key={ci} className={ci === 1 ? "pl-3" : "pr-3"}>
-                          <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Browser</span>
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Clicks</span>
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">%</span>
-                          </div>
-                          <div className="divide-y divide-border/40">
-                            {col.map((row) => {
-                              const pct = Math.round((row.count / total) * 100);
-                              return (
-                                <div key={row.name} className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5">
-                                  <span className="min-w-0 truncate text-[11px] font-medium text-foreground">{row.name}</span>
-                                  <span className="text-[11px] font-bold tabular-nums text-foreground text-right">{row.count.toLocaleString()}</span>
-                                  <span className="text-[11px] tabular-nums text-muted-foreground text-right">{pct}%</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
+                    {/* 2 × 3 table */}
+                    <div className="border-t border-border/60 shrink-0">
+                      <div className="grid grid-cols-2 divide-x divide-border/60">
+                        {[browsers.slice(0, 3), browsers.slice(3, 6)].map(
+                          (col, ci) => (
+                            <div
+                              key={ci}
+                              className={ci === 1 ? "pl-3" : "pr-3"}
+                            >
+                              <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                  Browser
+                                </span>
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                                  Clicks
+                                </span>
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                                  %
+                                </span>
+                              </div>
+                              <div className="divide-y divide-border/40">
+                                {col.map((row) => {
+                                  const pct = Math.round(
+                                    (row.count / total) * 100,
+                                  );
+                                  return (
+                                    <div
+                                      key={row.name}
+                                      className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5"
+                                    >
+                                      <span className="min-w-0 truncate text-[11px] font-medium text-foreground">
+                                        {row.name}
+                                      </span>
+                                      <span className="text-[11px] font-bold tabular-nums text-foreground text-right">
+                                        {row.count.toLocaleString()}
+                                      </span>
+                                      <span className="text-[11px] tabular-nums text-muted-foreground text-right">
+                                        {pct}%
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })()}
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
           {/* Operating Systems — SVG bar chart + 2×3 table */}
-          {stats.clicksByOs.length > 0 && (() => {
-            const osData = stats.clicksByOs.slice(0, 6);
-            const total  = osData.reduce((s, r) => s + r.count, 0) || 1;
-            const left   = osData.slice(0, 3);
-            const right  = osData.slice(3, 6);
+          {stats.clicksByOs.length > 0 &&
+            (() => {
+              const osData = stats.clicksByOs.slice(0, 6);
+              const total = osData.reduce((s, r) => s + r.count, 0) || 1;
+              const left = osData.slice(0, 3);
+              const right = osData.slice(3, 6);
 
-            return (
-              <Card className="flex flex-col">
-                <CardHeader className="pb-2 shrink-0">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-base font-semibold">Operating Systems</CardTitle>
-                      <p className="text-xs text-muted-foreground mt-0.5">Top platforms by clicks</p>
+              return (
+                <Card className="flex flex-col">
+                  <CardHeader className="pb-2 shrink-0">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-base font-semibold">
+                          Operating Systems
+                        </CardTitle>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Top platforms by clicks
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold tabular-nums text-foreground">
+                          {total.toLocaleString()}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          total clicks
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold tabular-nums text-foreground">{total.toLocaleString()}</p>
-                      <p className="text-[10px] text-muted-foreground">total clicks</p>
+                  </CardHeader>
+                  <CardContent className="flex flex-col flex-1 pt-2 px-4 pb-4 gap-3">
+                    {/* Bar chart with tooltip */}
+                    <div className="flex-1 min-h-0">
+                      <OsBarChart data={osData} total={total} />
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 pt-2 px-4 pb-4 gap-3">
-                  {/* Bar chart with tooltip */}
-                  <div className="flex-1 min-h-0">
-                    <OsBarChart data={osData} total={total} />
-                  </div>
 
-                  {/* 2 × 3 table — pinned to bottom, same style as Countries card */}
-                  <div className="border-t border-border/60 shrink-0">
-                    <div className="grid grid-cols-2 divide-x divide-border/60">
-                      {[left, right].map((col, ci) => (
-                        <div key={ci} className={ci === 1 ? "pl-3" : "pr-3"}>
-                          {/* Column header */}
-                          <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Platform</span>
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Clicks</span>
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">%</span>
+                    {/* 2 × 3 table — pinned to bottom, same style as Countries card */}
+                    <div className="border-t border-border/60 shrink-0">
+                      <div className="grid grid-cols-2 divide-x divide-border/60">
+                        {[left, right].map((col, ci) => (
+                          <div key={ci} className={ci === 1 ? "pl-3" : "pr-3"}>
+                            {/* Column header */}
+                            <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Platform
+                              </span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                                Clicks
+                              </span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                                %
+                              </span>
+                            </div>
+                            {/* Rows */}
+                            <div className="divide-y divide-border/40">
+                              {col.map((row, ri) => {
+                                const pct = Math.round(
+                                  (row.count / total) * 100,
+                                );
+                                return (
+                                  <div
+                                    key={row.name}
+                                    className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5"
+                                  >
+                                    <span className="min-w-0 truncate text-[11px] font-medium text-foreground">
+                                      {row.name}
+                                    </span>
+                                    <span className="text-[11px] font-bold tabular-nums text-foreground text-right">
+                                      {row.count.toLocaleString()}
+                                    </span>
+                                    <span className="text-[11px] tabular-nums text-muted-foreground text-right">
+                                      {pct}%
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                          {/* Rows */}
-                          <div className="divide-y divide-border/40">
-                            {col.map((row, ri) => {
-                              const pct = Math.round((row.count / total) * 100);
-                              return (
-                                <div key={row.name} className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5">
-                                  <span className="min-w-0 truncate text-[11px] font-medium text-foreground">{row.name}</span>
-                                  <span className="text-[11px] font-bold tabular-nums text-foreground text-right">{row.count.toLocaleString()}</span>
-                                  <span className="text-[11px] tabular-nums text-muted-foreground text-right">{pct}%</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })()}
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
           {/* Top Countries — world map */}
           {stats.clicksByCountry.length > 0 &&
