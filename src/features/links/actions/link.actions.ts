@@ -151,8 +151,39 @@ export async function updateLinkAction(id: string, input: unknown): Promise<Acti
   }
 
   try {
-    const { userId } = await getAuthContext();
-    await updateLinkService({ id, userId, input: parsed.data });
+    const { userId, workspaceId } = await getAuthContext();
+
+    // Campaign assignment — "" clears it, undefined leaves it untouched
+    let campaignId: string | null | undefined;
+    if (parsed.data.campaignId !== undefined) {
+      if (parsed.data.campaignId === "") {
+        campaignId = null;
+      } else {
+        const campaign = await prisma.campaign.findFirst({
+          where: { id: parsed.data.campaignId, workspaceId },
+          select: { id: true },
+        });
+        if (!campaign) return { success: false, message: "Selected campaign was not found." };
+        campaignId = campaign.id;
+      }
+    }
+
+    // Custom domain — only a verified domain belonging to this workspace may be used
+    let customDomainId: string | null | undefined;
+    if (parsed.data.customDomainId !== undefined) {
+      if (parsed.data.customDomainId === "") {
+        customDomainId = null;
+      } else {
+        const domain = await prisma.customDomain.findFirst({
+          where: { id: parsed.data.customDomainId, workspaceId, status: "VERIFIED" },
+          select: { id: true },
+        });
+        if (!domain) return { success: false, message: "Selected domain was not found or is not verified." };
+        customDomainId = domain.id;
+      }
+    }
+
+    await updateLinkService({ id, userId, input: parsed.data, campaignId, customDomainId });
     revalidatePath("/dashboard/links");
     revalidatePath(`/dashboard/links/${id}`);
     return { success: true, message: "Link updated." };

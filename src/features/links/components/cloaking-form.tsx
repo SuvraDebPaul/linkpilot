@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import { updateCloakingAction } from "@/features/links/actions/cloaking.actions";
 
 interface Props {
@@ -31,25 +32,14 @@ export function CloakingForm({ linkId, plan, initialCloaked, initialHideReferrer
 
   if (plan === "free") {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <EyeOff className="h-4 w-4" /> Link cloaking
-          </CardTitle>
-          <CardDescription>Hide your destination URL and referrer from visitors and analytics tools.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border border-border bg-muted/40 p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Cloaking and referrer hiding are available on{" "}
-              <a href="/dashboard/settings/billing" className="font-semibold text-foreground underline underline-offset-2">
-                Starter & Pro plans
-              </a>
-              .
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <PlanGateCard
+        icon={EyeOff}
+        title="Link cloaking"
+        description="Hide your destination URL and referrer from visitors and analytics tools."
+        lockedTitle="Cloak your destination"
+        lockedDescription="Keep your short link in the address bar and hide where traffic is really coming from."
+        requiredPlanLabel="Starter+"
+      />
     );
   }
 
@@ -89,7 +79,7 @@ export function CloakingForm({ linkId, plan, initialCloaked, initialHideReferrer
           <div>
             <Label className="text-sm font-medium">Hide referrer</Label>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              The destination site won't see which page the visitor came from. Useful when you don't want to reveal your traffic sources.
+              The destination site won&apos;t see which page the visitor came from. Useful when you don&apos;t want to reveal your traffic sources.
             </p>
           </div>
           <Switch
