@@ -237,9 +237,11 @@ export function getDemoLinkAnalytics(days: 7 | 30 | 90) {
   return {
     clicksPerDay: makeDailyClicks(days, peak),
     clicksByDevice: [
-      { device: "Mobile",  count: 1_820 },
-      { device: "Desktop", count:   980 },
-      { device: "Tablet",  count:   210 },
+      { device: "MOBILE",  count: 1_820 },
+      { device: "DESKTOP", count:   980 },
+      { device: "TABLET",  count:   210 },
+      { device: "BOT",     count:    65 },
+      { device: "UNKNOWN", count:    25 },
     ],
     clicksByBrowser: [
       { browser: "Chrome",           count: 1_540 },
@@ -260,14 +262,14 @@ export function getDemoLinkAnalytics(days: 7 | 30 | 90) {
       { referrer: "other",         count:  40 },
     ],
     topCountries: [
-      { country: "US", count: 1_210 },
-      { country: "IN", count:   580 },
-      { country: "GB", count:   340 },
-      { country: "DE", count:   240 },
-      { country: "CA", count:   180 },
-      { country: "AU", count:   130 },
-      { country: "FR", count:    90 },
-      { country: "BR", count:    70 },
+      { country: "United States",  count: 1_210 },
+      { country: "India",          count:   580 },
+      { country: "United Kingdom", count:   340 },
+      { country: "Germany",        count:   240 },
+      { country: "Canada",         count:   180 },
+      { country: "Australia",      count:   130 },
+      { country: "France",         count:    90 },
+      { country: "Brazil",         count:    70 },
     ],
     utmSources:   [
       { label: "google",    count: 940 },

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClicksLineChart } from "@/components/charts/clicks-line-chart";
+import { LinkDevicesCard } from "@/features/links/components/link-devices-card";
 import { DeviceBarChart } from "@/components/charts/device-bar-chart";
+import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
+import { WorldMap } from "@/components/charts/world-map";
 import { ReferrerTable } from "@/components/charts/referrer-table";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +31,12 @@ type Props = {
   analytics: Record<number, Analytics>;
 };
 
+// Split a ranked list into two columns of up to 3 rows each, mirroring the
+// Browsers / Top Countries card layout on the main dashboard.
+function twoColumns<T>(items: T[]): [T[], T[]] {
+  return [items.slice(0, 3), items.slice(3, 6)];
+}
+
 export function LinkAnalyticsSection({ analytics }: Props) {
   const [days, setDays] = useState(30);
   const data = analytics[days];
@@ -35,6 +44,16 @@ export function LinkAnalyticsSection({ analytics }: Props) {
 
   const totalClicks = data.clicksPerDay.reduce((s, d) => s + d.count, 0);
   const totalReferrers = data.topReferrers.reduce((s, r) => s + r.count, 0);
+
+  const browsers = data.clicksByBrowser
+    .slice(0, 6)
+    .map((b) => ({ name: b.browser.replace(" Browser", ""), count: b.count }));
+  const totalBrowserClicks = browsers.reduce((s, b) => s + b.count, 0);
+  const [browsersLeft, browsersRight] = twoColumns(browsers);
+
+  const countries = data.topCountries.slice(0, 6).map((c) => ({ name: c.country, count: c.count }));
+  const totalCountryClicks = countries.reduce((s, c) => s + c.count, 0);
+  const [countriesLeft, countriesRight] = twoColumns(countries);
 
   return (
     <div className="space-y-4">
@@ -72,25 +91,64 @@ export function LinkAnalyticsSection({ analytics }: Props) {
         </CardContent>
       </Card>
 
-      {/* Device + Browser */}
+      {/* Devices + Browsers */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Devices</CardTitle>
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2 shrink-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Devices</CardTitle>
+                <p className="mt-0.5 text-xs text-muted-foreground">Last {days} days</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <DeviceBarChart data={data.clicksByDevice} />
+          <CardContent className="flex flex-1 flex-col gap-3 pt-2">
+            <LinkDevicesCard data={data.clicksByDevice} />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Browsers</CardTitle>
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2 shrink-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Browsers</CardTitle>
+                <p className="mt-0.5 text-xs text-muted-foreground">Top browsers by clicks</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold tabular-nums text-foreground">{totalBrowserClicks.toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">total clicks</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <DeviceBarChart
-              data={data.clicksByBrowser.map((b) => ({ device: b.browser, count: b.count }))}
-            />
+          <CardContent className="flex flex-1 flex-col gap-3 pt-2">
+            <div className="flex-1 min-h-0">
+              <BrowserAreaChart data={browsers} total={totalBrowserClicks} />
+            </div>
+            <div className="border-t border-border/60 shrink-0">
+              <div className="grid grid-cols-2 divide-x divide-border/60">
+                {[browsersLeft, browsersRight].map((col, ci) => (
+                  <div key={ci} className={ci === 1 ? "pl-3" : "pr-3"}>
+                    <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Browser</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Clicks</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">%</span>
+                    </div>
+                    <div className="divide-y divide-border/40">
+                      {col.map((row) => {
+                        const pct = totalBrowserClicks > 0 ? Math.round((row.count / totalBrowserClicks) * 100) : 0;
+                        return (
+                          <div key={row.name} className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5">
+                            <span className="min-w-0 truncate text-[11px] font-medium text-foreground">{row.name}</span>
+                            <span className="text-[11px] font-bold tabular-nums text-foreground text-right">{row.count.toLocaleString()}</span>
+                            <span className="text-[11px] tabular-nums text-muted-foreground text-right">{pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -106,14 +164,48 @@ export function LinkAnalyticsSection({ analytics }: Props) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Top countries</CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Top Countries</CardTitle>
+                <p className="mt-0.5 text-xs text-muted-foreground">Click distribution by location</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold tabular-nums text-foreground">{totalCountryClicks.toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">total clicks</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <DeviceBarChart
-              data={data.topCountries.map((c) => ({ device: c.country, count: c.count }))}
-            />
+          <CardContent className="flex-1 pt-0 px-3 pb-3">
+            <div className="-mt-5">
+              <WorldMap data={countries} />
+            </div>
+            <div className="mt-2 border-t border-border/60">
+              <div className="grid grid-cols-2 divide-x divide-border/60">
+                {[countriesLeft, countriesRight].map((col, ci) => (
+                  <div key={ci} className={ci === 1 ? "pl-3" : "pr-3"}>
+                    <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Country</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Clicks</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">%</span>
+                    </div>
+                    <div className="divide-y divide-border/40">
+                      {col.map((row) => {
+                        const pct = totalCountryClicks > 0 ? Math.round((row.count / totalCountryClicks) * 100) : 0;
+                        return (
+                          <div key={row.name} className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5">
+                            <span className="min-w-0 truncate text-[11px] font-medium text-foreground">{row.name}</span>
+                            <span className="text-[11px] font-bold tabular-nums text-foreground text-right">{row.count.toLocaleString()}</span>
+                            <span className="text-[11px] tabular-nums text-muted-foreground text-right">{pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
