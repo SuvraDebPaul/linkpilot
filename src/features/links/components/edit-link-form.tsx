@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { FileText, FolderKanban, Globe, Zap } from "lucide-react";
+import { FileText, FolderKanban, Zap } from "lucide-react";
 
 import { updateLinkAction } from "@/features/links/actions/link.actions";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { siteConfig } from "@/config/site";
 
 type LinkData = {
   id: string;
@@ -29,22 +28,18 @@ type LinkData = {
   notes: string | null;
   tags: string[];
   campaignId: string | null;
-  customDomainId: string | null;
 };
 
 type Campaign = { id: string; name: string };
-type VerifiedDomain = { id: string; domain: string };
 
 type Props = {
   link: LinkData;
   campaigns: Campaign[];
-  verifiedDomains: VerifiedDomain[];
 };
 
-export function EditLinkForm({ link, campaigns, verifiedDomains }: Props) {
+export function EditLinkForm({ link, campaigns }: Props) {
   const [isPending, setIsPending] = useState(false);
   const [campaignId, setCampaignId] = useState(link.campaignId ?? "");
-  const [customDomainId, setCustomDomainId] = useState(link.customDomainId ?? "");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -62,7 +57,6 @@ export function EditLinkForm({ link, campaigns, verifiedDomains }: Props) {
       notes: formData.get("notes") as string,
       tags: formData.get("tags") as string,
       campaignId,
-      customDomainId,
     });
 
     setIsPending(false);
@@ -133,32 +127,6 @@ export function EditLinkForm({ link, campaigns, verifiedDomains }: Props) {
           </Select>
         </CardContent>
       </Card>
-
-      {verifiedDomains.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Globe className="h-4 w-4 text-primary" />
-              Domain
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Select value={customDomainId || "default"} onValueChange={(v) => setCustomDomainId(v === "default" ? "" : v)}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">{siteConfig.url.replace(/^https?:\/\//, "")} (default)</SelectItem>
-                {verifiedDomains.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {d.domain}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-      )}
 
       <Card>
         <CardHeader>

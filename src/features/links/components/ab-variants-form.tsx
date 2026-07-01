@@ -102,7 +102,7 @@ export function AbVariantsForm({ linkId, plan, originalUrl, initialVariants }: P
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <FlaskConical className="h-4 w-4" /> A/B split testing
+          <FlaskConical className="h-4 w-4 text-primary" /> A/B split testing
         </CardTitle>
         <CardDescription>
           Traffic is split randomly by weight. Geo rules take priority — A/B applies to unmatched countries.

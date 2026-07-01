@@ -76,7 +76,7 @@ export function GeoTargetsForm({ linkId, isPaidPlan, initialTargets }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <Globe className="h-4 w-4" /> Geo targeting
+          <Globe className="h-4 w-4 text-primary" /> Geo targeting
         </CardTitle>
         <CardDescription>
           Redirect visitors to a different URL based on their country. Falls back to the main URL for

@@ -1,6 +1,6 @@
 "use client";
 
-import { SlidersHorizontal, QrCode as QrCodeIcon, Crosshair, Layers } from "lucide-react";
+import { SlidersHorizontal, QrCode as QrCodeIcon, Crosshair, Layers, ArrowDown } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,16 +57,14 @@ type Props = {
   campaigns: Campaign[];
   verifiedDomains: VerifiedDomain[];
   qrDataUrl: string;
-  shortUrl: string;
   workspace: { brandLogoUrl: string | null; brandColor: string | null } | null;
 };
 
-export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl, shortUrl, workspace }: Props) {
+export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl, workspace }: Props) {
   const isPaidPlan = plan === "starter" || plan === "pro";
 
-  const targetingCount = link.geoTargets.length + link.abVariants.length;
+  const targetingCount = link.geoTargets.length + link.abVariants.length + link.retargetingPixels.length;
   const advancedCount =
-    link.retargetingPixels.length +
     (link.isCloaked || link.hideReferrer ? 1 : 0) +
     (link.redirectType !== "302" ? 1 : 0) +
     (link.ogTitle || link.ogDescription || link.ogImage ? 1 : 0);
@@ -103,18 +101,20 @@ export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl
       </TabsList>
 
       <TabsContent value="overview">
-        <EditLinkForm link={link} campaigns={campaigns} verifiedDomains={verifiedDomains} />
+        <EditLinkForm link={link} campaigns={campaigns} />
       </TabsContent>
 
       <TabsContent value="qr">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">QR Code</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <QrCodeIcon className="h-4 w-4 text-primary" />
+              QR Code
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {isPaidPlan ? (
               <QrCustomizerPanel
-                url={shortUrl}
                 shortCode={link.shortCode}
                 linkId={link.id}
                 savedFgColor={link.qrFgColor}
@@ -124,6 +124,8 @@ export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl
                 savedLogoUrl={link.qrLogoUrl ?? ""}
                 brandColor={workspace?.brandColor}
                 brandLogoUrl={workspace?.brandLogoUrl}
+                verifiedDomains={verifiedDomains}
+                initialCustomDomainId={link.customDomainId}
               />
             ) : (
               <div className="flex flex-col items-center gap-4">
@@ -138,17 +140,29 @@ export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl
       </TabsContent>
 
       <TabsContent value="targeting">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-3">
+          {/* Destination waterfall — geo rules are checked first, A/B split only applies to the rest */}
           <GeoTargetsForm linkId={link.id} isPaidPlan={isPaidPlan} initialTargets={link.geoTargets} />
+
+          <div className="flex items-center gap-2 pl-3 text-xs text-muted-foreground">
+            <ArrowDown className="h-3.5 w-3.5 shrink-0" />
+            Geo rules are checked first — A/B split only applies to traffic that didn&apos;t match a country rule.
+          </div>
+
           <AbVariantsForm linkId={link.id} plan={plan} originalUrl={link.originalUrl} initialVariants={link.abVariants} />
+
+          {/* Fires on every click regardless of which destination above was chosen */}
+          <div className="flex items-center gap-3 pt-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Also fires on every click</p>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <RetargetingPixelsForm linkId={link.id} plan={plan} initialPixels={link.retargetingPixels} />
         </div>
       </TabsContent>
 
       <TabsContent value="advanced">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <RetargetingPixelsForm linkId={link.id} plan={plan} initialPixels={link.retargetingPixels} />
-          <CloakingForm linkId={link.id} plan={plan} initialCloaked={link.isCloaked} initialHideReferrer={link.hideReferrer} />
-          <RedirectTypeForm linkId={link.id} plan={plan} initialType={link.redirectType} />
+        <div className="space-y-3">
           <OgTagsForm
             linkId={link.id}
             plan={plan}
@@ -156,6 +170,15 @@ export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl
             initialDescription={link.ogDescription}
             initialImage={link.ogImage}
           />
+
+          <CloakingForm linkId={link.id} plan={plan} initialCloaked={link.isCloaked} initialHideReferrer={link.hideReferrer} />
+
+          <div className="flex items-center gap-2 pl-3 text-xs text-muted-foreground">
+            <ArrowDown className="h-3.5 w-3.5 shrink-0" />
+            Redirect type only applies to a direct redirect — it&apos;s ignored while cloaking, referrer-hiding, retargeting pixels, or social preview require an intermediate page.
+          </div>
+
+          <RedirectTypeForm linkId={link.id} plan={plan} initialType={link.redirectType} />
         </div>
       </TabsContent>
     </Tabs>

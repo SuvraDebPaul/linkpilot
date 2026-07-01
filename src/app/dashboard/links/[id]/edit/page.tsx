@@ -12,7 +12,7 @@ import { getWorkspaceCampaignsForSelect } from "@/server/queries/campaign.querie
 import { getVerifiedDomainsForWorkspace } from "@/server/queries/domain.queries";
 import { prisma } from "@/server/db/prisma";
 import { generateQrCodeDataUrl } from "@/server/services/qr.service";
-import { getDemoLinkDetail } from "@/lib/demo-stats";
+import { getDemoLinkDetail, getDemoCampaigns } from "@/lib/demo-stats";
 import { getShortUrl } from "@/lib/short-url";
 
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,8 @@ export default async function EditLinkPage({
   if (IS_DEMO) {
     link            = getDemoLinkDetail(id) as unknown as Awaited<ReturnType<typeof getLinkById>>;
     plan            = "pro";
-    campaigns       = [];
-    verifiedDomains = [];
+    campaigns       = getDemoCampaigns().map((c) => ({ id: c.id, name: c.name }));
+    verifiedDomains = [{ id: "demo-domain-1", domain: "links.mystore.com" }];
     workspace       = { brandLogoUrl: null, brandColor: null };
   } else {
     const [fetchedLink, fetchedPlan, workspaceId] = await Promise.all([
@@ -143,7 +143,6 @@ export default async function EditLinkPage({
           campaigns={campaigns}
           verifiedDomains={verifiedDomains}
           qrDataUrl={qrDataUrl}
-          shortUrl={shortUrl}
           workspace={workspace}
         />
       </div>

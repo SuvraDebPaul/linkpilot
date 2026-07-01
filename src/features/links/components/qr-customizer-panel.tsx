@@ -2,13 +2,22 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import QRCode from "qrcode";
-import { Download, ImageIcon, Save, Check } from "lucide-react";
+import { Download, ImageIcon, Save, Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { siteConfig } from "@/config/site";
 import { saveQrSettingsAction } from "@/features/links/actions/qr-settings.actions";
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
@@ -28,9 +37,9 @@ const EC_LEVELS = [
 ] as const;
 
 type EcLevel = "L" | "M" | "Q" | "H";
+type VerifiedDomain = { id: string; domain: string };
 
 interface Props {
-  url: string;
   shortCode: string;
   linkId?: string;
   savedFgColor?: string;
@@ -40,6 +49,8 @@ interface Props {
   savedLogoUrl?: string;
   brandColor?: string | null;
   brandLogoUrl?: string | null;
+  verifiedDomains?: VerifiedDomain[];
+  initialCustomDomainId?: string | null;
 }
 
 async function drawQr(
@@ -88,9 +99,11 @@ async function drawQr(
 }
 
 export function QrCustomizerPanel({
-  url, shortCode, linkId,
+  shortCode, linkId,
   savedFgColor, savedBgColor, savedEcLevel, savedMargin, savedLogoUrl,
   brandColor, brandLogoUrl,
+  verifiedDomains = [],
+  initialCustomDomainId,
 }: Props) {
   const router = useRouter();
   const previewRef = useRef<HTMLCanvasElement>(null);
@@ -99,6 +112,8 @@ export function QrCustomizerPanel({
   const initBg = savedBgColor ?? "#ffffff";
   const initLogoUrl = savedLogoUrl ?? brandLogoUrl ?? "";
 
+  const [customDomainId, setCustomDomainId] = useState(initialCustomDomainId ?? "");
+  const [slug, setSlug] = useState(shortCode);
   const [fg, setFg] = useState(initFg);
   const [fgText, setFgText] = useState(initFg);
   const [bg, setBg] = useState(initBg);
@@ -113,6 +128,12 @@ export function QrCustomizerPanel({
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const selectedDomain = verifiedDomains.find((d) => d.id === customDomainId)?.domain;
+  const defaultDomain = siteConfig.url.replace(/^https?:\/\//, "");
+  const previewUrl = `https://${selectedDomain ?? defaultDomain}/${slug.trim() || shortCode}`;
+
+  const slugChanged = slug.trim() !== "" && slug.trim() !== shortCode;
+
   // Auto-bump EC to H when logo is enabled so data is recoverable
   function handleWithLogoChange(next: boolean) {
     setWithLogo(next);
@@ -122,8 +143,8 @@ export function QrCustomizerPanel({
   const renderPreview = useCallback(async () => {
     const canvas = previewRef.current;
     if (!canvas) return;
-    await drawQr(canvas, url, PREVIEW_SIZE, fg, bg, margin, ecLevel, withLogo, logoUrl);
-  }, [url, fg, bg, margin, ecLevel, withLogo, logoUrl]);
+    await drawQr(canvas, previewUrl, PREVIEW_SIZE, fg, bg, margin, ecLevel, withLogo, logoUrl);
+  }, [previewUrl, fg, bg, margin, ecLevel, withLogo, logoUrl]);
 
   // Re-render live whenever any option changes
   useEffect(() => { renderPreview(); }, [renderPreview]);
@@ -135,13 +156,19 @@ export function QrCustomizerPanel({
     if (!linkId) return;
     setIsSaving(true);
     try {
-      await saveQrSettingsAction(linkId, {
+      const result = await saveQrSettingsAction(linkId, {
         fgColor: fg,
         bgColor: bg,
         ecLevel,
         margin,
         logoUrl: withLogo ? logoUrl : "",
+        customDomainId,
+        customSlug: slugChanged ? slug.trim() : "",
       });
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
       setSaved(true);
       router.refresh();
       setTimeout(() => setSaved(false), 2500);
@@ -156,7 +183,7 @@ export function QrCustomizerPanel({
       if (format === "svg") {
         const fgColor = HEX_RE.test(fg) ? fg : "#000000";
         const bgColor = HEX_RE.test(bg) ? bg : "#ffffff";
-        const svgString = await QRCode.toString(url, {
+        const svgString = await QRCode.toString(previewUrl, {
           type: "svg",
           margin,
           errorCorrectionLevel: ecLevel,
@@ -170,7 +197,7 @@ export function QrCustomizerPanel({
         URL.revokeObjectURL(a.href);
       } else {
         const offscreen = document.createElement("canvas");
-        await drawQr(offscreen, url, downloadSize, fg, bg, margin, ecLevel, withLogo, logoUrl);
+        await drawQr(offscreen, previewUrl, downloadSize, fg, bg, margin, ecLevel, withLogo, logoUrl);
         const a = document.createElement("a");
         a.href = offscreen.toDataURL("image/png");
         a.download = `${shortCode}-qr-${downloadSize}.png`;
@@ -194,11 +221,56 @@ export function QrCustomizerPanel({
             style={{ imageRendering: "pixelated" }}
           />
         </div>
-        <p className="text-center text-[11px] text-muted-foreground">Updates live as you change options</p>
+        <p className="max-w-[220px] break-all text-center text-[11px] text-muted-foreground">
+          {previewUrl.replace(/^https?:\/\//, "")}
+        </p>
       </div>
 
       {/* Options */}
       <div className="flex flex-col gap-5">
+        {/* Link URL — domain + short code */}
+        <div className="space-y-3 rounded-lg border border-border p-3">
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <Link2 className="h-3.5 w-3.5" />
+            Link URL
+          </p>
+
+          {verifiedDomains.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Domain</Label>
+              <Select value={customDomainId || "default"} onValueChange={(v) => setCustomDomainId(v === "default" ? "" : v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">{defaultDomain} (default)</SelectItem>
+                  {verifiedDomains.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.domain}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Short code</Label>
+            <Input
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder={shortCode}
+              className="font-mono text-sm"
+              maxLength={64}
+            />
+            {slugChanged && (
+              <p className="text-xs text-amber-600">
+                Changing this breaks any links or printed QR codes already shared with &quot;{shortCode}&quot;.
+              </p>
+            )}
+          </div>
+        </div>
+
         {/* Colors */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">

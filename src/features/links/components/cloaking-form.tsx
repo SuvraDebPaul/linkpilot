@@ -47,7 +47,7 @@ export function CloakingForm({ linkId, plan, initialCloaked, initialHideReferrer
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <EyeOff className="h-4 w-4" /> Link cloaking
+          <EyeOff className="h-4 w-4 text-primary" /> Link cloaking
         </CardTitle>
         <CardDescription>
           Control what visitors and third-party tools see when someone clicks your link.

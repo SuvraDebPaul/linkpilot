@@ -80,7 +80,7 @@ export function RetargetingPixelsForm({ linkId, plan, initialPixels }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <Crosshair className="h-4 w-4" /> Retargeting pixels
+          <Crosshair className="h-4 w-4 text-primary" /> Retargeting pixels
         </CardTitle>
         <CardDescription>
           Every click fires your pixel before the visitor lands on the destination. No JS on the destination site needed.
