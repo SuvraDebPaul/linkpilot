@@ -10,6 +10,8 @@ import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "/dashboard";
+
 const navItems = [
   {
     label: "Home",
@@ -72,7 +74,7 @@ export function PublicHeader() {
         <div className="hidden items-center gap-2 md:flex">
           {isLoggedIn ? (
             <Button asChild className="gap-2">
-              <Link href="/dashboard">
+              <Link href={APP_URL}>
                 <LayoutDashboard className="h-4 w-4" /> Dashboard
               </Link>
             </Button>
@@ -128,7 +130,7 @@ export function PublicHeader() {
             <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4">
               {isLoggedIn ? (
                 <Button asChild className="gap-2">
-                  <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                  <Link href={APP_URL} onClick={() => setIsOpen(false)}>
                     <LayoutDashboard className="h-4 w-4" /> Dashboard
                   </Link>
                 </Button>
