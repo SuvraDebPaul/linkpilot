@@ -5,7 +5,7 @@ import { Logo } from "@/components/shared/logo";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-muted">
+    <div className="fixed inset-0 flex overflow-hidden bg-muted">
       <DashboardSidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex h-16 items-center border-b border-border bg-card px-4 lg:hidden">

@@ -7,6 +7,9 @@ import { ArrowLeft } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { getUserPlan, getUserUsage, PLAN_LIMITS, canCreateLink } from "@/lib/subscription";
 import { prisma } from "@/server/db/prisma";
+import { ensureWorkspace } from "@/server/queries/workspace.queries";
+import { getWorkspaceCampaignsForSelect } from "@/server/queries/campaign.queries";
+import { getVerifiedDomainsForWorkspace } from "@/server/queries/domain.queries";
 import { Button } from "@/components/ui/button";
 import { CreateLinkForm } from "@/features/links/components/create-link-form";
 
@@ -17,7 +20,10 @@ export default async function NewLinkPage() {
   if (!session?.user?.id) redirect("/login");
 
   const userId = session.user.id;
-  const plan = await getUserPlan(userId);
+  const [plan, workspaceId] = await Promise.all([
+    getUserPlan(userId),
+    ensureWorkspace(userId),
+  ]);
   const limit = PLAN_LIMITS[plan].links;
 
   if (isFinite(limit)) {
@@ -30,6 +36,11 @@ export default async function NewLinkPage() {
       redirect("/dashboard/links?limitReached=1");
     }
   }
+
+  const [campaigns, verifiedDomains] = await Promise.all([
+    getWorkspaceCampaignsForSelect(workspaceId),
+    getVerifiedDomainsForWorkspace(workspaceId),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -47,7 +58,7 @@ export default async function NewLinkPage() {
         </div>
       </div>
 
-      <CreateLinkForm />
+      <CreateLinkForm plan={plan} campaigns={campaigns} verifiedDomains={verifiedDomains} />
     </div>
   );
 }

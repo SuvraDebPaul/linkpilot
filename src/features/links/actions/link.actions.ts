@@ -82,7 +82,50 @@ export async function createLinkAction(input: unknown): Promise<ActionResult> {
       }
     }
 
-    const link = await createLinkService({ input: parsed.data, userId, workspaceId });
+    // Campaign assignment — verify the campaign actually belongs to this workspace
+    let campaignId: string | null = null;
+    if (parsed.data.campaignId) {
+      const campaign = await prisma.campaign.findFirst({
+        where: { id: parsed.data.campaignId, workspaceId },
+        select: { id: true },
+      });
+      if (!campaign) {
+        return { success: false, message: "Selected campaign was not found." };
+      }
+      campaignId = campaign.id;
+    }
+
+    // Custom domain — only a verified domain belonging to this workspace may be used
+    let customDomainId: string | null = null;
+    if (parsed.data.customDomainId) {
+      const domain = await prisma.customDomain.findFirst({
+        where: { id: parsed.data.customDomainId, workspaceId, status: "VERIFIED" },
+        select: { id: true },
+      });
+      if (!domain) {
+        return { success: false, message: "Selected domain was not found or is not verified." };
+      }
+      customDomainId = domain.id;
+    }
+
+    // Redirect type and QR styling are paid-plan features — strip them for
+    // free accounts instead of trusting the client to have gated the UI.
+    const isPaidPlan = plan === "starter" || plan === "pro";
+
+    const link = await createLinkService({
+      input: parsed.data,
+      userId,
+      workspaceId,
+      campaignId,
+      customDomainId,
+      redirectType: isPaidPlan ? parsed.data.redirectType : undefined,
+      qrFgColor: isPaidPlan ? (parsed.data.qrFgColor || undefined) : undefined,
+      qrBgColor: isPaidPlan ? (parsed.data.qrBgColor || undefined) : undefined,
+      qrEcLevel: isPaidPlan ? parsed.data.qrEcLevel : undefined,
+      qrMargin: isPaidPlan && parsed.data.qrMargin !== undefined && parsed.data.qrMargin !== ""
+        ? Number(parsed.data.qrMargin)
+        : undefined,
+    });
 
     // Increment lifetime counter (free plan tracking)
     const updatedUser = await prisma.user.update({

@@ -31,6 +31,13 @@ export const createLinkSchema = z.object({
   maxClicks: z.coerce.number().int().positive().optional().or(z.literal("")),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
   tags: z.string().trim().max(200).optional().or(z.literal("")),
+  campaignId: z.string().trim().optional().or(z.literal("")),
+  customDomainId: z.string().trim().optional().or(z.literal("")),
+  redirectType: z.enum(["301", "302", "307"]).optional(),
+  qrFgColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().or(z.literal("")),
+  qrBgColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().or(z.literal("")),
+  qrEcLevel: z.enum(["L", "M", "Q", "H"]).optional(),
+  qrMargin: z.coerce.number().int().min(0).max(10).optional().or(z.literal("")),
 });
 
 export const updateLinkSchema = z.object({
