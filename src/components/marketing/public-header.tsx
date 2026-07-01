@@ -10,7 +10,7 @@ import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "/dashboard";
+const APP_URL = "/dashboard";
 
 const navItems = [
   {
