@@ -7,22 +7,22 @@ import { LinkDevicesCard } from "@/features/links/components/link-devices-card";
 import { DeviceBarChart } from "@/components/charts/device-bar-chart";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
 import { WorldMap } from "@/components/charts/world-map";
-import { ReferrerTable } from "@/components/charts/referrer-table";
+import { LinkReferrersCard } from "@/features/links/components/link-referrers-card";
 import { cn } from "@/lib/utils";
 
 type Analytics = {
-  clicksPerDay:    { date: string; count: number }[];
-  clicksByDevice:  { device: string; count: number }[];
+  clicksPerDay: { date: string; count: number }[];
+  clicksByDevice: { device: string; count: number }[];
   clicksByBrowser: { browser: string; count: number }[];
-  topReferrers:    { referrer: string; count: number }[];
-  topCountries:    { country: string; count: number }[];
-  utmSources:      { label: string; count: number }[];
-  utmMediums:      { label: string; count: number }[];
-  utmCampaigns:    { label: string; count: number }[];
+  topReferrers: { referrer: string; count: number }[];
+  topCountries: { country: string; count: number }[];
+  utmSources: { label: string; count: number }[];
+  utmMediums: { label: string; count: number }[];
+  utmCampaigns: { label: string; count: number }[];
 };
 
 const PERIODS = [
-  { label: "7d",  days: 7 },
+  { label: "7d", days: 7 },
   { label: "30d", days: 30 },
   { label: "90d", days: 90 },
 ];
@@ -51,7 +51,9 @@ export function LinkAnalyticsSection({ analytics }: Props) {
   const totalBrowserClicks = browsers.reduce((s, b) => s + b.count, 0);
   const [browsersLeft, browsersRight] = twoColumns(browsers);
 
-  const countries = data.topCountries.slice(0, 6).map((c) => ({ name: c.country, count: c.count }));
+  const countries = data.topCountries
+    .slice(0, 6)
+    .map((c) => ({ name: c.country, count: c.count }));
   const totalCountryClicks = countries.reduce((s, c) => s + c.count, 0);
   const [countriesLeft, countriesRight] = twoColumns(countries);
 
@@ -83,7 +85,9 @@ export function LinkAnalyticsSection({ analytics }: Props) {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Clicks over time
-            <span className="ml-2 text-lg font-bold text-foreground">{totalClicks.toLocaleString()}</span>
+            <span className="ml-2 text-lg font-bold text-foreground">
+              {totalClicks.toLocaleString()}
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -97,8 +101,12 @@ export function LinkAnalyticsSection({ analytics }: Props) {
           <CardHeader className="pb-2 shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Devices</CardTitle>
-                <p className="mt-0.5 text-xs text-muted-foreground">Last {days} days</p>
+                <CardTitle className="text-base font-semibold">
+                  Devices
+                </CardTitle>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Last {days} days
+                </p>
               </div>
             </div>
           </CardHeader>
@@ -111,12 +119,20 @@ export function LinkAnalyticsSection({ analytics }: Props) {
           <CardHeader className="pb-2 shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Browsers</CardTitle>
-                <p className="mt-0.5 text-xs text-muted-foreground">Top browsers by clicks</p>
+                <CardTitle className="text-base font-semibold">
+                  Browsers
+                </CardTitle>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Top browsers by clicks
+                </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold tabular-nums text-foreground">{totalBrowserClicks.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">total clicks</p>
+                <p className="text-sm font-bold tabular-nums text-foreground">
+                  {totalBrowserClicks.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  total clicks
+                </p>
               </div>
             </div>
           </CardHeader>
@@ -129,18 +145,36 @@ export function LinkAnalyticsSection({ analytics }: Props) {
                 {[browsersLeft, browsersRight].map((col, ci) => (
                   <div key={ci} className={ci === 1 ? "pl-3" : "pr-3"}>
                     <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Browser</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Clicks</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">%</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Browser
+                      </span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                        Clicks
+                      </span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                        %
+                      </span>
                     </div>
                     <div className="divide-y divide-border/40">
                       {col.map((row) => {
-                        const pct = totalBrowserClicks > 0 ? Math.round((row.count / totalBrowserClicks) * 100) : 0;
+                        const pct =
+                          totalBrowserClicks > 0
+                            ? Math.round((row.count / totalBrowserClicks) * 100)
+                            : 0;
                         return (
-                          <div key={row.name} className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5">
-                            <span className="min-w-0 truncate text-[11px] font-medium text-foreground">{row.name}</span>
-                            <span className="text-[11px] font-bold tabular-nums text-foreground text-right">{row.count.toLocaleString()}</span>
-                            <span className="text-[11px] tabular-nums text-muted-foreground text-right">{pct}%</span>
+                          <div
+                            key={row.name}
+                            className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5"
+                          >
+                            <span className="min-w-0 truncate text-[11px] font-medium text-foreground">
+                              {row.name}
+                            </span>
+                            <span className="text-[11px] font-bold tabular-nums text-foreground text-right">
+                              {row.count.toLocaleString()}
+                            </span>
+                            <span className="text-[11px] tabular-nums text-muted-foreground text-right">
+                              {pct}%
+                            </span>
                           </div>
                         );
                       })}
@@ -157,10 +191,27 @@ export function LinkAnalyticsSection({ analytics }: Props) {
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Top referrers</CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">
+                  Top Referrers
+                </CardTitle>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Ranked by clicks
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold tabular-nums text-foreground">
+                  {totalReferrers.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  total clicks
+                </p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <ReferrerTable data={data.topReferrers} total={totalReferrers} />
+          <CardContent className="pt-0">
+            <LinkReferrersCard data={data.topReferrers} />
           </CardContent>
         </Card>
 
@@ -168,12 +219,20 @@ export function LinkAnalyticsSection({ analytics }: Props) {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Top Countries</CardTitle>
-                <p className="mt-0.5 text-xs text-muted-foreground">Click distribution by location</p>
+                <CardTitle className="text-base font-semibold">
+                  Top Countries
+                </CardTitle>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Click distribution by location
+                </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold tabular-nums text-foreground">{totalCountryClicks.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">total clicks</p>
+                <p className="text-sm font-bold tabular-nums text-foreground">
+                  {totalCountryClicks.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  total clicks
+                </p>
               </div>
             </div>
           </CardHeader>
@@ -186,18 +245,36 @@ export function LinkAnalyticsSection({ analytics }: Props) {
                 {[countriesLeft, countriesRight].map((col, ci) => (
                   <div key={ci} className={ci === 1 ? "pl-3" : "pr-3"}>
                     <div className="grid grid-cols-[1fr_44px_28px] items-center gap-1 px-1 py-1 border-b border-border/60">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Country</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Clicks</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">%</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Country
+                      </span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                        Clicks
+                      </span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                        %
+                      </span>
                     </div>
                     <div className="divide-y divide-border/40">
                       {col.map((row) => {
-                        const pct = totalCountryClicks > 0 ? Math.round((row.count / totalCountryClicks) * 100) : 0;
+                        const pct =
+                          totalCountryClicks > 0
+                            ? Math.round((row.count / totalCountryClicks) * 100)
+                            : 0;
                         return (
-                          <div key={row.name} className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5">
-                            <span className="min-w-0 truncate text-[11px] font-medium text-foreground">{row.name}</span>
-                            <span className="text-[11px] font-bold tabular-nums text-foreground text-right">{row.count.toLocaleString()}</span>
-                            <span className="text-[11px] tabular-nums text-muted-foreground text-right">{pct}%</span>
+                          <div
+                            key={row.name}
+                            className="grid grid-cols-[1fr_44px_28px] items-center px-1 gap-1 py-1.5"
+                          >
+                            <span className="min-w-0 truncate text-[11px] font-medium text-foreground">
+                              {row.name}
+                            </span>
+                            <span className="text-[11px] font-bold tabular-nums text-foreground text-right">
+                              {row.count.toLocaleString()}
+                            </span>
+                            <span className="text-[11px] tabular-nums text-muted-foreground text-right">
+                              {pct}%
+                            </span>
                           </div>
                         );
                       })}
@@ -211,42 +288,61 @@ export function LinkAnalyticsSection({ analytics }: Props) {
       </div>
 
       {/* UTM breakdown — only show if there is any UTM data */}
-      {(data.utmSources.length > 0 || data.utmMediums.length > 0 || data.utmCampaigns.length > 0) && (
+      {(data.utmSources.length > 0 ||
+        data.utmMediums.length > 0 ||
+        data.utmCampaigns.length > 0) && (
         <>
           <div className="flex items-center gap-3">
-            <h3 className="text-sm font-semibold text-foreground">UTM Breakdown</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              UTM Breakdown
+            </h3>
             <div className="h-px flex-1 bg-border" />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Sources</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">
+                  Sources
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <DeviceBarChart
-                  data={data.utmSources.map((u) => ({ device: u.label, count: u.count }))}
+                  data={data.utmSources.map((u) => ({
+                    device: u.label,
+                    count: u.count,
+                  }))}
                 />
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Mediums</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">
+                  Mediums
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <DeviceBarChart
-                  data={data.utmMediums.map((u) => ({ device: u.label, count: u.count }))}
+                  data={data.utmMediums.map((u) => ({
+                    device: u.label,
+                    count: u.count,
+                  }))}
                 />
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Campaigns</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">
+                  Campaigns
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <DeviceBarChart
-                  data={data.utmCampaigns.map((u) => ({ device: u.label, count: u.count }))}
+                  data={data.utmCampaigns.map((u) => ({
+                    device: u.label,
+                    count: u.count,
+                  }))}
                 />
               </CardContent>
             </Card>
