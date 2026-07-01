@@ -32,8 +32,15 @@ export async function createLinkService(params: {
   input: CreateLinkInput;
   userId: string;
   workspaceId: string;
+  campaignId?: string | null;
+  customDomainId?: string | null;
+  redirectType?: string;
+  qrFgColor?: string;
+  qrBgColor?: string;
+  qrEcLevel?: string;
+  qrMargin?: number;
 }) {
-  const { input, userId, workspaceId } = params;
+  const { input, userId, workspaceId, campaignId, customDomainId, redirectType, qrFgColor, qrBgColor, qrEcLevel, qrMargin } = params;
 
   const safeUrl = validateSafeUrl(input.originalUrl);
   const shortCode = await generateUniqueShortCode(input.customSlug || undefined);
@@ -52,6 +59,8 @@ export async function createLinkService(params: {
     data: {
       userId,
       workspaceId,
+      campaignId: campaignId || null,
+      customDomainId: customDomainId || null,
       title: input.title?.trim() || null,
       originalUrl: safeUrl,
       shortCode,
@@ -61,6 +70,11 @@ export async function createLinkService(params: {
       maxClicks,
       notes: input.notes?.trim() || null,
       tags,
+      ...(redirectType && { redirectType }),
+      ...(qrFgColor && { qrFgColor }),
+      ...(qrBgColor && { qrBgColor }),
+      ...(qrEcLevel && { qrEcLevel }),
+      ...(qrMargin !== undefined && { qrMargin }),
     },
   });
 }

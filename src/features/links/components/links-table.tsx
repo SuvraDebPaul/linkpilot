@@ -37,7 +37,7 @@ import {
 } from "@/features/links/actions/link.actions";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
-import { siteConfig } from "@/config/site";
+import { getShortUrl } from "@/lib/short-url";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,7 @@ type LinkRow = {
   expiresAt: Date | null;
   createdAt: Date;
   tags: string[];
+  customDomain: { domain: string } | null;
   _count: { clicks: number };
 };
 
@@ -215,8 +216,8 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
     }
   }
 
-  function copyShortUrl(shortCode: string) {
-    navigator.clipboard.writeText(`${siteConfig.url}/${shortCode}`);
+  function copyShortUrl(shortCode: string, customDomain: { domain: string } | null) {
+    navigator.clipboard.writeText(getShortUrl(shortCode, customDomain));
     toast.success("Short URL copied.");
   }
 
@@ -471,7 +472,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
               {links.map((link) => {
                 const isActive   = optimisticActive[link.id]   ?? link.isActive;
                 const isFavorite = optimisticFavorite[link.id] ?? link.isFavorite;
-                const shortUrl   = `${siteConfig.url}/${link.shortCode}`;
+                const shortUrl   = getShortUrl(link.shortCode, link.customDomain);
                 const isExpired  = link.expiresAt ? link.expiresAt < new Date() : false;
                 const isSelected = selected.has(link.id);
 
@@ -513,7 +514,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                           {shortUrl.replace(/^https?:\/\//, "")}
                         </a>
                         <button
-                          onClick={() => copyShortUrl(link.shortCode)}
+                          onClick={() => copyShortUrl(link.shortCode, link.customDomain)}
                           className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
                           title="Copy short URL"
                         >
@@ -597,7 +598,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
                         {/* Share — hidden on mobile (copy already in link cell) */}
                         <button
-                          onClick={() => copyShortUrl(link.shortCode)}
+                          onClick={() => copyShortUrl(link.shortCode, link.customDomain)}
                           className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
                           title="Copy short URL"
                         >

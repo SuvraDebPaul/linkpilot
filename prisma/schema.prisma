@@ -153,6 +153,7 @@ model CustomDomain {
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  links     Link[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -204,11 +205,12 @@ model Campaign {
 // ─── Managed Links ──────────────────────────────────────────────────────────
 
 model Link {
-  id          String  @id @default(cuid())
-  userId      String
-  workspaceId String
-  campaignId  String?
-  title       String?
+  id             String  @id @default(cuid())
+  userId         String
+  workspaceId    String
+  campaignId     String?
+  customDomainId String?
+  title          String?
 
   originalUrl String
   shortCode   String  @unique
@@ -240,9 +242,10 @@ model Link {
 
   clicks LinkClickEvent[]
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  campaign  Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign     Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  customDomain CustomDomain? @relation(fields: [customDomainId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -250,6 +253,7 @@ model Link {
   @@index([userId])
   @@index([workspaceId])
   @@index([campaignId])
+  @@index([customDomainId])
   @@index([shortCode])
   @@index([createdAt])
 }

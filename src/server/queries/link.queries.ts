@@ -41,6 +41,7 @@ export async function getLinksByWorkspace(workspaceId: string) {
       expiresAt: true,
       createdAt: true,
       tags: true,
+      customDomain: { select: { domain: true } },
       _count: { select: { clicks: true } },
     },
   });
@@ -54,6 +55,7 @@ export async function getLinkById(id: string, userId: string) {
       workspace: { members: { some: { userId } } },
     },
     include: {
+      customDomain: { select: { domain: true } },
       _count: { select: { clicks: true } },
       // QR fields are included via the model defaults — no need to list explicitly
       clicks: {

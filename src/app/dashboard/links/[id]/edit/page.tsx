@@ -11,7 +11,7 @@ import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { prisma } from "@/server/db/prisma";
 import { generateQrCodeDataUrl } from "@/server/services/qr.service";
 import { getDemoLinkDetail } from "@/lib/demo-stats";
-import { siteConfig } from "@/config/site";
+import { getShortUrl } from "@/lib/short-url";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,7 +69,7 @@ export default async function EditLinkPage({
   if (!link) notFound();
 
   const isPaidPlan = plan === "starter" || plan === "pro";
-  const shortUrl   = `${siteConfig.url}/${link.shortCode}`;
+  const shortUrl   = getShortUrl(link.shortCode, link.customDomain);
   const qrDataUrl  = await generateQrCodeDataUrl(shortUrl, {
     fg:      link.qrFgColor,
     bg:      link.qrBgColor,

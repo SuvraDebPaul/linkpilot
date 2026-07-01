@@ -8,7 +8,7 @@ import { authOptions } from "@/lib/auth";
 import { getLinkById } from "@/server/queries/link.queries";
 import { generateQrCodeDataUrl } from "@/server/services/qr.service";
 import { getDemoLinkDetail, getDemoLinkAnalytics } from "@/lib/demo-stats";
-import { siteConfig } from "@/config/site";
+import { getShortUrl } from "@/lib/short-url";
 import { getLinkAnalytics } from "@/server/queries/link-analytics.queries";
 
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,8 @@ export default async function LinkDetailPage({
 
   if (!link) notFound();
 
-  const shortUrl  = `${siteConfig.url}/${link.shortCode}`;
+  const shortUrl  = getShortUrl(link.shortCode, link.customDomain);
+  const isExpired = link.expiresAt ? link.expiresAt < new Date() : false;
   const qrDataUrl = await generateQrCodeDataUrl(shortUrl, {
     fg:      link.qrFgColor,
     bg:      link.qrBgColor,
