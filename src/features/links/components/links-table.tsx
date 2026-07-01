@@ -6,23 +6,26 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Link2,
+  ExternalLink,
   Search,
   PenLine,
   BarChart2,
-  Share2,
-  CopyPlus,
-  Trash2,
-  ToggleLeft,
-  ToggleRight,
-  X,
-  ChevronDown,
-  ChevronUp,
-  ChevronsUpDown,
   Copy,
   Calendar,
   Tag,
   Lock,
   Star,
+  Globe,
+  FolderKanban,
+  ToggleLeft,
+  ToggleRight,
+  MoreHorizontal,
+  CopyPlus,
+  Trash2,
+  X,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -44,8 +47,10 @@ import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -62,6 +67,7 @@ type LinkRow = {
   createdAt: Date;
   tags: string[];
   customDomain: { domain: string } | null;
+  campaign: { id: string; name: string } | null;
   _count: { clicks: number };
 };
 
@@ -69,6 +75,23 @@ type StatusFilter = "all" | "active" | "inactive" | "expired" | "favorites";
 type SortKey = "newest" | "oldest" | "clicks-desc" | "clicks-asc";
 
 const PER_PAGE_OPTIONS = [10, 20, 30, 50] as const;
+
+const STATUS_TABS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+  { value: "expired", label: "Expired" },
+  { value: "favorites", label: "Favorites" },
+];
+
+function faviconUrl(originalUrl: string): string | null {
+  try {
+    const host = new URL(originalUrl).hostname;
+    return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+  } catch {
+    return null;
+  }
+}
 
 export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
   const router = useRouter();
@@ -162,8 +185,8 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
     setPage(1);
   }
 
-  function handleStatusChange(val: string) {
-    setStatusFilter(val as StatusFilter);
+  function handleStatusChange(val: StatusFilter) {
+    setStatusFilter(val);
     setPage(1);
   }
 
@@ -191,7 +214,11 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
   function toggleOne(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -291,28 +318,17 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
       isActive: optimisticActive[l.id] ?? l.isActive,
       isFavorite: optimisticFavorite[l.id] ?? l.isFavorite,
     }));
+    const notExpired = (l: (typeof all)[number]) =>
+      !l.expiresAt || l.expiresAt >= now;
     return {
       all: all.length,
-      active: all
-        .filter((l) => !l.expiresAt || l.expiresAt >= now)
-        .filter((l) => l.isActive && (!l.expiresAt || l.expiresAt >= now))
-        .length,
-      inactive: all.filter(
-        (l) => !l.isActive && (!l.expiresAt || l.expiresAt >= now),
-      ).length,
+      active: all.filter((l) => notExpired(l) && l.isActive).length,
+      inactive: all.filter((l) => notExpired(l) && !l.isActive).length,
       expired: all.filter((l) => l.expiresAt && l.expiresAt < now).length,
       favorites: all.filter((l) => l.isFavorite).length,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLinks, optimisticActive, optimisticFavorite]);
-
-  const STATUS_TABS: { value: StatusFilter; label: string; icon?: string }[] = [
-    { value: "all", label: "All" },
-    { value: "active", label: "Active" },
-    { value: "inactive", label: "Inactive" },
-    { value: "expired", label: "Expired" },
-    { value: "favorites", label: "Favorites", icon: "⭐" },
-  ];
 
   if (initialLinks.length === 0) {
     return (
@@ -329,6 +345,44 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
   return (
     <div className="space-y-3">
+      {/* ── Status pills ── */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => handleStatusChange(tab.value)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors",
+              statusFilter === tab.value
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+            )}
+          >
+            {tab.value === "favorites" && (
+              <Star
+                className={cn(
+                  "h-3 w-3",
+                  statusFilter === tab.value
+                    ? "fill-primary-foreground"
+                    : "fill-amber-400 text-amber-400",
+                )}
+              />
+            )}
+            {tab.label}
+            <span
+              className={cn(
+                "rounded py-1 px-1.5 text-[10px] font-bold tabular-nums",
+                statusFilter === tab.value
+                  ? "bg-primary-foreground/15"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
+              {statusCounts[tab.value]}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* ── Toolbar — single row ── */}
       <div className="flex items-center gap-1 rounded-xl border border-border bg-card px-4 py-3">
         {/* Search */}
@@ -352,42 +406,6 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
         {/* Divider */}
         <div className="h-4 w-px bg-border shrink-0 mx-1" />
-
-        {/* Status filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex h-9 items-center gap-1 rounded-md border border-border/60 bg-transparent px-2.5 text-sm outline-none hover:bg-muted transition-colors">
-            <span className="text-muted-foreground">Status:</span>
-            <span className="font-medium text-foreground">
-              {STATUS_TABS.find((t) => t.value === statusFilter)?.label ??
-                "All"}
-            </span>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            side="bottom"
-            className="min-w-[140px]"
-          >
-            <DropdownMenuRadioGroup
-              value={statusFilter}
-              onValueChange={handleStatusChange}
-            >
-              <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="active">
-                Active
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="inactive">
-                Inactive
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="expired">
-                Expired
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="favorites">
-                ⭐ Favorites
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         {/* Sort */}
         <DropdownMenu>
@@ -542,17 +560,17 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/60">
+            <thead className="bg-primary text-primary-foreground">
               <tr>
                 <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
                     checked={allPageSelected}
                     onChange={toggleAll}
-                    className="h-4 w-4 cursor-pointer accent-primary"
+                    className="h-4 w-4 cursor-pointer accent-primary-foreground"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                   Link
                 </th>
                 <th className="hidden px-4 py-3 text-left sm:table-cell">
@@ -562,7 +580,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                         sort === "clicks-desc" ? "clicks-asc" : "clicks-desc",
                       )
                     }
-                    className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                    className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide opacity-90 hover:opacity-100 transition-opacity"
                   >
                     Clicks
                     {sort === "clicks-desc" ? (
@@ -570,14 +588,14 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                     ) : sort === "clicks-asc" ? (
                       <ChevronUp className="h-3 w-3" />
                     ) : (
-                      <ChevronsUpDown className="h-3 w-3 opacity-40" />
+                      <ChevronsUpDown className="h-3 w-3 opacity-60" />
                     )}
                   </button>
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide md:table-cell">
                   Status
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide">
                   Actions
                 </th>
               </tr>
@@ -593,6 +611,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                   ? link.expiresAt < new Date()
                   : false;
                 const isSelected = selected.has(link.id);
+                const favicon = faviconUrl(link.originalUrl);
 
                 return (
                   <tr
@@ -603,7 +622,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                     )}
                   >
                     {/* Checkbox */}
-                    <td className="w-10 px-4 py-3">
+                    <td className="w-10 px-4 py-3 align-top">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -614,74 +633,131 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
                     {/* ── Link cell ── */}
                     <td className="px-4 py-3.5 min-w-0">
-                      <Link
-                        href={`/dashboard/links/${link.id}`}
-                        className="font-semibold text-foreground hover:underline truncate block max-w-sm"
-                      >
-                        {link.title || link.shortCode}
-                      </Link>
-
-                      <div className="mt-0.5 flex items-center gap-1.5">
-                        <a
-                          href={shortUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="truncate text-xs font-medium text-primary hover:underline max-w-[200px]"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {shortUrl.replace(/^https?:\/\//, "")}
-                        </a>
-                        <button
-                          onClick={() =>
-                            copyShortUrl(link.shortCode, link.customDomain)
-                          }
-                          className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                          title="Copy short URL"
-                        >
-                          <Copy className="h-3 w-3" />
-                        </button>
-                      </div>
-
-                      <div className="mt-0.5 flex items-start gap-1">
-                        <span className="mt-px shrink-0 text-xs text-muted-foreground">
-                          ↳
+                      <div className="flex items-start gap-2.5">
+                        {/* Favicon chip */}
+                        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted/40">
+                          {favicon ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={favicon} alt="" className="h-3.5 w-3.5" />
+                          ) : (
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
                         </span>
-                        <p className="truncate text-xs text-muted-foreground max-w-sm">
-                          {link.originalUrl}
-                        </p>
-                      </div>
 
-                      {/* Meta row */}
-                      <div className="mt-2 flex flex-wrap items-center gap-3">
-                        {link.isPasswordProtected && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Lock className="h-3 w-3" /> Password
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {link.createdAt.toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Tag className="h-3 w-3" />
-                          {link.tags.length > 0
-                            ? link.tags.join(", ")
-                            : "No tags"}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          {/* Title + favorite */}
+                          <div className="flex items-center gap-1.5">
+                            <Link
+                              href={`/dashboard/links/${link.id}`}
+                              className="font-semibold text-foreground hover:underline truncate max-w-sm"
+                            >
+                              {link.title || link.shortCode}
+                            </Link>
+                            <button
+                              onClick={() =>
+                                toggleFavorite(link.id, isFavorite)
+                              }
+                              className={cn(
+                                "shrink-0 transition-colors",
+                                isFavorite
+                                  ? "text-amber-400 hover:text-amber-500"
+                                  : "text-muted-foreground/40 opacity-0 group-hover:opacity-100 hover:text-amber-400",
+                              )}
+                              title={
+                                isFavorite
+                                  ? "Remove from favorites"
+                                  : "Add to favorites"
+                              }
+                            >
+                              <Star
+                                className={cn(
+                                  "h-3.5 w-3.5",
+                                  isFavorite && "fill-amber-400",
+                                )}
+                              />
+                            </button>
+                          </div>
+
+                          {/* Short URL */}
+                          <div className="mt-0.5 flex items-center gap-1.5">
+                            <a
+                              href={shortUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="truncate text-xs font-medium text-primary hover:underline max-w-[200px]"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {shortUrl.replace(/^https?:\/\//, "")}
+                            </a>
+                            <button
+                              onClick={() =>
+                                copyShortUrl(link.shortCode, link.customDomain)
+                              }
+                              className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                              title="Copy short URL"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                            {link.customDomain && (
+                              <span className="flex shrink-0 items-center gap-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-700 dark:bg-sky-950 dark:text-sky-400">
+                                <Globe className="h-2.5 w-2.5" /> custom
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Destination */}
+                          <div className="mt-0.5 flex items-start gap-1">
+                            <span className="mt-px shrink-0 text-xs text-muted-foreground">
+                              ↳
+                            </span>
+                            <p className="truncate text-xs text-muted-foreground max-w-sm">
+                              {link.originalUrl}
+                            </p>
+                          </div>
+
+                          {/* Meta row */}
+                          <div className="mt-2 flex flex-wrap items-center gap-3">
+                            {link.campaign && (
+                              <Link
+                                href={`/dashboard/campaigns/${link.campaign.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                              >
+                                <FolderKanban className="h-3 w-3" />{" "}
+                                {link.campaign.name}
+                              </Link>
+                            )}
+                            {link.isPasswordProtected && (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Lock className="h-3 w-3" /> Password
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {link.createdAt.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                            {link.tags.length > 0 && (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Tag className="h-3 w-3" />
+                                {link.tags.join(", ")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </td>
 
                     {/* Clicks */}
-                    <td className="hidden px-4 py-3 text-sm text-foreground sm:table-cell whitespace-nowrap">
+                    <td className="hidden px-4 py-3 text-sm text-foreground sm:table-cell whitespace-nowrap align-top">
                       {link._count.clicks.toLocaleString()}
                     </td>
 
                     {/* Status */}
-                    <td className="hidden px-4 py-3 md:table-cell">
+                    <td className="hidden px-4 py-3 md:table-cell align-top">
                       {isExpired ? (
                         <Badge
                           variant="secondary"
@@ -702,31 +778,8 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                     </td>
 
                     {/* ── Action icons ── */}
-                    <td className="px-3 py-3">
+                    <td className="px-3 py-3 align-top">
                       <div className="flex items-center justify-end gap-0.5">
-                        {/* Favorite star — hidden on mobile */}
-                        <button
-                          onClick={() => toggleFavorite(link.id, isFavorite)}
-                          className={cn(
-                            "hidden h-8 w-8 items-center justify-center rounded-md transition-colors sm:flex",
-                            isFavorite
-                              ? "text-amber-400 hover:text-amber-500"
-                              : "text-muted-foreground hover:text-amber-400",
-                          )}
-                          title={
-                            isFavorite
-                              ? "Remove from favorites"
-                              : "Add to favorites"
-                          }
-                        >
-                          <Star
-                            className={cn(
-                              "h-3.5 w-3.5",
-                              isFavorite && "fill-amber-400",
-                            )}
-                          />
-                        </button>
-
                         {/* Edit */}
                         <Link
                           href={`/dashboard/links/${link.id}/edit`}
@@ -744,26 +797,6 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                         >
                           <BarChart2 className="h-3.5 w-3.5" />
                         </Link>
-
-                        {/* Share — hidden on mobile (copy already in link cell) */}
-                        <button
-                          onClick={() =>
-                            copyShortUrl(link.shortCode, link.customDomain)
-                          }
-                          className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
-                          title="Copy short URL"
-                        >
-                          <Share2 className="h-3.5 w-3.5" />
-                        </button>
-
-                        {/* Duplicate — hidden on mobile */}
-                        <button
-                          onClick={() => handleDuplicate(link.id)}
-                          className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
-                          title="Duplicate"
-                        >
-                          <CopyPlus className="h-3.5 w-3.5" />
-                        </button>
 
                         {/* Toggle active */}
                         <button
@@ -783,21 +816,39 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                           )}
                         </button>
 
-                        {/* Delete */}
-                        <ConfirmDialog
-                          trigger={
+                        {/* More menu */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                             <button
-                              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                              title="Delete"
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              title="More"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <MoreHorizontal className="h-3.5 w-3.5" />
                             </button>
-                          }
-                          title="Delete link?"
-                          description="This cannot be undone. The short URL will stop working immediately."
-                          confirmLabel="Delete"
-                          onConfirm={() => handleDelete(link.id)}
-                        />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleDuplicate(link.id)}
+                            >
+                              <CopyPlus className="h-3.5 w-3.5" /> Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <ConfirmDialog
+                              trigger={
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onSelect={(e) => e.preventDefault()}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" /> Delete
+                                </DropdownMenuItem>
+                              }
+                              title="Delete link?"
+                              description="This cannot be undone. The short URL will stop working immediately."
+                              confirmLabel="Delete"
+                              onConfirm={() => handleDelete(link.id)}
+                            />
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>

@@ -42,6 +42,7 @@ export async function getLinksByWorkspace(workspaceId: string) {
       createdAt: true,
       tags: true,
       customDomain: { select: { domain: true } },
+      campaign: { select: { id: true, name: true } },
       _count: { select: { clicks: true } },
     },
   });
