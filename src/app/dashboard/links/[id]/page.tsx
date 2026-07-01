@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, MousePointerClick, Lock, Clock, PenLine } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import { getLinkById } from "@/server/queries/link.queries";
@@ -11,15 +11,9 @@ import { getDemoLinkDetail, getDemoLinkAnalytics } from "@/lib/demo-stats";
 import { getShortUrl } from "@/lib/short-url";
 import { getLinkAnalytics } from "@/server/queries/link-analytics.queries";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/shared/stat-card";
-import { CopyButton } from "@/components/shared/copy-button";
-import { QrPreview } from "@/components/shared/qr-preview";
-import { QrDownloadButton } from "@/features/links/components/qr-download-button";
-import { RecentClicksTable } from "@/features/links/components/recent-clicks-table";
-import { LinkAnalyticsSection } from "@/features/links/components/link-analytics-section";
+import { LinkDetailSidebar } from "@/features/links/components/link-detail-sidebar";
+import { LinkDetailTabs } from "@/features/links/components/link-detail-tabs";
 
 export const metadata: Metadata = { title: "Link Details" };
 
@@ -70,112 +64,45 @@ export default async function LinkDetailPage({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* ── Back link ── */}
+      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
+        <Link href="/dashboard/links">
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+          Back to links
+        </Link>
+      </Button>
 
-      {/* ── Header ── */}
-      <div className="flex items-start gap-3">
-        <Button asChild variant="ghost" size="icon" className="mt-1 shrink-0">
-          <Link href="/dashboard/links">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <div className="flex items-center justify-between gap-3">
-            <h1 className="truncate text-2xl font-bold text-foreground">
-              {link.title || link.shortCode}
-            </h1>
-            <div className="flex shrink-0 items-center gap-2">
-              {isExpired ? (
-                <Badge variant="secondary" className="bg-destructive/10 text-destructive">Expired</Badge>
-              ) : link.isActive ? (
-                <Badge variant="secondary" className="bg-primary/10 text-primary">Active</Badge>
-              ) : (
-                <Badge variant="secondary">Inactive</Badge>
-              )}
-              {link.isPasswordProtected && (
-                <Badge variant="secondary" className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400">
-                  <Lock className="mr-1 h-3 w-3" /> Password
-                </Badge>
-              )}
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/dashboard/links/${id}/edit`}>
-                  <PenLine className="mr-1.5 h-3.5 w-3.5" />
-                  Edit link
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 text-sm">
-            <a href={shortUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
-              {shortUrl}
-            </a>
-            <ExternalLink className="h-3 w-3 text-primary" />
-            <CopyButton value={shortUrl} size="icon" label="" copiedLabel="" variant="ghost" />
-          </div>
-
-          <p className="break-all text-sm text-muted-foreground">{link.originalUrl}</p>
+      {/* ── Two-column layout ── */}
+      <div className="grid gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
+        <div className="lg:sticky lg:top-6">
+          <LinkDetailSidebar
+            id={link.id}
+            title={link.title}
+            shortCode={link.shortCode}
+            shortUrl={shortUrl}
+            originalUrl={link.originalUrl}
+            isActive={link.isActive}
+            isPasswordProtected={link.isPasswordProtected}
+            isFavorite={link.isFavorite}
+            expiresAt={link.expiresAt}
+            createdAt={link.createdAt}
+            maxClicks={link.maxClicks}
+            totalClicks={link._count.clicks}
+            tags={link.tags}
+            qrDataUrl={qrDataUrl}
+          />
         </div>
-      </div>
 
-      {/* ── Stat cards ── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total clicks" value={link._count.clicks} icon={MousePointerClick} />
-        <StatCard
-          title="Max clicks"
-          value={link.maxClicks ? `${link._count.clicks} / ${link.maxClicks}` : "No limit"}
-          icon={MousePointerClick}
-        />
-        <StatCard
-          title="Expires"
-          value={
-            link.expiresAt
-              ? link.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-              : "Never"
-          }
-          icon={Clock}
-        />
-        <StatCard
-          title="Created"
-          value={link.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-          icon={Clock}
-        />
-      </div>
-
-      {/* ── Analytics ── */}
-      {analytics30 && (
-        <LinkAnalyticsSection
+        <LinkDetailTabs
           analytics={{
-            7:  analytics7  ?? analytics30,
-            30: analytics30,
-            90: analytics90 ?? analytics30,
+            7:  analytics7  ?? analytics30!,
+            30: analytics30!,
+            90: analytics90 ?? analytics30!,
           }}
+          clicks={link.clicks}
         />
-      )}
-
-      {/* ── Recent clicks + QR code ── */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent clicks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RecentClicksTable clicks={link.clicks} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">QR Code</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <QrPreview src={qrDataUrl} size={180} />
-            <QrDownloadButton dataUrl={qrDataUrl} shortCode={link.shortCode} />
-          </CardContent>
-        </Card>
       </div>
-
     </div>
   );
 }
