@@ -27,15 +27,6 @@ const RI  = R - SW / 2; // inner radius
 const CR  = 4;    // corner radius in px
 const GAP = 5;    // visual gap between segments in px (circumference units)
 
-// TODO: remove demo data once UI is verified
-const DEMO_DATA: DeviceRow[] = [
-  { device: "DESKTOP", count: 420 },
-  { device: "MOBILE",  count: 310 },
-  { device: "TABLET",  count: 180 },
-  { device: "BOT",     count: 65  },
-  { device: "UNKNOWN", count: 25  },
-];
-
 type Pt = [number, number];
 const pt = (r: number, a: number): Pt => [
   CX + r * Math.cos(a),
@@ -91,8 +82,7 @@ function segmentPath(startDeg: number, endDeg: number): string {
 export function DeviceDonutChart({ data }: { data: DeviceRow[] }) {
   const [hovered, setHovered] = useState<string | null>(null);
 
-  // TODO: swap DEMO_DATA → data once UI is verified
-  const countMap = Object.fromEntries(DEMO_DATA.map((d) => [d.device, d.count]));
+  const countMap = Object.fromEntries(data.map((d) => [d.device, d.count]));
   const full: DeviceRow[] = ALL_DEVICES.map((device) => ({
     device,
     count: countMap[device] ?? 0,
@@ -107,16 +97,21 @@ export function DeviceDonutChart({ data }: { data: DeviceRow[] }) {
   // Gap in degrees
   const gapDeg = (GAP / (2 * Math.PI * R)) * 360;
 
-  let cumFrac = 0;
   const arcs = sorted
     .filter((r) => r.count > 0 && (r.count / total) * 360 > gapDeg * 2)
-    .map((row) => {
-      const frac     = row.count / total;
-      const startDeg = cumFrac * 360 + gapDeg / 2;
-      cumFrac += frac;
-      const endDeg   = cumFrac * 360 - gapDeg / 2;
-      return { ...row, startDeg, endDeg, color: colorMap[row.device] };
-    });
+    .reduce<{ cumFrac: number; rows: (DeviceRow & { startDeg: number; endDeg: number; color: string })[] }>(
+      (acc, row) => {
+        const frac     = row.count / total;
+        const startDeg = acc.cumFrac * 360 + gapDeg / 2;
+        const cumFrac  = acc.cumFrac + frac;
+        const endDeg   = cumFrac * 360 - gapDeg / 2;
+        return {
+          cumFrac,
+          rows: [...acc.rows, { ...row, startDeg, endDeg, color: colorMap[row.device] }],
+        };
+      },
+      { cumFrac: 0, rows: [] },
+    ).rows;
 
   return (
     <div>
@@ -184,7 +179,7 @@ export function DeviceDonutChart({ data }: { data: DeviceRow[] }) {
 
       {/* Device list */}
       <div className="mt-1 divide-y divide-border">
-        {sorted.map((row, i) => {
+        {sorted.map((row) => {
           const Icon  = ICONS[row.device] ?? HelpCircle;
           const pct   = total > 0 ? Math.round((row.count / total) * 100) : 0;
           const label = row.device.charAt(0) + row.device.slice(1).toLowerCase();
