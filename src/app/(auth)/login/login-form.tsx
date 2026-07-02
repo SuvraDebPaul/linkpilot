@@ -24,6 +24,9 @@ export function LoginForm() {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [savedCreds, setSavedCreds] = useState<{ email: string; password: string } | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,6 +56,12 @@ export function LoginForm() {
 
     setIsPending(false);
 
+    if (result?.error === "2FA_REQUIRED") {
+      setSavedCreds({ email: parsed.data.email, password: parsed.data.password });
+      setOtpRequired(true);
+      return;
+    }
+
     if (result?.error) {
       setError("Invalid email or password.");
       return;
@@ -60,6 +69,66 @@ export function LoginForm() {
 
     router.push(callbackUrl);
     router.refresh();
+  }
+
+  async function handleOtpSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!savedCreds) return;
+    setError(null);
+    setIsPending(true);
+
+    const result = await signIn("credentials", {
+      email: savedCreds.email,
+      password: savedCreds.password,
+      otp,
+      redirect: false,
+    });
+
+    setIsPending(false);
+
+    if (result?.error) {
+      setError("Incorrect authentication code.");
+      return;
+    }
+
+    router.push(callbackUrl);
+    router.refresh();
+  }
+
+  if (otpRequired) {
+    return (
+      <div className="space-y-5">
+        <form onSubmit={handleOtpSubmit} className="space-y-5">
+          <FormError message={error} />
+          <div className="space-y-1.5">
+            <Label htmlFor="otp">Two-factor code</Label>
+            <p className="text-xs text-muted-foreground">
+              Enter the 6-digit code from your authenticator app, or a backup code.
+            </p>
+            <Input
+              id="otp"
+              name="otp"
+              autoComplete="one-time-code"
+              placeholder="123456"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              disabled={isPending}
+              autoFocus
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={isPending || !otp.trim()}>
+            {isPending ? "Verifying…" : "Verify and sign in"}
+          </Button>
+          <button
+            type="button"
+            onClick={() => { setOtpRequired(false); setSavedCreds(null); setOtp(""); setError(null); }}
+            className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            Back to sign in
+          </button>
+        </form>
+      </div>
+    );
   }
 
   return (

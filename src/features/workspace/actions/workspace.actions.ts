@@ -174,6 +174,115 @@ export async function removeMemberAction(memberId: string, workspaceId: string) 
   return { success: true };
 }
 
+// ─── Default link settings ────────────────────────────────────────────────────
+
+const defaultsSchema = z.object({
+  workspaceId: z.string(),
+  slugStyle: z.enum(["incremental", "random", "secure"]),
+  defaultRedirectType: z.enum(["301", "302", "307", "308"]),
+  defaultCloakingEnabled: z.boolean(),
+});
+
+export async function updateWorkspaceDefaultsAction(data: {
+  workspaceId: string;
+  slugStyle: string;
+  defaultRedirectType: string;
+  defaultCloakingEnabled: boolean;
+}) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const parsed = defaultsSchema.safeParse(data);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+  const member = await getWorkspaceMember(session.user.id, parsed.data.workspaceId);
+  if (!member || (member.role !== "OWNER" && member.role !== "ADMIN")) {
+    return { error: "Insufficient permissions" };
+  }
+
+  await prisma.workspace.update({
+    where: { id: parsed.data.workspaceId },
+    data: {
+      slugStyle: parsed.data.slugStyle,
+      defaultRedirectType: parsed.data.defaultRedirectType,
+      defaultCloakingEnabled: parsed.data.defaultCloakingEnabled,
+    },
+  });
+
+  revalidatePath("/dashboard/settings/defaults");
+  return { success: true };
+}
+
+// ─── Transfer ownership ──────────────────────────────────────────────────────
+
+export async function transferOwnershipAction(memberId: string, workspaceId: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const requester = await getWorkspaceMember(session.user.id, workspaceId);
+  if (!requester || requester.role !== "OWNER") return { error: "Only the owner can transfer ownership" };
+
+  const target = await prisma.workspaceMember.findUnique({ where: { id: memberId } });
+  if (!target || target.workspaceId !== workspaceId) return { error: "Member not found" };
+  if (target.userId === session.user.id) return { error: "You already own this workspace" };
+
+  await prisma.$transaction([
+    prisma.workspaceMember.update({ where: { id: memberId }, data: { role: "OWNER" } }),
+    prisma.workspaceMember.update({
+      where: { userId_workspaceId: { userId: session.user.id, workspaceId } },
+      data: { role: "ADMIN" },
+    }),
+  ]);
+
+  revalidatePath("/dashboard/settings/workspace");
+  return { success: true };
+}
+
+// ─── Pending invites ─────────────────────────────────────────────────────────
+
+export async function resendInviteAction(workspaceId: string, email: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const requester = await getWorkspaceMember(session.user.id, workspaceId);
+  if (!requester || (requester.role !== "OWNER" && requester.role !== "ADMIN")) {
+    return { error: "Insufficient permissions" };
+  }
+
+  const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId } });
+  if (!workspace) return { error: "Workspace not found" };
+
+  const identifier = `invite:${workspaceId}:${email}`;
+  await prisma.verificationToken.deleteMany({ where: { identifier } });
+
+  const token = crypto.randomBytes(32).toString("hex");
+  await prisma.verificationToken.create({
+    data: { identifier, token, expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+  });
+
+  await sendWorkspaceInviteEmail(email, workspace.name, token, session.user.name ?? "Someone");
+
+  revalidatePath("/dashboard/settings/workspace");
+  return { success: true };
+}
+
+export async function revokeInviteAction(workspaceId: string, email: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const requester = await getWorkspaceMember(session.user.id, workspaceId);
+  if (!requester || (requester.role !== "OWNER" && requester.role !== "ADMIN")) {
+    return { error: "Insufficient permissions" };
+  }
+
+  await prisma.verificationToken.deleteMany({
+    where: { identifier: `invite:${workspaceId}:${email}` },
+  });
+
+  revalidatePath("/dashboard/settings/workspace");
+  return { success: true };
+}
+
 // ─── Leave workspace ─────────────────────────────────────────────────────────
 
 export async function leaveWorkspaceAction(workspaceId: string) {

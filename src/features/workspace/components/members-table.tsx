@@ -1,11 +1,22 @@
-﻿"use client";
+"use client";
 
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { MoreHorizontal, Crown, ShieldCheck, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { changeMemberRoleAction, removeMemberAction } from "@/features/workspace/actions/workspace.actions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import {
+  changeMemberRoleAction,
+  removeMemberAction,
+  transferOwnershipAction,
+} from "@/features/workspace/actions/workspace.actions";
 import type { WorkspaceRole } from "@/generated/prisma/enums";
 
 type Member = {
@@ -14,10 +25,10 @@ type Member = {
   user: { id: string; name: string | null; email: string | null; image: string | null };
 };
 
-const ROLE_COLORS: Record<WorkspaceRole, string> = {
-  OWNER: "bg-amber-100 text-amber-800",
-  ADMIN: "bg-primary/15 text-primary",
-  MEMBER: "bg-muted text-foreground",
+const ROLE_STYLE: Record<WorkspaceRole, { badge: string; icon: typeof Crown }> = {
+  OWNER: { badge: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300", icon: Crown },
+  ADMIN: { badge: "bg-primary/15 text-primary", icon: ShieldCheck },
+  MEMBER: { badge: "bg-muted text-foreground", icon: UserIcon },
 };
 
 export function MembersTable({
@@ -49,48 +60,89 @@ export function MembersTable({
     });
   }
 
+  function transferOwnership(memberId: string) {
+    startTransition(async () => {
+      const r = await transferOwnershipAction(memberId, workspaceId);
+      if (r.error) toast.error(r.error);
+      else toast.success("Ownership transferred. You are now an admin.");
+    });
+  }
+
   return (
     <div className="divide-y divide-border/50 rounded-lg border border-border">
       {members.map((m) => {
         const isMe = m.user.id === currentUserId;
         const canManage = currentUserRole === "OWNER" && !isMe && m.role !== "OWNER";
+        const rs = ROLE_STYLE[m.role];
+
         return (
           <div key={m.id} className="flex items-center justify-between gap-3 px-4 py-3">
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex min-w-0 items-center gap-3">
               {m.user.image ? (
-                <img src={m.user.image} alt="" className="h-8 w-8 rounded-full" />
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={m.user.image} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                   {(m.user.name ?? m.user.email ?? "?")[0].toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">{m.user.name ?? m.user.email}</p>
+                <p className="truncate text-sm font-medium text-foreground">
+                  {m.user.name ?? m.user.email}
+                  {isMe && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(You)</span>}
+                </p>
                 {m.user.name && <p className="truncate text-xs text-muted-foreground">{m.user.email}</p>}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${ROLE_COLORS[m.role]}`}>
+
+            <div className="flex shrink-0 items-center gap-2">
+              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${rs.badge}`}>
+                <rs.icon className="h-3 w-3" />
                 {m.role.charAt(0) + m.role.slice(1).toLowerCase()}
               </span>
+
               {canManage && (
-                <>
-                  {m.role === "MEMBER" ? (
-                    <Button size="sm" variant="outline" disabled={isPending} onClick={() => changeRole(m.id, "ADMIN")}>
-                      Make admin
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isPending}>
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" disabled={isPending} onClick={() => changeRole(m.id, "MEMBER")}>
-                      Make member
-                    </Button>
-                  )}
-                  <Button size="sm" variant="ghost" disabled={isPending} onClick={() => remove(m.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </>
-              )}
-              {isMe && m.role !== "OWNER" && (
-                <span className="text-xs text-muted-foreground">You</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {m.role === "MEMBER" ? (
+                      <DropdownMenuItem onClick={() => changeRole(m.id, "ADMIN")}>
+                        <ShieldCheck className="h-3.5 w-3.5" /> Make admin
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={() => changeRole(m.id, "MEMBER")}>
+                        <UserIcon className="h-3.5 w-3.5" /> Make member
+                      </DropdownMenuItem>
+                    )}
+                    <ConfirmDialog
+                      trigger={
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Crown className="h-3.5 w-3.5" /> Transfer ownership
+                        </DropdownMenuItem>
+                      }
+                      title={`Make ${m.user.name ?? m.user.email} the owner?`}
+                      description="You will become an admin. This cannot be undone by yourself — only the new owner can transfer it back."
+                      confirmLabel="Transfer ownership"
+                      onConfirm={() => transferOwnership(m.id)}
+                    />
+                    <DropdownMenuSeparator />
+                    <ConfirmDialog
+                      trigger={
+                        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                          Remove from workspace
+                        </DropdownMenuItem>
+                      }
+                      title={`Remove ${m.user.name ?? m.user.email}?`}
+                      description="They will lose access to this workspace immediately."
+                      confirmLabel="Remove"
+                      onConfirm={() => remove(m.id)}
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>

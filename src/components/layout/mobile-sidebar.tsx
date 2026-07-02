@@ -11,11 +11,13 @@ import {
   Link2,
   BarChart2,
   Folder,
-  Settings,
   CreditCard,
-  Users,
-  Globe,
+  Building2,
+  Globe2,
   Contact,
+  CircleUserRound,
+  SlidersHorizontal,
+  LayoutTemplate,
 } from "lucide-react";
 
 const mainNav = [
@@ -27,10 +29,12 @@ const mainNav = [
 ];
 
 const settingsItems = [
-  { href: "/dashboard/settings", label: "General" },
-  { href: "/dashboard/settings/workspace", label: "Workspace" },
-  { href: "/dashboard/settings/domains", label: "Domains" },
-  { href: "/dashboard/settings/billing", label: "Billing" },
+  { href: "/dashboard/settings", label: "Profile", icon: CircleUserRound },
+  { href: "/dashboard/settings/workspace", label: "Organization", icon: Building2 },
+  { href: "/dashboard/settings/domains", label: "Domains", icon: Globe2 },
+  { href: "/dashboard/settings/defaults", label: "Defaults", icon: SlidersHorizontal },
+  { href: "/dashboard/settings/templates", label: "Templates", icon: LayoutTemplate },
+  { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
 export function MobileSidebar() {
@@ -78,17 +82,11 @@ export function MobileSidebar() {
                 ))}
               </div>
 
-              <div className="mt-6">
-                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                  Configuration
-                </p>
-                <div className="space-y-0.5">
-                  <DashboardNavGroup
-                    icon={Settings}
-                    label="Settings"
-                    items={settingsItems}
-                  />
-                </div>
+              <div className="mt-6" onClick={(e) => {
+                const link = (e.target as HTMLElement).closest("a");
+                if (link) setOpen(false);
+              }}>
+                <DashboardNavGroup label="Settings" items={settingsItems} />
               </div>
             </nav>
 

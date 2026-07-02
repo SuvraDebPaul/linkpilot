@@ -40,6 +40,17 @@ model User {
   // Onboarding
   onboardingCompleted Boolean @default(false)
 
+  // Preferences
+  theme                String  @default("auto") // "light" | "dark" | "auto"
+  monthlyReportEnabled Boolean @default(false)
+
+  // Security
+  twoFactorEnabled     Boolean  @default(false)
+  twoFactorSecret      String?
+  twoFactorBackupCodes String[] @default([])
+  sessionVersion       Int      @default(0) // bumped to invalidate all existing JWTs
+  loginEvents          LoginEvent[]
+
   // Onboarding email sequence tracking
   onboardingDay1SentAt DateTime?
   onboardingDay3SentAt DateTime?
@@ -88,6 +99,24 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model LoginEvent {
+  id     String @id @default(cuid())
+  userId String
+
+  type    String // "credentials" | "google" | "registration"
+  ip      String?
+  country String?
+  city    String?
+  browser String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
 // ─── Workspaces ─────────────────────────────────────────────────────────────
 
 enum WorkspaceRole {
@@ -106,16 +135,56 @@ model Workspace {
   brandColor   String?
   hideBranding Boolean @default(false)
 
-  members        WorkspaceMember[]
-  links          Link[]
-  campaigns      Campaign[]
-  customDomains  CustomDomain[]
-  clientAccesses ClientAccess[]
+  // Default settings applied when creating new links
+  slugStyle              String  @default("random") // "incremental" | "random" | "secure"
+  slugCounter             Int     @default(0)
+  defaultRedirectType    String  @default("302") // "301" | "302" | "307" | "308"
+  defaultCloakingEnabled Boolean @default(false)
+
+  members           WorkspaceMember[]
+  links             Link[]
+  campaigns         Campaign[]
+  customDomains     CustomDomain[]
+  clientAccesses    ClientAccess[]
+  geoTemplates      GeoTemplate[]
+  campaignTemplates CampaignTemplate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([slug])
+}
+
+// ─── Reusable templates ─────────────────────────────────────────────────────
+
+model GeoTemplate {
+  id          String @id @default(cuid())
+  workspaceId String
+  name        String
+  targets     Json // [{ country: "US", url: "https://..." }]
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
+}
+
+model CampaignTemplate {
+  id          String  @id @default(cuid())
+  workspaceId String
+  name        String
+  source      String?
+  medium      String?
+  campaign    String?
+  term        String?
+  content     String?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
 }
 
 model WorkspaceMember {

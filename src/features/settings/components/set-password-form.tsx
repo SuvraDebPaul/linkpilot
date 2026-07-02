@@ -1,14 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { changePasswordAction } from "@/features/settings/actions/settings.actions";
+import { setPasswordAction } from "@/features/settings/actions/settings.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordStrengthMeter } from "@/features/settings/components/password-strength-meter";
 
-export function PasswordForm() {
+export function SetPasswordForm() {
+  const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
@@ -17,8 +19,7 @@ export function PasswordForm() {
     e.preventDefault();
     setIsPending(true);
     const fd = new FormData(e.currentTarget);
-    const result = await changePasswordAction({
-      currentPassword: fd.get("currentPassword"),
+    const result = await setPasswordAction({
       newPassword: fd.get("newPassword"),
       confirmPassword: fd.get("confirmPassword"),
     });
@@ -27,6 +28,7 @@ export function PasswordForm() {
       toast.success(result.message);
       formRef.current?.reset();
       setNewPassword("");
+      router.refresh();
     } else {
       toast.error(result.message);
     }
@@ -34,14 +36,14 @@ export function PasswordForm() {
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        Your account was created with Google sign-in and has no password yet. Set one to also enable
+        email/password sign-in and two-factor authentication.
+      </p>
       <div className="space-y-1.5">
-        <Label htmlFor="currentPassword">Current password</Label>
-        <Input id="currentPassword" name="currentPassword" type="password" placeholder="••••••••" disabled={isPending} />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="newPassword">New password</Label>
+        <Label htmlFor="setNewPassword">New password</Label>
         <Input
-          id="newPassword"
+          id="setNewPassword"
           name="newPassword"
           type="password"
           placeholder="Min. 8 characters"
@@ -52,11 +54,11 @@ export function PasswordForm() {
         <PasswordStrengthMeter password={newPassword} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="confirmPassword">Confirm new password</Label>
-        <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" disabled={isPending} />
+        <Label htmlFor="setConfirmPassword">Confirm password</Label>
+        <Input id="setConfirmPassword" name="confirmPassword" type="password" placeholder="••••••••" disabled={isPending} />
       </div>
       <Button type="submit" disabled={isPending}>
-        {isPending ? "Changing…" : "Change password"}
+        {isPending ? "Setting…" : "Set password"}
       </Button>
     </form>
   );
