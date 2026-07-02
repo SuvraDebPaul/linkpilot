@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X, Loader2 } from "lucide-react";
+import { Plus, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -73,7 +73,9 @@ export function CreateClientDialog({ workspaceId, campaigns }: Props) {
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create client portal</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" /> Create client portal
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 pt-1">
           <div className="space-y-1.5">
