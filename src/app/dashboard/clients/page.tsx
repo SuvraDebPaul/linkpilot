@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { Check, Users } from "lucide-react";
+import Link from "next/link";
+import { Check, Users, Sparkles, Lock } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
@@ -51,26 +52,32 @@ export default async function ClientsPage() {
             title="Client Portals"
             description="Give clients a private, branded view of their campaigns."
           />
-          <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-            <h2 className="text-lg font-semibold text-foreground">Client portals are a Starter feature</h2>
-            <p className="mt-2 text-sm text-muted-foreground max-w-lg">
-              Create a private portal link for each client showing their campaigns, click stats, and
-              report links — no client login required.
-            </p>
-            <ul className="mt-4 space-y-2">
-              {["3 portals on Starter", "Unlimited on Pro", "Branded with your logo & colors", "Invite via email"].map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <a
-              href="/dashboard/settings/billing"
-              className="mt-6 inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              Upgrade to Starter →
-            </a>
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                <Lock className="h-5 w-5 text-primary" />
+              </div>
+              <h2 className="mt-4 text-lg font-semibold text-foreground">Client portals are a Starter feature</h2>
+              <p className="mt-2 max-w-lg text-sm text-muted-foreground">
+                Create a private portal link for each client showing their campaigns, click stats, and
+                report links — no client login required.
+              </p>
+              <ul className="mt-4 space-y-2">
+                {["3 portals on Starter", "Unlimited on Pro", "Branded with your logo & colors", "Invite via email"].map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-foreground">
+                    <Check className="h-4 w-4 shrink-0 text-primary" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/dashboard/settings/billing"
+                className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                <Sparkles className="h-4 w-4" /> Upgrade to Starter
+              </Link>
+            </div>
           </div>
         </div>
       );
@@ -103,20 +110,20 @@ export default async function ClientsPage() {
 
       {atLimit && plan === "starter" && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          You've used all {limit} client portals on your Starter plan.{" "}
-          <a href="/dashboard/settings/billing" className="font-semibold underline underline-offset-2">
+          You&apos;ve used all {limit} client portals on your Starter plan.{" "}
+          <Link href="/dashboard/settings/billing" className="font-semibold underline underline-offset-2">
             Upgrade to Pro
-          </a>{" "}
+          </Link>{" "}
           for unlimited portals.
         </div>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            Active portals
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="h-4 w-4 text-primary" /> Active portals
             {limit !== Infinity && (
-              <span className="ml-2 text-xs font-normal text-muted-foreground">
+              <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
                 {clients.length}/{limit}
               </span>
             )}
