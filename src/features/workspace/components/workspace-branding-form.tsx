@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { ImageUploader } from "@/components/shared/image-uploader";
 import { updateWorkspaceBrandingAction } from "@/features/workspace/actions/workspace.actions";
 
 type Props = {
@@ -55,31 +56,19 @@ export function WorkspaceBrandingForm({
 
   return (
     <div className="space-y-5">
-      {/* Logo URL */}
+      {/* Logo */}
       <div className="space-y-1.5">
-        <Label htmlFor="brand-logo">Logo URL</Label>
-        <Input
-          id="brand-logo"
-          type="url"
-          placeholder="https://yourbrand.com/logo.png"
+        <Label>Logo</Label>
+        <ImageUploader
           value={logoUrl}
-          onChange={(e) => setLogoUrl(e.target.value)}
+          onChange={setLogoUrl}
+          folder="branding-logos"
+          shape="square"
           disabled={isPending}
         />
         <p className="text-xs text-muted-foreground">
-          Paste a direct link to your logo image. Appears in the report header instead of the LinkPilot logo.
+          Appears in the report header instead of the LinkPilot logo.
         </p>
-        {logoUrl && (
-          <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-3">
-            <img
-              src={logoUrl}
-              alt="Logo preview"
-              className="h-8 max-w-[160px] object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-            <span className="text-xs text-muted-foreground">Preview</span>
-          </div>
-        )}
       </div>
 
       {/* Brand color */}

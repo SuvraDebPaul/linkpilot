@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
   Search,
@@ -10,6 +10,9 @@ import {
   LogOut,
   User,
   Plus,
+  Sun,
+  Moon,
+  MonitorSmartphone,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -21,28 +24,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from "@/components/shared/theme-provider";
 import { cn } from "@/lib/utils";
 
-const PAGE_TITLES: Record<string, string> = {
-  "/dashboard": "Overview",
-  "/dashboard/links": "Links",
-  "/dashboard/links/new": "New Link",
-  "/dashboard/campaigns": "Campaigns",
-  "/dashboard/clients": "Clients",
-  "/dashboard/analytics": "Analytics",
-  "/dashboard/settings": "Settings",
-  "/dashboard/settings/workspace": "Workspace",
-  "/dashboard/settings/domains": "Domains",
-  "/dashboard/settings/billing": "Billing",
-};
-
-function getPageTitle(pathname: string): string {
-  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
-  if (pathname.match(/\/dashboard\/links\/[^/]+\/qr-assets$/)) return "QR Assets";
-  if (pathname.match(/\/dashboard\/links\/.+/)) return "Link Details";
-  if (pathname.match(/\/dashboard\/campaigns\/.+/)) return "Campaign Details";
-  return "Dashboard";
-}
+const THEME_CYCLE = ["light", "dark", "auto"] as const;
+const THEME_ICON = { light: Sun, dark: Moon, auto: MonitorSmartphone } as const;
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -56,15 +42,28 @@ function getInitials(name?: string | null, email?: string | null): string {
 }
 
 export function DashboardTopbar() {
-  const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
+  const { theme, setTheme } = useTheme();
   const [search, setSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
-  const title = getPageTitle(pathname);
   const initials = getInitials(session?.user?.name, session?.user?.email);
   const displayName = session?.user?.name ?? session?.user?.email ?? "Account";
+  const ThemeIcon = THEME_ICON[theme];
+
+  // Cmd/Ctrl+K focuses search from anywhere on the dashboard.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,48 +73,59 @@ export function DashboardTopbar() {
     }
   }
 
+  function cycleTheme() {
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
+    setTheme(next);
+  }
+
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-card px-4 sm:px-6">
-      {/* Page title */}
-      <h1 className="hidden shrink-0 text-xl font-bold text-foreground lg:block">
-        {title}
-      </h1>
-
-      {/* Search */}
+      {/* Search — takes the freed-up space, with a Cmd+K hint */}
       <form
         onSubmit={handleSearchSubmit}
-        className={cn(
-          "relative hidden flex-1 transition-all duration-200 sm:flex",
-          "max-w-md lg:mx-6",
-        )}
+        className="relative hidden flex-1 max-w-lg transition-all duration-200 sm:flex"
       >
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
+          ref={searchRef}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => setSearchFocused(false)}
           placeholder="Search links…"
           className={cn(
-            "h-9 w-full rounded-full border-border bg-muted/50 pl-9 text-sm transition-all duration-200 focus-visible:ring-1",
+            "h-9 w-full rounded-full border-border bg-muted/50 pl-9 pr-14 text-sm transition-all duration-200 focus-visible:ring-1",
             searchFocused && "bg-background shadow-sm",
           )}
         />
+        {!searchFocused && (
+          <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            ⌘K
+          </kbd>
+        )}
       </form>
 
       {/* Spacer on mobile */}
-      <div className="flex-1 lg:hidden" />
+      <div className="flex-1 sm:hidden" />
 
       {/* Right actions */}
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="ml-auto flex items-center gap-1 sm:gap-2">
         {/* Notification bell */}
         <button
           className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           title="Notifications"
         >
           <Bell className="h-[18px] w-[18px]" />
-          {/* Badge */}
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
+        </button>
+
+        {/* Quick theme toggle — cycles light → dark → auto */}
+        <button
+          onClick={cycleTheme}
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          title={`Theme: ${theme} (click to change)`}
+        >
+          <ThemeIcon className="h-[18px] w-[18px]" />
         </button>
 
         {/* Settings shortcut */}
@@ -130,7 +140,15 @@ export function DashboardTopbar() {
         {/* Divider */}
         <div className="mx-1 h-6 w-px bg-border" />
 
-        {/* User dropdown */}
+        {/* CTA */}
+        <Button asChild size="sm" className="hidden gap-1.5 sm:flex">
+          <Link href="/dashboard/links/new">
+            <Plus className="h-4 w-4" />
+            New Link
+          </Link>
+        </Button>
+
+        {/* User dropdown — rightmost */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent">
@@ -184,14 +202,6 @@ export function DashboardTopbar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* CTA */}
-        <Button asChild size="sm" className="hidden gap-1.5 sm:flex">
-          <Link href="/dashboard/links/new">
-            <Plus className="h-4 w-4" />
-            New Link
-          </Link>
-        </Button>
       </div>
     </header>
   );

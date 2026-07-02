@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CANONICAL_BROWSERS, padToSix } from "@/lib/audience-breakdown";
 
 type DataPoint = { name: string; count: number };
 
@@ -23,14 +24,16 @@ const TOTAL_H = PAD_TOP + H + LABEL_H;
 export function BrowserAreaChart({ data, total }: { data: DataPoint[]; total: number }) {
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
-  const browsers  = data.slice(0, 6);
+  const browsers  = padToSix(data, CANONICAL_BROWSERS);
   const maxCount  = browsers[0]?.count || 1;
   const N         = browsers.length;
-  const STEP      = (W - PAD_X * 2) / (N - 1);
+  const STEP      = N > 1 ? (W - PAD_X * 2) / (N - 1) : 0;
   const BASE_Y    = PAD_TOP + H;
 
+  if (N === 0) return null;
+
   const pts = browsers.map((b, i) => ({
-    x:     PAD_X + i * STEP,
+    x:     N === 1 ? W / 2 : PAD_X + i * STEP,
     y:     PAD_TOP + H - Math.max((b.count / maxCount) * H, 4),
     pct:   Math.round((b.count / total) * 100),
     name:  b.name.replace(" Browser", ""),

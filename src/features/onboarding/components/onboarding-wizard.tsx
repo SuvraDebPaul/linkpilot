@@ -7,6 +7,7 @@ import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ImageUploader } from "@/components/shared/image-uploader";
 import { cn } from "@/lib/utils";
 import { completeOnboardingAction } from "@/features/onboarding/actions/onboarding.actions";
 
@@ -30,7 +31,6 @@ export function OnboardingWizard({ userName }: { userName: string | null }) {
   // Step 2
   const [brandLogoUrl, setBrandLogoUrl] = useState("");
   const [brandColor, setBrandColor] = useState("#0d9488");
-  const [logoError, setLogoError] = useState("");
 
   function handleStep1() {
     if (!workspaceName.trim()) {
@@ -42,11 +42,6 @@ export function OnboardingWizard({ userName }: { userName: string | null }) {
   }
 
   function handleStep2() {
-    if (brandLogoUrl && !brandLogoUrl.startsWith("http")) {
-      setLogoError("Please enter a valid URL starting with http:// or https://");
-      return;
-    }
-    setLogoError("");
     setStep(3);
   }
 
@@ -155,15 +150,13 @@ export function OnboardingWizard({ userName }: { userName: string | null }) {
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="brandLogoUrl">Logo URL <span className="text-xs text-muted-foreground">(optional)</span></Label>
-                    <Input
-                      id="brandLogoUrl"
+                    <Label>Logo <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                    <ImageUploader
                       value={brandLogoUrl}
-                      onChange={(e) => { setBrandLogoUrl(e.target.value); setLogoError(""); }}
-                      placeholder="https://yoursite.com/logo.png"
+                      onChange={setBrandLogoUrl}
+                      folder="branding-logos"
+                      shape="square"
                     />
-                    {logoError && <p className="text-xs text-destructive">{logoError}</p>}
-                    <p className="text-xs text-muted-foreground">PNG, SVG, or WebP recommended</p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -248,7 +241,8 @@ export function OnboardingWizard({ userName }: { userName: string | null }) {
                   {brandLogoUrl && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Logo</span>
-                      <span className="font-medium text-foreground truncate max-w-[200px]">{brandLogoUrl}</span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={brandLogoUrl} alt="" className="h-6 w-6 rounded object-contain" />
                     </div>
                   )}
                   <div className="flex items-center justify-between text-sm">

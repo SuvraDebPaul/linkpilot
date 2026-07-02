@@ -29,6 +29,7 @@ import {
 } from "@/server/queries/analytics.queries";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { getDemoAnalytics, getDemoBusinessOverview } from "@/lib/demo-stats";
+import { CANONICAL_BROWSERS, CANONICAL_OS, padToSix } from "@/lib/audience-breakdown";
 
 const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -401,10 +402,9 @@ export default async function AnalyticsPage({
         {/* Browsers — area chart + mini table */}
         {isStarter ? (
           (() => {
-            const browsers = data.clicksByBrowser
-              .map((r) => ({ name: r.browser, count: r.count }))
-              .slice(0, 6);
-            const total = browsers.reduce((s, r) => s + r.count, 0) || 1;
+            const realBrowsers = data.clicksByBrowser.map((r) => ({ name: r.browser, count: r.count }));
+            const total = realBrowsers.reduce((s, r) => s + r.count, 0) || 1;
+            const browsers = padToSix(realBrowsers, CANONICAL_BROWSERS);
             return (
               <Card className="flex flex-col">
                 <CardHeader className="pb-2 shrink-0">
@@ -413,7 +413,7 @@ export default async function AnalyticsPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col gap-3 pt-2">
-                  {browsers.length === 0 ? (
+                  {realBrowsers.length === 0 ? (
                     <p className="py-6 text-center text-sm text-muted-foreground">
                       No data yet.
                     </p>
@@ -440,10 +440,9 @@ export default async function AnalyticsPage({
         {/* Operating systems — bar chart + mini table */}
         {isStarter ? (
           (() => {
-            const osRows = data.clicksByOs
-              .map((r) => ({ name: r.os, count: r.count }))
-              .slice(0, 6);
-            const total = osRows.reduce((s, r) => s + r.count, 0) || 1;
+            const realOsRows = data.clicksByOs.map((r) => ({ name: r.os, count: r.count }));
+            const total = realOsRows.reduce((s, r) => s + r.count, 0) || 1;
+            const osRows = padToSix(realOsRows, CANONICAL_OS);
             return (
               <Card className="flex flex-col">
                 <CardHeader className="pb-2 shrink-0">
@@ -453,7 +452,7 @@ export default async function AnalyticsPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col gap-3 pt-2">
-                  {osRows.length === 0 ? (
+                  {realOsRows.length === 0 ? (
                     <p className="py-6 text-center text-sm text-muted-foreground">
                       No data yet.
                     </p>

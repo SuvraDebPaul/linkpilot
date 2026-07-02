@@ -21,6 +21,7 @@ import { getDashboardStats } from "@/server/queries/dashboard.queries";
 import { WorldMap } from "@/components/charts/world-map";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
 import { OsBarChart } from "@/components/charts/os-bar-chart";
+import { CANONICAL_BROWSERS, CANONICAL_OS, padToSix } from "@/lib/audience-breakdown";
 
 const COUNTRY_CODE: Record<string, string> = {
   "United States": "US",
@@ -826,8 +827,8 @@ export default async function DashboardPage() {
           {/* Browsers — ranked card */}
           {stats.clicksByBrowser.length > 0 &&
             (() => {
-              const browsers = stats.clicksByBrowser.slice(0, 6);
-              const total = browsers.reduce((s, r) => s + r.count, 0) || 1;
+              const total = stats.clicksByBrowser.reduce((s, r) => s + r.count, 0) || 1;
+              const browsers = padToSix(stats.clicksByBrowser, CANONICAL_BROWSERS);
 
               return (
                 <Card className="flex flex-col">
@@ -913,8 +914,8 @@ export default async function DashboardPage() {
           {/* Operating Systems — SVG bar chart + 2×3 table */}
           {stats.clicksByOs.length > 0 &&
             (() => {
-              const osData = stats.clicksByOs.slice(0, 6);
-              const total = osData.reduce((s, r) => s + r.count, 0) || 1;
+              const total = stats.clicksByOs.reduce((s, r) => s + r.count, 0) || 1;
+              const osData = padToSix(stats.clicksByOs, CANONICAL_OS);
               const left = osData.slice(0, 3);
               const right = osData.slice(3, 6);
 

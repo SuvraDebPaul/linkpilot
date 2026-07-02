@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlanGateCard } from "@/components/shared/plan-gate-card";
+import { ImageUploader } from "@/components/shared/image-uploader";
 import type { PlanTier } from "@/lib/plans";
 
 type Props = {
@@ -97,13 +98,12 @@ export function OgTagsForm({ linkId, plan, initialTitle, initialDescription, ini
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="ogImage" className="text-xs">Image URL</Label>
-              <Input
-                id="ogImage"
-                type="url"
+              <Label className="text-xs">Image</Label>
+              <ImageUploader
                 value={ogImage}
-                onChange={(e) => setOgImage(e.target.value)}
-                placeholder="https://example.com/image.png"
+                onChange={setOgImage}
+                folder="og-images"
+                shape="square"
                 disabled={isPending}
               />
               <p className="text-xs text-muted-foreground">Recommended: 1200×630px</p>

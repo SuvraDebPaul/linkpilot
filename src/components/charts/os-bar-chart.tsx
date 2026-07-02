@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CANONICAL_OS, padToSix } from "@/lib/audience-breakdown";
 
 type DataPoint = { name: string; count: number };
 
@@ -22,8 +23,7 @@ const GAP   = 8;
 export function OsBarChart({ data, total }: { data: DataPoint[]; total: number }) {
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
-  const items    = data.slice(0, 6);
-  const maxCount = items[0]?.count || 1;
+  const items    = padToSix(data, CANONICAL_OS);
   const N        = items.length;
   const BAR_W    = (W - (N - 1) * GAP) / N;
 

@@ -7,7 +7,7 @@ import { updateProfileAction, resendVerificationEmailAction } from "@/features/s
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { ImageUploader } from "@/components/shared/image-uploader";
 
 type Props = {
   name: string | null;
@@ -41,18 +41,15 @@ export function ProfileForm({ name, email, image, emailVerified }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-center gap-4">
-        <UserAvatar name={name} email={email} image={imageUrl} />
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <Label htmlFor="image">Avatar image URL</Label>
-          <Input
-            id="image"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/avatar.jpg"
-            disabled={isPending}
-          />
-        </div>
+      <div className="space-y-1.5">
+        <Label>Avatar</Label>
+        <ImageUploader
+          value={imageUrl}
+          onChange={setImageUrl}
+          folder="avatars"
+          shape="circle"
+          disabled={isPending}
+        />
       </div>
 
       <div className="space-y-1.5">

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import QRCode from "qrcode";
-import { Download, ImageIcon, Save, Check, Link2 } from "lucide-react";
+import { Download, Save, Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ImageUploader } from "@/components/shared/image-uploader";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
 import { saveQrSettingsAction } from "@/features/links/actions/qr-settings.actions";
@@ -359,15 +360,13 @@ export function QrCustomizerPanel({
             <Switch checked={withLogo} onCheckedChange={handleWithLogoChange} />
           </div>
           {withLogo && (
-            <div className="flex gap-2">
-              <ImageIcon className="mt-2 h-4 w-4 shrink-0 text-muted-foreground" />
-              <Input
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://example.com/logo.png"
-                className="text-xs"
-              />
-            </div>
+            <ImageUploader
+              value={logoUrl}
+              onChange={setLogoUrl}
+              folder="qr-logos"
+              shape="square"
+              size={64}
+            />
           )}
         </div>
 
