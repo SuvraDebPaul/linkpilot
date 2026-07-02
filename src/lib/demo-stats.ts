@@ -1644,6 +1644,33 @@ export function getDemoCampaignDeviceBreakdown() {
 
 // ── Analytics page demo data ──────────────────────────────────────────────────
 
+export function getDemoBusinessOverview(days: number) {
+  const clicksThisPeriod = days === 7 ? 1_240 : days === 30 ? 5_180 : 12_640;
+  const clicksPrevPeriod = Math.round(clicksThisPeriod * 0.83);
+  const growthPct = Math.round(((clicksThisPeriod - clicksPrevPeriod) / clicksPrevPeriod) * 100);
+
+  return {
+    totalLinks: 24,
+    totalCampaigns: 6,
+    totalClients: 5,
+    totalClicksAllTime: 42_310,
+    clicksThisPeriod,
+    clicksPrevPeriod,
+    growthPct,
+    activeLinks: 18,
+    inactiveLinks: 4,
+    expiredLinks: 1,
+    expiringSoon: 1,
+    topCampaigns: [
+      { id: "dc-01", name: "Summer Sale 2024", count: Math.round(clicksThisPeriod * 0.34) },
+      { id: "dc-03", name: "Product Launch Q1", count: Math.round(clicksThisPeriod * 0.24) },
+      { id: "dc-05", name: "Social Media Links", count: Math.round(clicksThisPeriod * 0.18) },
+      { id: "dc-04", name: "Newsletter Series", count: Math.round(clicksThisPeriod * 0.13) },
+      { id: "dc-06", name: "Podcast Episodes", count: Math.round(clicksThisPeriod * 0.08) },
+    ],
+  };
+}
+
 export function getDemoAnalytics(days: number) {
   const peak = days === 7 ? 58 : days === 30 ? 145 : 98;
 
@@ -1668,6 +1695,14 @@ export function getDemoAnalytics(days: number) {
       { browser: "Firefox", count: Math.round(totalClicks * 0.08) },
       { browser: "Edge", count: Math.round(totalClicks * 0.05) },
       { browser: "Other", count: Math.round(totalClicks * 0.02) },
+    ],
+    clicksByOs: [
+      { os: "Android", count: Math.round(totalClicks * 0.4) },
+      { os: "iOS", count: Math.round(totalClicks * 0.28) },
+      { os: "Windows", count: Math.round(totalClicks * 0.15) },
+      { os: "macOS", count: Math.round(totalClicks * 0.1) },
+      { os: "Linux", count: Math.round(totalClicks * 0.05) },
+      { os: "Other", count: Math.round(totalClicks * 0.02) },
     ],
     topReferrers: [
       { referrer: "google.com", count: Math.round(totalClicks * 0.31) },
