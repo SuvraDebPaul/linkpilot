@@ -3,13 +3,23 @@ import { DashboardTopbar } from "@/components/layout/dashboard-topbar";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
 import { Logo } from "@/components/shared/logo";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+type WorkspaceOption = { id: string; name: string; role: string };
+
+export function DashboardShell({
+  children,
+  workspaces,
+  activeWorkspaceId,
+}: {
+  children: React.ReactNode;
+  workspaces: WorkspaceOption[];
+  activeWorkspaceId: string | null;
+}) {
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-muted">
-      <DashboardSidebar />
+      <DashboardSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex h-16 items-center border-b border-border bg-card px-4 lg:hidden">
-          <MobileSidebar />
+          <MobileSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
           <div className="ml-3">
             <Logo />
           </div>

@@ -22,7 +22,13 @@ import type { WorkspaceRole } from "@/generated/prisma/enums";
 type Member = {
   id: string;
   role: WorkspaceRole;
-  user: { id: string; name: string | null; email: string | null; image: string | null };
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+    createdAsWorkspaceMember: boolean;
+  };
 };
 
 const ROLE_STYLE: Record<WorkspaceRole, { badge: string; icon: typeof Crown }> = {
@@ -137,7 +143,11 @@ export function MembersTable({
                         </DropdownMenuItem>
                       }
                       title={`Remove ${m.user.name ?? m.user.email}?`}
-                      description="They will lose access to this workspace immediately."
+                      description={
+                        m.user.createdAsWorkspaceMember
+                          ? "This account was created for this workspace only — removing them will permanently delete the account. This cannot be undone."
+                          : "They will lose access to this workspace immediately."
+                      }
                       confirmLabel="Remove"
                       onConfirm={() => remove(m.id)}
                     />

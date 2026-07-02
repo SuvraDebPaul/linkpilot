@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
+import { getUserWorkspaces, getActiveWorkspaceId } from "@/server/queries/workspace.queries";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -15,5 +16,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!user?.onboardingCompleted) redirect("/onboarding");
 
-  return <DashboardShell>{children}</DashboardShell>;
+  const [memberships, activeWorkspaceId] = await Promise.all([
+    getUserWorkspaces(session.user.id),
+    getActiveWorkspaceId(session.user.id),
+  ]);
+  const workspaces = memberships.map((m) => ({ id: m.workspace.id, name: m.workspace.name, role: m.role }));
+
+  return (
+    <DashboardShell workspaces={workspaces} activeWorkspaceId={activeWorkspaceId}>
+      {children}
+    </DashboardShell>
+  );
 }
