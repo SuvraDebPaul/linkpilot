@@ -4,6 +4,17 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "@/components/shared/session-provider";
+import { ThemeProvider } from "@/components/shared/theme-provider";
+
+const THEME_INIT_SCRIPT = `
+(function () {
+  try {
+    var theme = localStorage.getItem("linkpilot-theme") || "auto";
+    var isDark = theme === "dark" || (theme === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+  } catch (e) {}
+})();
+`;
 
 const roboto = Roboto({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -44,6 +55,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         "h-full",
         "antialiased",
@@ -53,11 +65,16 @@ export default function RootLayout({
         roboto.variable,
       )}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
-        <SessionProvider>
-          {children}
-        </SessionProvider>
-        <Toaster richColors position="top-right" />
+        <ThemeProvider>
+          <SessionProvider>
+            {children}
+          </SessionProvider>
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

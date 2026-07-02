@@ -73,3 +73,26 @@ export async function getWorkspaceMember(userId: string, workspaceId: string) {
     where: { userId_workspaceId: { userId, workspaceId } },
   });
 }
+
+export async function getWorkspaceDefaults(workspaceId: string) {
+  return prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: {
+      slugStyle: true,
+      defaultRedirectType: true,
+      defaultCloakingEnabled: true,
+    },
+  });
+}
+
+/** Pending workspace invites are stored as VerificationToken rows with identifier "invite:<workspaceId>:<email>". */
+export async function getPendingInvites(workspaceId: string) {
+  const tokens = await prisma.verificationToken.findMany({
+    where: { identifier: { startsWith: `invite:${workspaceId}:` } },
+  });
+
+  return tokens.map((t) => ({
+    email: t.identifier.slice(`invite:${workspaceId}:`.length),
+    expires: t.expires,
+  }));
+}

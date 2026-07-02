@@ -2,6 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { headers } from "next/headers";
 
 import { prisma } from "@/server/db/prisma";
 import { registerSchema } from "@/features/auth/schemas/auth.schema";
@@ -67,6 +68,25 @@ export async function registerAction(input: unknown): Promise<RegisterResult> {
       role: "OWNER",
     },
   });
+
+  try {
+    const hdrs = await headers();
+    const forwardedFor = hdrs.get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "Unknown";
+    const userAgent = hdrs.get("user-agent") ?? "";
+    const browser = /Chrome/.test(userAgent)
+      ? "Chrome"
+      : /Firefox/.test(userAgent)
+        ? "Firefox"
+        : /Safari/.test(userAgent) && !/Chrome/.test(userAgent)
+          ? "Safari"
+          : /Edg/.test(userAgent)
+            ? "Edge"
+            : "Unknown";
+    await prisma.loginEvent.create({ data: { userId: user.id, type: "registration", ip, browser } });
+  } catch {
+    // Non-critical — don't block registration on activity logging
+  }
 
   // Send verification email (fire-and-forget; don't block registration on email errors)
   try {

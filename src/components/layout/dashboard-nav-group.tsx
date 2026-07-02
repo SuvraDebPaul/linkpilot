@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
@@ -10,38 +10,38 @@ import { cn } from "@/lib/utils";
 interface SubItem {
   href: string;
   label: string;
+  icon: LucideIcon;
 }
 
 interface DashboardNavGroupProps {
-  icon: LucideIcon;
   label: string;
   items: SubItem[];
 }
 
-export function DashboardNavGroup({ icon: Icon, label, items }: DashboardNavGroupProps) {
+export function DashboardNavGroup({ label, items }: DashboardNavGroupProps) {
   const pathname = usePathname();
-  const isAnyActive = items.some(
+
+  // Match the single longest href instead of every prefix independently —
+  // otherwise a root item like "/dashboard/settings" would also light up
+  // for nested routes like "/dashboard/settings/billing".
+  const matches = items.filter(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );
-  const [open, setOpen] = useState(isAnyActive);
+  const activeHref = matches.sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
-  useEffect(() => {
-    if (isAnyActive) setOpen(true);
-  }, [isAnyActive]);
+  const isAnyActive = matches.length > 0;
+  // null = no manual override yet; follow isAnyActive. Once the user toggles,
+  // that choice sticks until the active item changes again.
+  const [manualOpen, setManualOpen] = useState<boolean | null>(null);
+  const open = manualOpen ?? isAnyActive;
 
   return (
     <div>
       <button
-        onClick={() => setOpen((v) => !v)}
-        className={cn(
-          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
-          isAnyActive
-            ? "text-primary"
-            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-        )}
+        onClick={() => setManualOpen(!open)}
+        className="flex w-full items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-muted-foreground"
       >
-        <Icon className="h-[18px] w-[18px] shrink-0" />
-        <span className="flex-1 text-left">{label}</span>
+        {label}
         <ChevronDown
           className={cn(
             "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
@@ -51,27 +51,21 @@ export function DashboardNavGroup({ icon: Icon, label, items }: DashboardNavGrou
       </button>
 
       {open && (
-        <div className="ml-2 mt-0.5 space-y-0.5 border-l-2 border-border pl-4">
+        <div className="mt-1 space-y-0.5">
           {items.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive = item.href === activeHref;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                   isActive
-                    ? "font-semibold text-primary"
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
-                <span
-                  className={cn(
-                    "h-1.5 w-1.5 shrink-0 rounded-full transition-colors",
-                    isActive ? "bg-primary" : "bg-muted-foreground/40",
-                  )}
-                />
+                <item.icon className="h-[18px] w-[18px] shrink-0" />
                 {item.label}
               </Link>
             );

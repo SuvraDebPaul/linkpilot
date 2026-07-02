@@ -1,11 +1,15 @@
 import bcrypt from "bcryptjs";
 
-import { generateShortCode, isReservedSlug } from "@/lib/slug";
+import { generateShortCode, isReservedSlug, counterToSlug, shortCodeLengthForStyle, type SlugStyle } from "@/lib/slug";
 import { validateSafeUrl } from "@/server/services/url-safety.service";
 import { prisma } from "@/server/db/prisma";
 import type { CreateLinkInput, UpdateLinkInput } from "@/features/links/schemas/link.schema";
 
-async function generateUniqueShortCode(preferred?: string): Promise<string> {
+async function generateUniqueShortCode(
+  workspaceId: string,
+  slugStyle: SlugStyle,
+  preferred?: string,
+): Promise<string> {
   if (preferred) {
     if (isReservedSlug(preferred)) throw new Error("That slug is reserved.");
     const existing = await prisma.link.findUnique({ where: { shortCode: preferred }, select: { id: true } });
@@ -16,8 +20,24 @@ async function generateUniqueShortCode(preferred?: string): Promise<string> {
     return preferred;
   }
 
+  if (slugStyle === "incremental") {
+    for (let i = 0; i < 10; i++) {
+      const workspace = await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: { slugCounter: { increment: 1 } },
+        select: { slugCounter: true },
+      });
+      const code = counterToSlug(workspace.slugCounter);
+      if (isReservedSlug(code)) continue;
+      const exists = await prisma.link.findUnique({ where: { shortCode: code }, select: { id: true } });
+      if (!exists) return code;
+    }
+    throw new Error("Could not generate a unique short code. Please try again.");
+  }
+
+  const length = shortCodeLengthForStyle(slugStyle);
   for (let i = 0; i < 10; i++) {
-    const code = generateShortCode(7);
+    const code = generateShortCode(length);
     if (isReservedSlug(code)) continue;
     const exists = await prisma.link.findUnique({ where: { shortCode: code }, select: { id: true } });
     if (!exists) {
@@ -42,8 +62,14 @@ export async function createLinkService(params: {
 }) {
   const { input, userId, workspaceId, campaignId, customDomainId, redirectType, qrFgColor, qrBgColor, qrEcLevel, qrMargin } = params;
 
+  const workspaceDefaults = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { slugStyle: true, defaultRedirectType: true, defaultCloakingEnabled: true },
+  });
+  const slugStyle = (workspaceDefaults?.slugStyle ?? "random") as SlugStyle;
+
   const safeUrl = validateSafeUrl(input.originalUrl);
-  const shortCode = await generateUniqueShortCode(input.customSlug || undefined);
+  const shortCode = await generateUniqueShortCode(workspaceId, slugStyle, input.customSlug || undefined);
 
   const password = input.password?.trim();
   const hasPassword = Boolean(password);
@@ -70,7 +96,8 @@ export async function createLinkService(params: {
       maxClicks,
       notes: input.notes?.trim() || null,
       tags,
-      ...(redirectType && { redirectType }),
+      redirectType: redirectType || workspaceDefaults?.defaultRedirectType || "302",
+      isCloaked: workspaceDefaults?.defaultCloakingEnabled ?? false,
       ...(qrFgColor && { qrFgColor }),
       ...(qrBgColor && { qrBgColor }),
       ...(qrEcLevel && { qrEcLevel }),
