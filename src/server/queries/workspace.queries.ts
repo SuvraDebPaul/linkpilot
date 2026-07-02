@@ -1,7 +1,26 @@
+import { cookies } from "next/headers";
 import { prisma } from "@/server/db/prisma";
 
-/** Returns the ID of the user's active workspace (first joined). */
+export const ACTIVE_WORKSPACE_COOKIE = "active_workspace";
+
+/**
+ * Returns the ID of the user's active workspace: whichever workspace they last
+ * switched to (via the active-workspace cookie), falling back to the first one
+ * they joined if the cookie is missing, stale, or points to a workspace they're
+ * no longer a member of.
+ */
 export async function getActiveWorkspaceId(userId: string): Promise<string | null> {
+  const cookieStore = await cookies();
+  const cookieWorkspaceId = cookieStore.get(ACTIVE_WORKSPACE_COOKIE)?.value;
+
+  if (cookieWorkspaceId) {
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { userId_workspaceId: { userId, workspaceId: cookieWorkspaceId } },
+      select: { workspaceId: true },
+    });
+    if (membership) return membership.workspaceId;
+  }
+
   const membership = await prisma.workspaceMember.findFirst({
     where: { userId },
     select: { workspaceId: true },
@@ -17,12 +36,8 @@ export async function getActiveWorkspaceId(userId: string): Promise<string | nul
  * creation event may not have completed before their first dashboard load.
  */
 export async function ensureWorkspace(userId: string): Promise<string> {
-  const existing = await prisma.workspaceMember.findFirst({
-    where: { userId },
-    select: { workspaceId: true },
-    orderBy: { joinedAt: "asc" },
-  });
-  if (existing) return existing.workspaceId;
+  const existing = await getActiveWorkspaceId(userId);
+  if (existing) return existing;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -61,7 +76,11 @@ export async function getWorkspaceWithMembers(workspaceId: string) {
     where: { id: workspaceId },
     include: {
       members: {
-        include: { user: { select: { id: true, name: true, email: true, image: true } } },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, image: true, createdAsWorkspaceMember: true },
+          },
+        },
         orderBy: { joinedAt: "asc" },
       },
     },

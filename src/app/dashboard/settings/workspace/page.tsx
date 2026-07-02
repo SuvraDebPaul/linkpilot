@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { PageHeader } from "@/components/shared/page-header";
 import { RenameWorkspaceForm } from "@/features/workspace/components/rename-workspace-form";
 import { InviteMemberForm } from "@/features/workspace/components/invite-member-form";
+import { CreateMemberAccountForm } from "@/features/workspace/components/create-member-account-form";
 import { PendingInvitesList } from "@/features/workspace/components/pending-invites-list";
 import { MembersTable } from "@/features/workspace/components/members-table";
 import { WorkspaceBrandingForm } from "@/features/workspace/components/workspace-branding-form";
@@ -94,7 +95,10 @@ export default async function WorkspaceSettingsPage() {
         <CardContent className="space-y-4">
           {isOwnerOrAdmin && (
             canInvite ? (
-              <InviteMemberForm workspaceId={workspace.id} />
+              <div className="flex flex-wrap items-center gap-2">
+                <InviteMemberForm workspaceId={workspace.id} />
+                <CreateMemberAccountForm workspaceId={workspace.id} />
+              </div>
             ) : (
               <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                 Upgrade to Starter or Pro to invite team members.

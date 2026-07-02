@@ -1,6 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/shared/logo";
+import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
 import { DashboardNavItem } from "./dashboard-nav-item";
 import { DashboardNavGroup } from "./dashboard-nav-group";
 import {
@@ -34,12 +35,25 @@ const settingsItems = [
   { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
-export function DashboardSidebar() {
+type WorkspaceOption = { id: string; name: string; role: string };
+
+export function DashboardSidebar({
+  workspaces,
+  activeWorkspaceId,
+}: {
+  workspaces: WorkspaceOption[];
+  activeWorkspaceId: string | null;
+}) {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card lg:flex">
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-border px-5">
         <Logo />
+      </div>
+
+      {/* Workspace switcher */}
+      <div className="px-3 pt-3">
+        <WorkspaceSwitcher workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
       </div>
 
       {/* Nav */}

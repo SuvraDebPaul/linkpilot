@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { getUserPlan, canCreateCampaign, PLAN_LIMITS, getUserUsage } from "@/lib/subscription";
 import { checkCampaignRateLimit } from "@/lib/rate-limit";
+import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import {
   createCampaignSchema,
   updateCampaignSchema,
@@ -19,28 +20,9 @@ async function getAuthContext() {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
+  const workspaceId = await ensureWorkspace(userId);
 
-  let membership = await prisma.workspaceMember.findFirst({
-    where: { userId },
-    select: { workspaceId: true },
-    orderBy: { joinedAt: "asc" },
-  });
-
-  if (!membership) {
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true, email: true } });
-    const base = user?.email?.split("@")[0] ?? userId.slice(0, 8);
-    const slug = `${base}-${userId.slice(-6)}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
-    const workspace = await prisma.workspace.create({
-      data: { name: `${user?.name ?? "My"} Workspace`, slug },
-      select: { id: true },
-    });
-    await prisma.workspaceMember.create({
-      data: { userId, workspaceId: workspace.id, role: "OWNER" },
-    });
-    membership = { workspaceId: workspace.id };
-  }
-
-  return { userId, workspaceId: membership.workspaceId };
+  return { userId, workspaceId };
 }
 
 export async function createCampaignAction(input: unknown): Promise<Result> {

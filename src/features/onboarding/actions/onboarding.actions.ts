@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
+import { ensureWorkspace } from "@/server/queries/workspace.queries";
 
 const schema = z.object({
   workspaceName: z.string().min(1).max(60).trim(),
@@ -23,23 +24,16 @@ export async function completeOnboardingAction(input: unknown): Promise<Result> 
   const { workspaceName, brandLogoUrl, brandColor } = parsed.data;
   const userId = session.user.id;
 
-  // Update workspace name (use first membership)
-  const membership = await prisma.workspaceMember.findFirst({
-    where: { userId },
-    select: { workspaceId: true },
-    orderBy: { joinedAt: "asc" },
-  });
+  const workspaceId = await ensureWorkspace(userId);
 
-  if (membership) {
-    await prisma.workspace.update({
-      where: { id: membership.workspaceId },
-      data: {
-        name: workspaceName,
-        ...(brandLogoUrl ? { brandLogoUrl } : {}),
-        ...(brandColor   ? { brandColor }   : {}),
-      },
-    });
-  }
+  await prisma.workspace.update({
+    where: { id: workspaceId },
+    data: {
+      name: workspaceName,
+      ...(brandLogoUrl ? { brandLogoUrl } : {}),
+      ...(brandColor   ? { brandColor }   : {}),
+    },
+  });
 
   await prisma.user.update({
     where: { id: userId },

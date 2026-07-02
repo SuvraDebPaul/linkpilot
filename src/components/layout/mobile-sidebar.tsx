@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/logo";
+import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
 import { DashboardNavItem } from "./dashboard-nav-item";
 import { DashboardNavGroup } from "./dashboard-nav-group";
 import {
@@ -37,7 +38,15 @@ const settingsItems = [
   { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
-export function MobileSidebar() {
+type WorkspaceOption = { id: string; name: string; role: string };
+
+export function MobileSidebar({
+  workspaces,
+  activeWorkspaceId,
+}: {
+  workspaces: WorkspaceOption[];
+  activeWorkspaceId: string | null;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -67,6 +76,11 @@ export function MobileSidebar() {
               <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>
+            </div>
+
+            {/* Workspace switcher */}
+            <div className="px-3 pt-3">
+              <WorkspaceSwitcher workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
             </div>
 
             {/* Nav */}

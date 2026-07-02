@@ -40,6 +40,11 @@ model User {
   // Onboarding
   onboardingCompleted Boolean @default(false)
 
+  // True only for accounts created via "Create account manually" on the
+  // Organization page — these exist solely for that one workspace, so removing
+  // the member can safely delete the whole account instead of just unlinking it.
+  createdAsWorkspaceMember Boolean @default(false)
+
   // Preferences
   theme                String  @default("auto") // "light" | "dark" | "auto"
   monthlyReportEnabled Boolean @default(false)
