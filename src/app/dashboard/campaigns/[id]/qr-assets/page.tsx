@@ -25,7 +25,9 @@ export default async function CampaignQrAssetsPage({
   if (!session?.user?.id) redirect("/login");
 
   const campaign = IS_DEMO
-    ? getDemoCampaignDetail(id) as unknown as Awaited<ReturnType<typeof getCampaignById>>
+    ? (getDemoCampaignDetail(id) as unknown as Awaited<
+        ReturnType<typeof getCampaignById>
+      >)
     : await getCampaignById(id, session.user.id);
   if (!campaign) notFound();
 
@@ -48,8 +50,10 @@ export default async function CampaignQrAssetsPage({
         </Button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <QrCode className="h-5 w-5 text-muted-foreground" />
-            <h1 className="truncate text-2xl font-bold text-foreground">QR Assets</h1>
+            <QrCode className="h-5 w-5 text-primary" />
+            <h1 className="truncate text-2xl font-bold text-foreground">
+              QR Assets
+            </h1>
           </div>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {campaign.name} · {links.length} link{links.length !== 1 ? "s" : ""}
