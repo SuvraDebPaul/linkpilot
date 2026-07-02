@@ -2,7 +2,15 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Link2, MousePointerClick, ExternalLink, FileText, QrCode } from "lucide-react";
+import {
+  ArrowLeft,
+  Link2,
+  MousePointerClick,
+  ExternalLink,
+  FileText,
+  QrCode,
+  Mail,
+} from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import { getCampaignById } from "@/server/queries/campaign.queries";
@@ -22,6 +30,15 @@ import { RemoveLinkFromCampaign } from "@/features/campaigns/components/remove-l
 import { ReportEmailForm } from "@/features/campaigns/components/report-email-form";
 
 export const metadata: Metadata = { title: "Campaign" };
+
+function faviconUrl(originalUrl: string): string | null {
+  try {
+    const host = new URL(originalUrl).hostname;
+    return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+  } catch {
+    return null;
+  }
+}
 
 export default async function CampaignDetailPage({
   params,
@@ -57,6 +74,7 @@ export default async function CampaignDetailPage({
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-start gap-4">
         <Button asChild variant="ghost" size="icon" className="mt-1 shrink-0">
           <Link href="/dashboard/campaigns">
@@ -88,16 +106,20 @@ export default async function CampaignDetailPage({
         </div>
       </div>
 
+      {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard title="Total links" value={campaign.links.length} icon={Link2} />
         <StatCard title="Total clicks" value={totalClicks} icon={MousePointerClick} />
         <StatCard title="Active links" value={activeLinks} icon={Link2} variant="success" />
       </div>
 
+      {/* Scheduled report emails */}
       {canScheduleEmails && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Scheduled report emails</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Mail className="h-4 w-4 text-primary" /> Scheduled report emails
+            </CardTitle>
             <CardDescription>
               Send clients an automatic campaign summary — weekly or monthly, no login required.
             </CardDescription>
@@ -114,9 +136,12 @@ export default async function CampaignDetailPage({
         </Card>
       )}
 
+      {/* Links */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base">Links in this campaign</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Link2 className="h-4 w-4 text-primary" /> Links in this campaign
+          </CardTitle>
           <AddLinkToCampaign campaignId={campaign.id} userId={session.user.id} />
         </CardHeader>
         <CardContent>
@@ -127,64 +152,77 @@ export default async function CampaignDetailPage({
               description="Use Add link to assign existing links to this campaign."
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b border-border text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <tr>
-                    <th className="pb-2 pr-4">Link</th>
-                    <th className="hidden pb-2 pr-4 sm:table-cell">Clicks</th>
-                    <th className="hidden pb-2 md:table-cell">Status</th>
-                    <th className="w-8 pb-2" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {campaign.links.map((link) => {
-                    const isExpired = link.expiresAt ? link.expiresAt < new Date() : false;
-                    return (
-                      <tr key={link.id} className="group">
-                        <td className="py-3 pr-4">
-                          <Link
-                            href={`/dashboard/links/${link.id}`}
-                            className="block hover:underline"
-                          >
-                            <p className="max-w-xs truncate font-medium text-foreground">
-                              {link.title || link.shortCode}
-                            </p>
-                          </Link>
-                          <a
-                            href={`${siteConfig.url}/${link.shortCode}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex w-fit items-center gap-1 text-xs text-primary hover:underline"
-                          >
-                            {siteConfig.url}/{link.shortCode}
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </td>
-                        <td className="hidden py-3 pr-4 text-foreground sm:table-cell">
-                          {link._count.clicks.toLocaleString()}
-                        </td>
-                        <td className="hidden py-3 md:table-cell">
-                          {isExpired ? (
-                            <Badge variant="secondary" className="bg-destructive/10 text-destructive">
-                              Expired
-                            </Badge>
-                          ) : link.isActive ? (
-                            <Badge variant="secondary" className="bg-primary/10 text-primary">
-                              Active
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">Inactive</Badge>
-                          )}
-                        </td>
-                        <td className="py-3 text-right">
-                          <RemoveLinkFromCampaign linkId={link.id} campaignId={campaign.id} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="overflow-hidden rounded-lg border border-border">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-primary text-white">
+                    <tr>
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">Link</th>
+                      <th className="hidden px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide sm:table-cell">Clicks</th>
+                      <th className="hidden px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide md:table-cell">Status</th>
+                      <th className="w-10 px-4 py-2.5" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {campaign.links.map((link) => {
+                      const isExpired = link.expiresAt ? link.expiresAt < new Date() : false;
+                      const favicon = faviconUrl(link.originalUrl);
+                      return (
+                        <tr key={link.id} className="group transition-colors hover:bg-muted/40">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2.5">
+                              <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted/40">
+                                {favicon ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={favicon} alt="" className="h-3.5 w-3.5" />
+                                ) : (
+                                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
+                              </span>
+                              <div className="min-w-0">
+                                <Link
+                                  href={`/dashboard/links/${link.id}`}
+                                  className="block truncate font-medium text-foreground hover:underline"
+                                >
+                                  {link.title || link.shortCode}
+                                </Link>
+                                <a
+                                  href={`${siteConfig.url}/${link.shortCode}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex w-fit items-center gap-1 text-xs text-primary hover:underline"
+                                >
+                                  {siteConfig.url.replace(/^https?:\/\//, "")}/{link.shortCode}
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="hidden px-4 py-3 text-foreground sm:table-cell">
+                            {link._count.clicks.toLocaleString()}
+                          </td>
+                          <td className="hidden px-4 py-3 md:table-cell">
+                            {isExpired ? (
+                              <Badge variant="secondary" className="bg-destructive/10 text-destructive">
+                                Expired
+                              </Badge>
+                            ) : link.isActive ? (
+                              <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                Active
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">Inactive</Badge>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <RemoveLinkFromCampaign linkId={link.id} campaignId={campaign.id} />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>

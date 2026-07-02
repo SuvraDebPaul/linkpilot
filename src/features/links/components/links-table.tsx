@@ -560,7 +560,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-primary text-primary-foreground">
+            <thead className="bg-primary text-white">
               <tr>
                 <th className="w-10 px-4 py-3">
                   <input
