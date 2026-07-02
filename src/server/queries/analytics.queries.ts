@@ -1,6 +1,84 @@
 import { prisma } from "@/server/db/prisma";
 import type { PlanTier } from "@/lib/subscription";
 
+export async function getBusinessOverview(workspaceId: string, days: number = 30) {
+  const now = new Date();
+  const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  const prevSince = new Date(since.getTime() - days * 24 * 60 * 60 * 1000);
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const [
+    totalLinks,
+    totalCampaigns,
+    totalClients,
+    totalClicksAllTime,
+    clicksThisPeriod,
+    clicksPrevPeriod,
+    campaignsWithClicks,
+    activeLinks,
+    inactiveLinks,
+    expiredLinks,
+    expiringSoon,
+  ] = await Promise.all([
+    prisma.link.count({ where: { workspaceId } }),
+    prisma.campaign.count({ where: { workspaceId } }),
+    prisma.clientAccess.count({ where: { workspaceId } }),
+    prisma.linkClickEvent.count({ where: { link: { workspaceId } } }),
+    prisma.linkClickEvent.count({ where: { link: { workspaceId }, createdAt: { gte: since } } }),
+    prisma.linkClickEvent.count({ where: { link: { workspaceId }, createdAt: { gte: prevSince, lt: since } } }),
+    prisma.campaign.findMany({
+      where: { workspaceId },
+      select: {
+        id: true,
+        name: true,
+        links: { select: { _count: { select: { clicks: { where: { createdAt: { gte: since } } } } } } },
+      },
+    }),
+    prisma.link.count({
+      where: { workspaceId, isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+    }),
+    prisma.link.count({
+      where: { workspaceId, isActive: false, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+    }),
+    prisma.link.count({ where: { workspaceId, expiresAt: { lte: now } } }),
+    prisma.link.count({
+      where: { workspaceId, isActive: true, expiresAt: { gt: now, lte: sevenDaysFromNow } },
+    }),
+  ]);
+
+  const growthPct =
+    clicksPrevPeriod > 0
+      ? Math.round(((clicksThisPeriod - clicksPrevPeriod) / clicksPrevPeriod) * 100)
+      : clicksThisPeriod > 0
+        ? 100
+        : 0;
+
+  const topCampaigns = campaignsWithClicks
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      count: c.links.reduce((s, l) => s + l._count.clicks, 0),
+    }))
+    .filter((c) => c.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  return {
+    totalLinks,
+    totalCampaigns,
+    totalClients,
+    totalClicksAllTime,
+    clicksThisPeriod,
+    clicksPrevPeriod,
+    growthPct,
+    topCampaigns,
+    activeLinks,
+    inactiveLinks,
+    expiredLinks,
+    expiringSoon,
+  };
+}
+
 export async function getAnalytics(workspaceId: string, days: number = 30, plan: PlanTier = "free") {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const isStarter = plan === "starter" || plan === "pro";
@@ -27,7 +105,7 @@ export async function getAnalytics(workspaceId: string, days: number = 30, plan:
     }),
   ]);
 
-  const [clicksByBrowser, topReferrers, topCountries, topLinks] = await Promise.all([
+  const [clicksByBrowser, clicksByOs, topReferrers, topCountries, topLinks] = await Promise.all([
     isStarter
       ? prisma.linkClickEvent.groupBy({
           by: ["browser"],
@@ -37,6 +115,16 @@ export async function getAnalytics(workspaceId: string, days: number = 30, plan:
           take: 8,
         })
       : Promise.resolve([] as Array<{ browser: string | null; _count: { id: number } }>),
+
+    isStarter
+      ? prisma.linkClickEvent.groupBy({
+          by: ["os"],
+          where: { link: { workspaceId }, createdAt: { gte: since }, os: { not: null } },
+          _count: { id: true },
+          orderBy: { _count: { id: "desc" } },
+          take: 6,
+        })
+      : Promise.resolve([] as Array<{ os: string | null; _count: { id: number } }>),
 
     isStarter
       ? prisma.linkClickEvent.groupBy({
@@ -100,6 +188,7 @@ export async function getAnalytics(workspaceId: string, days: number = 30, plan:
     clicksPerDay: Object.entries(dayMap).map(([date, count]) => ({ date, count })),
     clicksByDevice: clicksByDevice.map((r) => ({ device: r.device, count: r._count.id })),
     clicksByBrowser: clicksByBrowser.map((r) => ({ browser: r.browser ?? "Other", count: r._count.id })),
+    clicksByOs: clicksByOs.map((r) => ({ os: r.os ?? "Other", count: r._count.id })),
     topReferrers: topReferrers.map((r) => ({ referrer: r.referrer ?? "Direct", count: r._count.id })),
     topCountries: topCountries.map((r) => ({ country: r.country ?? "Unknown", count: r._count.id })),
     topLinks: topLinks
