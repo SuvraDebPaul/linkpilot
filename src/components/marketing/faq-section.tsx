@@ -14,7 +14,10 @@ import { faqs } from "@/constants/faqs";
 
 export function FaqSection() {
   return (
-    <section className="relative overflow-hidden bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+    <section
+      id="faq"
+      className="relative scroll-mt-24 overflow-hidden bg-slate-50 px-4 py-20 sm:px-6 lg:px-8"
+    >
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(20,184,166,0.12),transparent_28%),radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.1),transparent_30%)]" />
 
       <div className="mx-auto max-w-7xl">

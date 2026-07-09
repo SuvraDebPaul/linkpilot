@@ -7,6 +7,7 @@ import { Repeat } from "lucide-react";
 import { updateRedirectTypeAction } from "@/features/links/actions/redirect-type.actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import type { PlanTier } from "@/lib/plans";
 
@@ -72,29 +73,29 @@ export function RedirectTypeForm({ linkId, plan, initialType }: Props) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {REDIRECT_OPTIONS.map((opt) => (
-            <label
-              key={opt.value}
-              className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors ${
-                selected === opt.value
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/40"
-              }`}
-            >
-              <input
-                type="radio"
-                name="redirectType"
-                value={opt.value}
-                checked={selected === opt.value}
-                onChange={() => setSelected(opt.value)}
-                className="mt-0.5 accent-primary"
-              />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground">{opt.label}</p>
-                <p className="text-xs text-muted-foreground">{opt.description}</p>
-              </div>
-            </label>
-          ))}
+          <RadioGroup
+            value={selected}
+            onValueChange={(v) => setSelected(v as "301" | "302" | "307")}
+            className="gap-3"
+          >
+            {REDIRECT_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                htmlFor={`redirect-type-${opt.value}`}
+                className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors ${
+                  selected === opt.value
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/40"
+                }`}
+              >
+                <RadioGroupItem value={opt.value} id={`redirect-type-${opt.value}`} className="mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                  <p className="text-xs text-muted-foreground">{opt.description}</p>
+                </div>
+              </label>
+            ))}
+          </RadioGroup>
 
           <Button
             onClick={handleSave}

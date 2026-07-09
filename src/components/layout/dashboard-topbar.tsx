@@ -25,21 +25,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/shared/theme-provider";
+import { getInitials } from "@/lib/initials";
 import { cn } from "@/lib/utils";
 
 const THEME_CYCLE = ["light", "dark", "auto"] as const;
 const THEME_ICON = { light: Sun, dark: Moon, auto: MonitorSmartphone } as const;
-
-function getInitials(name?: string | null, email?: string | null): string {
-  if (name) {
-    const parts = name.trim().split(" ");
-    return parts.length >= 2
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-      : parts[0].slice(0, 2).toUpperCase();
-  }
-  if (email) return email.slice(0, 2).toUpperCase();
-  return "U";
-}
 
 export function DashboardTopbar() {
   const router = useRouter();

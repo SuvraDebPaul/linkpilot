@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CopyButton } from "@/components/shared/copy-button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { LinkStatusBadge, isLinkExpired } from "@/components/shared/link-status-badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,15 +40,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-
-function faviconUrl(originalUrl: string): string | null {
-  try {
-    const host = new URL(originalUrl).hostname;
-    return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
-  } catch {
-    return null;
-  }
-}
+import { faviconUrl } from "@/lib/favicon";
 
 function domainLabel(originalUrl: string): string {
   try {
@@ -93,7 +86,7 @@ export function LinkEditSidebar({
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [active, setActive] = useState(isActive);
 
-  const isExpired = expiresAt ? expiresAt < new Date() : false;
+  const isExpired = isLinkExpired(expiresAt);
   const favicon = faviconUrl(originalUrl);
   const domain = domainLabel(originalUrl);
 
@@ -172,13 +165,7 @@ export function LinkEditSidebar({
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            {isExpired ? (
-              <Badge variant="secondary" className="bg-destructive/10 text-destructive">Expired</Badge>
-            ) : active ? (
-              <Badge variant="secondary" className="bg-primary/10 text-primary">Active</Badge>
-            ) : (
-              <Badge variant="secondary">Inactive</Badge>
-            )}
+            <LinkStatusBadge isActive={active} expiresAt={expiresAt} />
             {isPasswordProtected && (
               <Badge variant="secondary" className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400">
                 <Lock className="mr-1 h-3 w-3" /> Password

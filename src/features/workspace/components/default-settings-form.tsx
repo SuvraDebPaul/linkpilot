@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { updateWorkspaceDefaultsAction } from "@/features/workspace/actions/workspace.actions";
 
 type SlugStyle = "incremental" | "random" | "secure";
@@ -57,48 +58,46 @@ export function DefaultSettingsForm({
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">Slug generator rule</p>
         <p className="text-xs text-muted-foreground">Examples: linkpilot.com/fipBMz</p>
-        <div className="space-y-1.5 pt-1">
+        <RadioGroup
+          value={slugStyle}
+          onValueChange={(v) => setSlugStyle(v as SlugStyle)}
+          className="gap-1.5 pt-1"
+        >
           {SLUG_OPTIONS.map((opt) => (
             <label
               key={opt.value}
+              htmlFor={`slug-${opt.value}`}
               className="flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50"
             >
-              <input
-                type="radio"
-                name="slugStyle"
-                checked={slugStyle === opt.value}
-                onChange={() => setSlugStyle(opt.value)}
-                className="mt-0.5 h-4 w-4 accent-primary"
-              />
+              <RadioGroupItem value={opt.value} id={`slug-${opt.value}`} className="mt-0.5" />
               <span>
                 <span className="block text-sm font-medium text-foreground">{opt.label}</span>
                 <span className="block text-xs text-muted-foreground">{opt.sub}</span>
               </span>
             </label>
           ))}
-        </div>
+        </RadioGroup>
       </div>
 
       {/* Redirect rule */}
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">Redirect rule</p>
-        <div className="space-y-1.5 pt-1">
+        <RadioGroup
+          value={redirectType}
+          onValueChange={(v) => setRedirectType(v as RedirectType)}
+          className="gap-1.5 pt-1"
+        >
           {REDIRECT_OPTIONS.map((opt) => (
             <label
               key={opt.value}
+              htmlFor={`redirect-${opt.value}`}
               className="flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50"
             >
-              <input
-                type="radio"
-                name="redirectType"
-                checked={redirectType === opt.value}
-                onChange={() => setRedirectType(opt.value)}
-                className="mt-0.5 h-4 w-4 accent-primary"
-              />
+              <RadioGroupItem value={opt.value} id={`redirect-${opt.value}`} className="mt-0.5" />
               <span className="text-sm text-foreground">{opt.label}</span>
             </label>
           ))}
-        </div>
+        </RadioGroup>
       </div>
 
       {/* Cloaking */}

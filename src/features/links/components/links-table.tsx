@@ -40,8 +40,8 @@ import {
 } from "@/features/links/actions/link.actions";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { LinkStatusBadge } from "@/components/shared/link-status-badge";
 import { getShortUrl } from "@/lib/short-url";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,6 +54,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { faviconUrl } from "@/lib/favicon";
 
 type LinkRow = {
   id: string;
@@ -83,15 +84,6 @@ const STATUS_TABS: { value: StatusFilter; label: string }[] = [
   { value: "expired", label: "Expired" },
   { value: "favorites", label: "Favorites" },
 ];
-
-function faviconUrl(originalUrl: string): string | null {
-  try {
-    const host = new URL(originalUrl).hostname;
-    return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
-  } catch {
-    return null;
-  }
-}
 
 export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
   const router = useRouter();
@@ -607,9 +599,6 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                 const isFavorite =
                   optimisticFavorite[link.id] ?? link.isFavorite;
                 const shortUrl = getShortUrl(link.shortCode, link.customDomain);
-                const isExpired = link.expiresAt
-                  ? link.expiresAt < new Date()
-                  : false;
                 const isSelected = selected.has(link.id);
                 const favicon = faviconUrl(link.originalUrl);
 
@@ -758,23 +747,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
 
                     {/* Status */}
                     <td className="hidden px-4 py-3 md:table-cell align-top">
-                      {isExpired ? (
-                        <Badge
-                          variant="secondary"
-                          className="bg-destructive/10 text-destructive"
-                        >
-                          Expired
-                        </Badge>
-                      ) : isActive ? (
-                        <Badge
-                          variant="secondary"
-                          className="bg-primary/10 text-primary"
-                        >
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Inactive</Badge>
-                      )}
+                      <LinkStatusBadge isActive={isActive} expiresAt={link.expiresAt} />
                     </td>
 
                     {/* ── Action icons ── */}

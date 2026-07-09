@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { getInitials } from "@/lib/initials";
 import {
   changeMemberRoleAction,
   removeMemberAction,
@@ -89,7 +90,7 @@ export function MembersTable({
                 <img src={m.user.image} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
               ) : (
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                  {(m.user.name ?? m.user.email ?? "?")[0].toUpperCase()}
+                  {getInitials(m.user.name, m.user.email)}
                 </div>
               )}
               <div className="min-w-0">

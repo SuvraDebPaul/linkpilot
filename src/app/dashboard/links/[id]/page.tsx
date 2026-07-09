@@ -55,7 +55,6 @@ export default async function LinkDetailPage({
   if (!link) notFound();
 
   const shortUrl  = getShortUrl(link.shortCode, link.customDomain);
-  const isExpired = link.expiresAt ? link.expiresAt < new Date() : false;
   const qrDataUrl = await generateQrCodeDataUrl(shortUrl, {
     fg:      link.qrFgColor,
     bg:      link.qrBgColor,

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { getInitials } from "@/lib/initials";
 import { deleteClientAccessAction } from "@/features/clients/actions/client-access.actions";
 
 type ClientAccess = {
@@ -29,13 +30,6 @@ const AVATAR_ACCENTS = [
   "bg-rose-500/10 text-rose-600",
   "bg-emerald-500/10 text-emerald-600",
 ];
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 export function ClientList({ items }: Props) {
   const router = useRouter();
@@ -76,7 +70,7 @@ export function ClientList({ items }: Props) {
             <div
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${accent}`}
             >
-              {initials(label)}
+              {getInitials(label)}
             </div>
 
             <div className="min-w-0 flex-1">
