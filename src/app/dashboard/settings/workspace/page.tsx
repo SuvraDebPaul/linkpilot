@@ -6,6 +6,7 @@ import { Building2, Palette, Users } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { getUserWorkspaces, getWorkspaceWithMembers, getPendingInvites } from "@/server/queries/workspace.queries";
 import { getUserPlan } from "@/lib/subscription";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 import { RenameWorkspaceForm } from "@/features/workspace/components/rename-workspace-form";
@@ -41,8 +42,10 @@ export default async function WorkspaceSettingsPage() {
   const isPaidPlan = plan === "starter" || plan === "pro";
   const isOwnerOrAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
 
+  const memberSince = workspace.createdAt.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       <PageHeader title="Organization" description="Manage your workspace, branding, and team members." />
 
       {/* Workspace name + Branding — side by side when both apply */}
@@ -51,10 +54,28 @@ export default async function WorkspaceSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Building2 className="h-4 w-4 text-primary" /> Workspace name
+                <Building2 className="h-4 w-4 text-primary" /> Workspace details
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 font-semibold capitalize",
+                    plan === "pro" && "bg-primary/10 text-primary",
+                    plan === "starter" && "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
+                    plan === "free" && "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {plan} plan
+                </span>
+                <span>·</span>
+                <span>
+                  {workspace.members.length} member{workspace.members.length !== 1 ? "s" : ""}
+                </span>
+                <span>·</span>
+                <span>Created {memberSince}</span>
+              </div>
               <RenameWorkspaceForm workspaceId={workspace.id} currentName={workspace.name} />
             </CardContent>
           </Card>

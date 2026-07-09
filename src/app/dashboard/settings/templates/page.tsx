@@ -24,18 +24,18 @@ export default async function TemplatesPage() {
   ]);
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-6xl space-y-6">
       <PageHeader
         title="Templates"
         description="Reusable geo-targeting rule sets and UTM campaign tags for building your links."
       />
 
       <Tabs defaultValue="geo">
-        <TabsList>
-          <TabsTrigger value="geo" className="gap-1.5">
+        <TabsList className="h-10 p-1">
+          <TabsTrigger value="geo" className="h-8 gap-1.5 px-4">
             <Globe className="h-3.5 w-3.5" /> Geo templates
           </TabsTrigger>
-          <TabsTrigger value="campaign" className="gap-1.5">
+          <TabsTrigger value="campaign" className="h-8 gap-1.5 px-4">
             <Megaphone className="h-3.5 w-3.5" /> Campaign templates
           </TabsTrigger>
         </TabsList>

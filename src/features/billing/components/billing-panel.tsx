@@ -24,36 +24,45 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-const PLAN_FEATURES: Record<string, string[]> = {
+type PlanFeature = { text: string; highlight?: boolean };
+
+const PLAN_FEATURES: Record<string, PlanFeature[]> = {
+  free: [
+    { text: "Up to 50 managed links", highlight: true },
+    { text: "Up to 2 campaigns", highlight: true },
+    { text: "Basic click analytics" },
+    { text: "QR code per link" },
+    { text: "1 workspace" },
+  ],
   starter: [
-    "Up to 500 managed links",
-    "Up to 100 campaigns",
-    "All analytics (devices, referrers, countries)",
-    "QR code per link",
-    "Password-protected links",
-    "Custom slugs",
-    "1 custom branded domain",
-    "White-label campaign reports",
-    "3 client portals",
-    "Scheduled report emails",
-    "Max-click limits on links",
+    { text: "Up to 500 managed links", highlight: true },
+    { text: "Up to 100 campaigns", highlight: true },
+    { text: "All analytics (devices, referrers, countries)", highlight: true },
+    { text: "QR code per link" },
+    { text: "Password-protected links" },
+    { text: "Custom slugs" },
+    { text: "1 custom branded domain" },
+    { text: "White-label campaign reports" },
+    { text: "3 client portals" },
+    { text: "Scheduled report emails" },
+    { text: "Max-click limits on links" },
   ],
   pro: [
-    "Unlimited links & campaigns",
-    "Advanced analytics",
-    "Campaign reports + PDF",
-    "Shareable public reports",
-    "Team workspaces",
-    "Unlimited branded domains",
-    "Unlimited client portals",
-    "Priority support",
+    { text: "Unlimited links & campaigns", highlight: true },
+    { text: "Advanced analytics", highlight: true },
+    { text: "Team workspaces", highlight: true },
+    { text: "Campaign reports + PDF" },
+    { text: "Shareable public reports" },
+    { text: "Unlimited branded domains" },
+    { text: "Unlimited client portals" },
+    { text: "Priority support" },
   ],
   lifetime: [
-    "Everything in Pro — forever",
-    "No subscription, one-time payment",
-    "All future Pro features included",
-    "Branded domains",
-    "Team workspaces",
+    { text: "Everything in Pro — forever" },
+    { text: "No subscription, one-time payment" },
+    { text: "All future Pro features included" },
+    { text: "Branded domains" },
+    { text: "Team workspaces" },
   ],
 };
 
@@ -165,7 +174,7 @@ export function BillingPanel({
         </div>
 
         {currentPlan === "free" && (
-          <div className="grid gap-3 pt-1 sm:grid-cols-2">
+          <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
             <UsageMeter label="Links created" used={linksCreated} limit={FREE_LIMITS.links} />
             <UsageMeter
               label="Campaigns created"
@@ -203,30 +212,39 @@ export function BillingPanel({
             </button>
             <button
               onClick={() => setCycle("yearly")}
-              className={`relative rounded-lg px-4 py-2 text-sm font-medium transition ${
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${
                 cycle === "yearly"
                   ? "bg-foreground text-background"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
               Yearly
-              <span className="absolute -right-3 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  cycle === "yearly"
+                    ? "bg-background/20 text-background"
+                    : "bg-primary/10 text-primary"
+                }`}
+              >
                 -20%
               </span>
             </button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            {(["starter", "pro"] as const).map((tier) => {
-              const option = PRICING[tier][cycle];
-              const isCurrentPlan =
-                currentPlan === tier;
+          <div className="grid items-start gap-4 sm:grid-cols-3">
+            {(["free", "starter", "pro"] as const).map((tier) => {
+              const option = tier === "free" ? null : PRICING[tier][cycle];
+              const isCurrentPlan = currentPlan === tier;
               const isFeatured = tier === "pro";
 
               return (
                 <Card
                   key={tier}
-                  className={isFeatured ? "border-primary/40 shadow-lg shadow-primary/5" : ""}
+                  className={`flex h-full flex-col ${
+                    isFeatured
+                      ? "border-primary/50 bg-gradient-to-b from-primary/[0.06] to-transparent shadow-lg shadow-primary/10 sm:scale-[1.03]"
+                      : ""
+                  }`}
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -235,42 +253,55 @@ export function BillingPanel({
                         <Badge className="bg-primary/10 text-primary">Current</Badge>
                       )}
                       {isFeatured && !isCurrentPlan && (
-                        <Badge variant="secondary">Most popular</Badge>
+                        <Badge className="bg-primary text-primary-foreground">Most popular</Badge>
                       )}
                     </div>
                     <CardDescription>
-                      <span className="text-3xl font-bold text-foreground">${option.price}</span>
+                      <span className="text-3xl font-bold text-foreground">
+                        ${option ? option.price : 0}
+                      </span>
                       <span className="text-muted-foreground">
                         {" "}
                         / {cycle === "monthly" ? "mo" : "yr"}
                       </span>
-                      {option.saving && (
+                      {option?.saving && (
                         <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                           {option.saving}
                         </span>
                       )}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <ul className="space-y-2">
+                  <CardContent className="flex flex-1 flex-col gap-4">
+                    <ul className="flex-1 space-y-2">
                       {PLAN_FEATURES[tier]?.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-sm text-foreground">
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                          {f}
+                        <li
+                          key={f.text}
+                          className={`flex items-start gap-2 text-sm ${
+                            f.highlight ? "font-semibold text-foreground" : "text-foreground"
+                          }`}
+                        >
+                          <CheckCircle2
+                            className={`mt-0.5 h-4 w-4 shrink-0 ${
+                              f.highlight ? "text-primary" : "text-primary/60"
+                            }`}
+                          />
+                          {f.text}
                         </li>
                       ))}
                     </ul>
                     <Button
-                      className="w-full"
+                      className="mt-auto w-full"
                       variant={isFeatured ? "default" : "outline"}
-                      disabled={isCurrentPlan || !!loadingPlan}
-                      onClick={() => handleUpgrade(option.key)}
+                      disabled={isCurrentPlan || !!loadingPlan || !option}
+                      onClick={() => option && handleUpgrade(option.key)}
                     >
                       {isCurrentPlan
                         ? "Current plan"
-                        : loadingPlan === option.key
-                          ? "Redirecting…"
-                          : `Upgrade to ${tier.charAt(0).toUpperCase() + tier.slice(1)}`}
+                        : !option
+                          ? "Free plan"
+                          : loadingPlan === option.key
+                            ? "Redirecting…"
+                            : `Upgrade to ${tier.charAt(0).toUpperCase() + tier.slice(1)}`}
                     </Button>
                   </CardContent>
                 </Card>
@@ -292,9 +323,9 @@ export function BillingPanel({
                   </p>
                   <ul className="mt-2 grid gap-1 sm:grid-cols-2">
                     {PLAN_FEATURES.lifetime?.map((f) => (
-                      <li key={f} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <li key={f.text} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <InfinityIcon className="h-3 w-3 shrink-0 text-amber-500" />
-                        {f}
+                        {f.text}
                       </li>
                     ))}
                   </ul>

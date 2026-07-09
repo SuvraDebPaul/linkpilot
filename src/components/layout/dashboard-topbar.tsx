@@ -13,6 +13,13 @@ import {
   Sun,
   Moon,
   MonitorSmartphone,
+  Mail,
+  Globe,
+  Users,
+  Gauge,
+  UserPlus,
+  Link2,
+  CheckCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -27,11 +34,21 @@ import {
 import { useTheme } from "@/components/shared/theme-provider";
 import { getInitials } from "@/lib/initials";
 import { cn } from "@/lib/utils";
+import type { ActionItem } from "@/server/queries/notifications.queries";
 
 const THEME_CYCLE = ["light", "dark", "auto"] as const;
 const THEME_ICON = { light: Sun, dark: Moon, auto: MonitorSmartphone } as const;
 
-export function DashboardTopbar() {
+const ACTION_ICON = {
+  mail: Mail,
+  globe: Globe,
+  users: Users,
+  gauge: Gauge,
+  "user-plus": UserPlus,
+  link: Link2,
+} as const;
+
+export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem[] }) {
   const router = useRouter();
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
@@ -101,13 +118,65 @@ export function DashboardTopbar() {
       {/* Right actions */}
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
         {/* Notification bell */}
-        <button
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          title="Notifications"
-        >
-          <Bell className="h-[18px] w-[18px]" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              title="Notifications"
+            >
+              <Bell className="h-[18px] w-[18px]" />
+              {actionItems.length > 0 && (
+                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <div className="flex items-center justify-between px-2 py-1.5">
+              <p className="text-sm font-semibold text-foreground">Notifications</p>
+              {actionItems.length > 0 && (
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  {actionItems.length}
+                </span>
+              )}
+            </div>
+            <DropdownMenuSeparator />
+            {actionItems.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+                <CheckCheck className="h-5 w-5 text-muted-foreground" />
+                <p className="text-sm font-medium text-foreground">You&apos;re all caught up</p>
+                <p className="text-xs text-muted-foreground">No action items right now.</p>
+              </div>
+            ) : (
+              <div className="max-h-96 overflow-y-auto">
+                {actionItems.map((item) => {
+                  const Icon = ACTION_ICON[item.icon];
+                  return (
+                    <DropdownMenuItem key={item.id} asChild className="cursor-pointer">
+                      <Link href={item.href} className="items-start gap-2.5 py-2.5">
+                        <span
+                          className={cn(
+                            "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                            item.severity === "warning"
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
+                              : "bg-primary/10 text-primary",
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">{item.title}</p>
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                            {item.description}
+                          </p>
+                        </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </div>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Quick theme toggle — cycles light → dark → auto */}
         <button

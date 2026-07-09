@@ -50,11 +50,8 @@ model User {
   monthlyReportEnabled Boolean @default(false)
 
   // Security
-  twoFactorEnabled     Boolean  @default(false)
-  twoFactorSecret      String?
-  twoFactorBackupCodes String[] @default([])
-  sessionVersion       Int      @default(0) // bumped to invalidate all existing JWTs
-  loginEvents          LoginEvent[]
+  sessionVersion Int @default(0) // bumped to invalidate all existing JWTs
+  loginEvents    LoginEvent[]
 
   // Onboarding email sequence tracking
   onboardingDay1SentAt DateTime?
