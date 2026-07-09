@@ -5,7 +5,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/server/db/prisma";
-import { verifyTotp } from "@/lib/totp";
 
 function getRequestMeta(req?: { headers?: Record<string, string> }) {
   const headers = req?.headers ?? {};
@@ -43,38 +42,19 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-        otp: { label: "Two-factor code", type: "text" },
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email.toLowerCase().trim() },
-          select: {
-            id: true, name: true, email: true, image: true, password: true,
-            twoFactorEnabled: true, twoFactorSecret: true, twoFactorBackupCodes: true,
-          },
+          select: { id: true, name: true, email: true, image: true, password: true },
         });
 
         if (!user?.password) return null;
 
         const passwordMatch = await bcrypt.compare(credentials.password, user.password);
         if (!passwordMatch) return null;
-
-        if (user.twoFactorEnabled && user.twoFactorSecret) {
-          const otp = credentials.otp?.trim();
-          if (!otp) throw new Error("2FA_REQUIRED");
-
-          const validTotp = verifyTotp(user.twoFactorSecret, otp);
-          const backupIndex = user.twoFactorBackupCodes.indexOf(otp.toUpperCase());
-
-          if (!validTotp && backupIndex === -1) throw new Error("2FA_INVALID");
-
-          if (!validTotp && backupIndex !== -1) {
-            const remaining = user.twoFactorBackupCodes.filter((_, i) => i !== backupIndex);
-            await prisma.user.update({ where: { id: user.id }, data: { twoFactorBackupCodes: remaining } });
-          }
-        }
 
         const { ip, browser } = getRequestMeta(req as { headers?: Record<string, string> } | undefined);
         await prisma.loginEvent.create({

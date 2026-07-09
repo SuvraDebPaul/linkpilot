@@ -81,7 +81,7 @@ export function CampaignTemplatesPanel({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -102,7 +102,7 @@ export function CampaignTemplatesPanel({
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             {FIELDS.map((f) => (
               <div key={f.key} className="space-y-1.5">
                 <Label className="text-xs">{f.label}</Label>
@@ -123,9 +123,9 @@ export function CampaignTemplatesPanel({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="lg:sticky lg:top-6">
         <CardHeader>
-          <CardTitle className="text-base">Templates</CardTitle>
+          <CardTitle className="text-base">Saved templates</CardTitle>
         </CardHeader>
         <CardContent>
           {templates.length === 0 ? (

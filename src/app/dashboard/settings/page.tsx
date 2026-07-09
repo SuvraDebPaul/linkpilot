@@ -16,7 +16,6 @@ import { SignInMethods } from "@/features/settings/components/sign-in-methods";
 import { DangerZone } from "@/features/settings/components/danger-zone";
 import { ThemeSwitcher } from "@/features/settings/components/theme-switcher";
 import { MonthlyReportToggle } from "@/features/settings/components/monthly-report-toggle";
-import { TwoFactorSettings } from "@/features/settings/components/two-factor-settings";
 import { RevokeSessionsButton } from "@/features/settings/components/revoke-sessions-button";
 import { LoginActivityTable } from "@/features/settings/components/login-activity-table";
 import { cn } from "@/lib/utils";
@@ -32,7 +31,7 @@ export default async function SettingsPage() {
       where: { id: session.user.id },
       select: {
         name: true, email: true, password: true, image: true, createdAt: true, emailVerified: true,
-        monthlyReportEnabled: true, twoFactorEnabled: true,
+        monthlyReportEnabled: true,
       },
     }),
     getRecentLoginEvents(session.user.id),
@@ -102,12 +101,10 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Security</CardTitle>
-          <CardDescription>Two-factor authentication, sessions, and recent sign-in activity.</CardDescription>
+          <CardDescription>Sessions and recent sign-in activity.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <TwoFactorSettings initialEnabled={user.twoFactorEnabled} />
-
-          <div className="flex items-center justify-between gap-4 border-t border-border pt-5">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-foreground">Active sessions</p>
               <p className="mt-0.5 text-xs text-muted-foreground">

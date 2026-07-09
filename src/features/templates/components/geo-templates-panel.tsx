@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Globe, Trash2, Loader2 } from "lucide-react";
+import { Plus, X, Globe, Trash2, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,7 +95,7 @@ export function GeoTemplatesPanel({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -142,53 +142,58 @@ export function GeoTemplatesPanel({
             </div>
           )}
 
-          <div className="space-y-3 rounded-lg border border-dashed border-border p-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Add country rule</p>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Country</Label>
-              <Input
-                placeholder="Search country…"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCountry("");
-                }}
-                className="text-sm"
-              />
-              {search && (
-                <div className="max-h-40 overflow-y-auto rounded-md border border-border bg-card shadow-sm">
-                  {filtered.length === 0 ? (
-                    <p className="px-3 py-2 text-xs text-muted-foreground">No matches</p>
-                  ) : (
-                    filtered.slice(0, 20).map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        disabled={usedCodes.has(c.code)}
-                        onClick={() => {
-                          setCountry(c.code);
-                          setSearch(`${c.flag} ${c.name}`);
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <span>{c.flag}</span>
-                        <span className="text-foreground">{c.name}</span>
-                        <span className="ml-auto text-xs text-muted-foreground">{c.code}</span>
-                      </button>
-                    ))
-                  )}
+          <div className="space-y-3 border-t border-border pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Add country rule</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Country</Label>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search country…"
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setCountry("");
+                    }}
+                    className="pl-8 text-sm"
+                  />
                 </div>
-              )}
-            </div>
+                {search && (
+                  <div className="max-h-40 overflow-y-auto rounded-md border border-border bg-card shadow-sm">
+                    {filtered.length === 0 ? (
+                      <p className="px-3 py-2 text-xs text-muted-foreground">No matches</p>
+                    ) : (
+                      filtered.slice(0, 20).map((c) => (
+                        <button
+                          key={c.code}
+                          type="button"
+                          disabled={usedCodes.has(c.code)}
+                          onClick={() => {
+                            setCountry(c.code);
+                            setSearch(`${c.flag} ${c.name}`);
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <span>{c.flag}</span>
+                          <span className="text-foreground">{c.name}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{c.code}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs">Destination URL</Label>
-              <Input
-                placeholder="https://example.com/en-us"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="text-sm"
-              />
+              <div className="space-y-1.5">
+                <Label className="text-xs">Destination URL</Label>
+                <Input
+                  placeholder="https://example.com/en-us"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
             </div>
 
             <Button
@@ -210,9 +215,9 @@ export function GeoTemplatesPanel({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="lg:sticky lg:top-6">
         <CardHeader>
-          <CardTitle className="text-base">Templates</CardTitle>
+          <CardTitle className="text-base">Saved templates</CardTitle>
         </CardHeader>
         <CardContent>
           {templates.length === 0 ? (
