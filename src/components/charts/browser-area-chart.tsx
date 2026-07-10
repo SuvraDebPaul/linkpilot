@@ -70,7 +70,7 @@ export function BrowserAreaChart({ data, total }: { data: DataPoint[]; total: nu
             x1={PAD_X} x2={W - PAD_X}
             y1={PAD_TOP + H * (1 - v)} y2={PAD_TOP + H * (1 - v)}
             strokeDasharray="4 4" strokeWidth={1}
-            style={{ stroke: "hsl(var(--border))" }}
+            style={{ stroke: "var(--border)" }}
           />
         ))}
 
@@ -114,7 +114,7 @@ export function BrowserAreaChart({ data, total }: { data: DataPoint[]; total: nu
               onMouseLeave={() => setTooltip(null)}
             />
             {/* Browser label */}
-            <text x={p.x} y={BASE_Y + 18} textAnchor="middle" fontSize={9.5} style={{ fill: "hsl(var(--foreground))", fontWeight: 500 }}>
+            <text x={p.x} y={BASE_Y + 18} textAnchor="middle" fontSize={9.5} style={{ fill: "var(--foreground)", fontWeight: 500 }}>
               {p.name}
             </text>
           </g>

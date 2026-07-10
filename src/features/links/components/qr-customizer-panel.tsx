@@ -48,7 +48,6 @@ interface Props {
   savedEcLevel?: string;
   savedMargin?: number;
   savedLogoUrl?: string;
-  brandColor?: string | null;
   brandLogoUrl?: string | null;
   verifiedDomains?: VerifiedDomain[];
   initialCustomDomainId?: string | null;
@@ -102,14 +101,14 @@ async function drawQr(
 export function QrCustomizerPanel({
   shortCode, linkId,
   savedFgColor, savedBgColor, savedEcLevel, savedMargin, savedLogoUrl,
-  brandColor, brandLogoUrl,
+  brandLogoUrl,
   verifiedDomains = [],
   initialCustomDomainId,
 }: Props) {
   const router = useRouter();
   const previewRef = useRef<HTMLCanvasElement>(null);
 
-  const initFg = savedFgColor ?? (brandColor && HEX_RE.test(brandColor) ? brandColor : "#000000");
+  const initFg = savedFgColor ?? "#000000";
   const initBg = savedBgColor ?? "#ffffff";
   const initLogoUrl = savedLogoUrl ?? brandLogoUrl ?? "";
 

@@ -8,6 +8,7 @@ import { prisma } from "@/server/db/prisma";
 import { getUserPlan, canCreateLink, PLAN_LIMITS, getUserUsage } from "@/lib/subscription";
 import { checkAuthLinkRateLimit } from "@/lib/rate-limit";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
+import { isDemoAccount, DEMO_SAFE_URL } from "@/server/services/demo-guard.service";
 import { createLinkSchema, updateLinkSchema } from "@/features/links/schemas/link.schema";
 import {
   createLinkService,
@@ -118,7 +119,11 @@ export async function createLinkAction(input: unknown): Promise<ActionResult> {
     const newUsedCount = plan === "free" ? updatedUser.totalLinksCreated : await prisma.link.count({ where: { userId } });
     const limitRemaining = isFinite(limit) ? limit - newUsedCount : Infinity;
 
-    return { success: true, message: "Link created.", data: { id: link.id, shortCode: link.shortCode, limitRemaining } };
+    const message = (await isDemoAccount(userId))
+      ? `Link created. Demo accounts always redirect to ${DEMO_SAFE_URL} regardless of the URL entered.`
+      : "Link created.";
+
+    return { success: true, message, data: { id: link.id, shortCode: link.shortCode, limitRemaining } };
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : "Failed to create link." };
   }

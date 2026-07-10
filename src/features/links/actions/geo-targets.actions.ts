@@ -5,6 +5,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { getUserPlan } from "@/lib/subscription";
+import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
 
 export type GeoTarget = { country: string; url: string };
 
@@ -40,9 +41,13 @@ export async function updateGeoTargetsAction(
   });
   if (!link) return { error: "Link not found" };
 
+  const safeTargets = await Promise.all(
+    targets.map(async (t) => ({ ...t, url: await enforceDemoRedirect(session.user.id, t.url) })),
+  );
+
   await prisma.link.update({
     where: { id: linkId },
-    data: { geoTargets: targets },
+    data: { geoTargets: safeTargets },
   });
 
   return { success: true };

@@ -8,9 +8,6 @@ import { ArrowLeft } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { getUserPlan } from "@/lib/subscription";
 import { getCampaignById, getCampaignDeviceBreakdown } from "@/server/queries/campaign.queries";
-import { getDemoCampaignDetail, getDemoCampaignDeviceBreakdown } from "@/lib/demo-stats";
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 import { Button } from "@/components/ui/button";
 import { PrintButton } from "@/features/campaigns/components/print-button";
 import { ReportContent } from "@/features/campaigns/components/report-content";
@@ -33,30 +30,18 @@ export default async function CampaignReportPage({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  let campaign: Awaited<ReturnType<typeof getCampaignById>>;
-  let plan: Awaited<ReturnType<typeof getUserPlan>>;
-  let deviceBreakdown: { device: string; count: number }[];
-
   const from = fromStr ? new Date(fromStr) : null;
   const to   = toStr ? new Date(toStr + "T23:59:59") : null;
 
-  if (IS_DEMO) {
-    campaign        = getDemoCampaignDetail(id) as unknown as Awaited<ReturnType<typeof getCampaignById>>;
-    plan            = "pro";
-    deviceBreakdown = getDemoCampaignDeviceBreakdown();
-  } else {
-    const [c, p] = await Promise.all([
-      getCampaignById(id, session.user.id),
-      getUserPlan(session.user.id),
-    ]);
-    campaign = c;
-    plan     = p;
-    if (!campaign) notFound();
-    const linkIds = campaign!.links.map((l) => l.id);
-    const raw     = await getCampaignDeviceBreakdown(linkIds, from, to);
-    deviceBreakdown = raw.map((r) => ({ device: r.device, count: r._count.id }));
-  }
+  const [campaign, plan] = await Promise.all([
+    getCampaignById(id, session.user.id),
+    getUserPlan(session.user.id),
+  ]);
   if (!campaign) notFound();
+
+  const linkIds = campaign.links.map((l) => l.id);
+  const raw = await getCampaignDeviceBreakdown(linkIds, from, to);
+  const deviceBreakdown = raw.map((r) => ({ device: r.device, count: r._count.id }));
 
   const basePath = `/dashboard/campaigns/${id}/report`;
   const isPro    = plan === "pro";

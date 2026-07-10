@@ -15,6 +15,12 @@ import { canCreateWorkspace, PLAN_LIMITS } from "@/lib/plans";
 import { getWorkspaceMember, ACTIVE_WORKSPACE_COOKIE } from "@/server/queries/workspace.queries";
 import { sendWorkspaceInviteEmail, sendVerificationEmail } from "@/lib/email";
 
+// ─── Audit log ────────────────────────────────────────────────────────────
+
+async function logActivity(workspaceId: string, actorUserId: string, message: string) {
+  await prisma.workspaceAuditLog.create({ data: { workspaceId, actorUserId, message } });
+}
+
 // ─── Create / switch workspace ───────────────────────────────────────────────
 
 const createWorkspaceSchema = z.object({
@@ -116,6 +122,12 @@ export async function updateWorkspaceBrandingAction(data: {
     },
   });
 
+  await logActivity(
+    parsed.data.workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} updated the report branding`,
+  );
+
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
 }
@@ -146,6 +158,12 @@ export async function renameWorkspaceAction(formData: FormData) {
     where: { id: parsed.data.workspaceId },
     data: { name: parsed.data.name },
   });
+
+  await logActivity(
+    parsed.data.workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} renamed the workspace to "${parsed.data.name}"`,
+  );
 
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
@@ -200,6 +218,12 @@ export async function inviteMemberAction(formData: FormData) {
   });
 
   await sendWorkspaceInviteEmail(parsed.data.email, workspace.name, token, session.user.name ?? "Someone");
+
+  await logActivity(
+    parsed.data.workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} invited ${parsed.data.email} to the workspace`,
+  );
 
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
@@ -270,6 +294,12 @@ export async function createMemberAccountAction(input: unknown) {
     // Non-critical — the account still works without it
   }
 
+  await logActivity(
+    parsed.data.workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} created a member account for ${parsed.data.name} (${email})`,
+  );
+
   revalidatePath("/dashboard/settings/workspace");
   return { success: true, email };
 }
@@ -283,12 +313,22 @@ export async function changeMemberRoleAction(memberId: string, workspaceId: stri
   const requester = await getWorkspaceMember(session.user.id, workspaceId);
   if (!requester || requester.role !== "OWNER") return { error: "Only owners can change roles" };
 
-  const target = await prisma.workspaceMember.findUnique({ where: { id: memberId } });
+  const target = await prisma.workspaceMember.findUnique({
+    where: { id: memberId },
+    include: { user: { select: { name: true, email: true } } },
+  });
   if (!target || target.workspaceId !== workspaceId) return { error: "Member not found" };
   if (target.userId === session.user.id) return { error: "Cannot change your own role" };
   if (target.role === "OWNER") return { error: "Cannot change owner role" };
 
   await prisma.workspaceMember.update({ where: { id: memberId }, data: { role } });
+
+  await logActivity(
+    workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} changed ${target.user.name ?? target.user.email}'s role to ${role.charAt(0) + role.slice(1).toLowerCase()}`,
+  );
+
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
 }
@@ -312,6 +352,8 @@ export async function removeMemberAction(memberId: string, workspaceId: string) 
   const targetUser = await prisma.user.findUnique({
     where: { id: target.userId },
     select: {
+      name: true,
+      email: true,
       createdAsWorkspaceMember: true,
       _count: { select: { workspaces: true } },
     },
@@ -328,6 +370,12 @@ export async function removeMemberAction(memberId: string, workspaceId: string) 
   } else {
     await prisma.workspaceMember.delete({ where: { id: memberId } });
   }
+
+  await logActivity(
+    workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} removed ${targetUser?.name ?? targetUser?.email ?? "a member"} from the workspace`,
+  );
 
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
@@ -372,6 +420,52 @@ export async function updateWorkspaceDefaultsAction(data: {
   return { success: true };
 }
 
+// ─── QR code defaults (Starter/Pro only) ─────────────────────────────────────
+// Independent of workspace branding (brandColor/brandLogoUrl) — that only
+// themes shared campaign reports, never the QR code itself.
+
+const qrDefaultsSchema = z.object({
+  workspaceId: z.string(),
+  defaultQrFgColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color e.g. #000000"),
+  defaultQrBgColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color e.g. #ffffff"),
+  defaultQrEcLevel: z.enum(["L", "M", "Q", "H"]),
+});
+
+export async function updateQrDefaultsAction(data: {
+  workspaceId: string;
+  defaultQrFgColor: string;
+  defaultQrBgColor: string;
+  defaultQrEcLevel: string;
+}) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const parsed = qrDefaultsSchema.safeParse(data);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+  const member = await getWorkspaceMember(session.user.id, parsed.data.workspaceId);
+  if (!member || (member.role !== "OWNER" && member.role !== "ADMIN")) {
+    return { error: "Insufficient permissions" };
+  }
+
+  const plan = await getUserPlan(session.user.id);
+  if (plan !== "starter" && plan !== "pro") {
+    return { error: "QR code defaults require a Starter or Pro plan" };
+  }
+
+  await prisma.workspace.update({
+    where: { id: parsed.data.workspaceId },
+    data: {
+      defaultQrFgColor: parsed.data.defaultQrFgColor,
+      defaultQrBgColor: parsed.data.defaultQrBgColor,
+      defaultQrEcLevel: parsed.data.defaultQrEcLevel,
+    },
+  });
+
+  revalidatePath("/dashboard/settings/defaults");
+  return { success: true };
+}
+
 // ─── Transfer ownership ──────────────────────────────────────────────────────
 
 export async function transferOwnershipAction(memberId: string, workspaceId: string) {
@@ -381,7 +475,10 @@ export async function transferOwnershipAction(memberId: string, workspaceId: str
   const requester = await getWorkspaceMember(session.user.id, workspaceId);
   if (!requester || requester.role !== "OWNER") return { error: "Only the owner can transfer ownership" };
 
-  const target = await prisma.workspaceMember.findUnique({ where: { id: memberId } });
+  const target = await prisma.workspaceMember.findUnique({
+    where: { id: memberId },
+    include: { user: { select: { name: true, email: true } } },
+  });
   if (!target || target.workspaceId !== workspaceId) return { error: "Member not found" };
   if (target.userId === session.user.id) return { error: "You already own this workspace" };
 
@@ -392,6 +489,12 @@ export async function transferOwnershipAction(memberId: string, workspaceId: str
       data: { role: "ADMIN" },
     }),
   ]);
+
+  await logActivity(
+    workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} transferred ownership to ${target.user.name ?? target.user.email}`,
+  );
 
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
@@ -438,6 +541,12 @@ export async function revokeInviteAction(workspaceId: string, email: string) {
     where: { identifier: `invite:${workspaceId}:${email}` },
   });
 
+  await logActivity(
+    workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} revoked the invite for ${email}`,
+  );
+
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
 }
@@ -455,6 +564,13 @@ export async function leaveWorkspaceAction(workspaceId: string) {
   await prisma.workspaceMember.delete({
     where: { userId_workspaceId: { userId: session.user.id, workspaceId } },
   });
+
+  await logActivity(
+    workspaceId,
+    session.user.id,
+    `${session.user.name ?? session.user.email ?? "Someone"} left the workspace`,
+  );
+
   revalidatePath("/dashboard");
   return { success: true };
 }

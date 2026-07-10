@@ -4,10 +4,7 @@ import Link from "next/link";
 import { ExternalLink, MousePointerClick, Link2, BarChart2, FolderKanban } from "lucide-react";
 
 import { getClientAccessByToken } from "@/server/queries/client-access.queries";
-import { getDemoClientPortal } from "@/lib/demo-stats";
 import { Logo } from "@/components/shared/logo";
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 
 export async function generateMetadata({
   params,
@@ -15,9 +12,7 @@ export async function generateMetadata({
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
   const { token } = await params;
-  const access = IS_DEMO
-    ? getDemoClientPortal(token)
-    : await getClientAccessByToken(token);
+  const access = await getClientAccessByToken(token);
   if (!access) return { title: "Portal not found" };
   return {
     title: `${access.clientName ?? "Your"} campaign portal — ${access.workspace.name}`,
@@ -30,9 +25,7 @@ export default async function ClientPortalPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const access = IS_DEMO
-    ? getDemoClientPortal(token)
-    : await getClientAccessByToken(token);
+  const access = await getClientAccessByToken(token);
   if (!access) notFound();
 
   const { workspace, campaigns, clientName } = access;

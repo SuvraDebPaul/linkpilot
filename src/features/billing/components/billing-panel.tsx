@@ -159,7 +159,7 @@ export function BillingPanel({
                       : "Free"}
               </p>
               {isLifetime && (
-                <Badge className="bg-amber-100 text-amber-800">
+                <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400">
                   <Star className="mr-1 h-3 w-3" />
                   Lifetime
                 </Badge>
@@ -186,12 +186,12 @@ export function BillingPanel({
       </div>
 
       {isLifetime && (
-        <div className="space-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+        <div className="space-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
           <p className="flex items-center gap-1.5 font-semibold">
             <Star className="h-4 w-4 text-amber-500" />
             You have lifetime Pro access
           </p>
-          <p className="text-amber-700">
+          <p className="text-amber-700 dark:text-amber-400/80">
             All Pro features are unlocked forever — no subscription needed.
           </p>
         </div>
@@ -310,13 +310,13 @@ export function BillingPanel({
           </div>
 
           {currentPlan !== "pro" && (
-            <Card className="border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50">
+            <Card className="border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:border-amber-500/20 dark:from-amber-500/10 dark:via-card dark:to-orange-500/10">
               <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Star className="h-4 w-4 text-amber-500" />
                     <p className="font-bold text-foreground">Pro Lifetime Access</p>
-                    <Badge className="bg-amber-100 text-amber-800">One-time</Badge>
+                    <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400">One-time</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Pay once, use forever. All Pro features, all future updates.

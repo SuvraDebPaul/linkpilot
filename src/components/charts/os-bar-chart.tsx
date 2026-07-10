@@ -36,7 +36,7 @@ export function OsBarChart({ data, total }: { data: DataPoint[]; total: number }
             key={v} x1={0} x2={W}
             y1={H * (1 - v)} y2={H * (1 - v)}
             strokeDasharray="4 4" strokeWidth={1}
-            style={{ stroke: "hsl(var(--border))" }}
+            style={{ stroke: "var(--border)" }}
           />
         ))}
 
@@ -67,7 +67,7 @@ export function OsBarChart({ data, total }: { data: DataPoint[]; total: number }
                 : <text x={mid} y={y - 5}  textAnchor="middle" fontSize={10} fontWeight="700" fill={color}>{pct}%</text>
               }
               {/* OS name */}
-              <text x={mid} y={H + 14} textAnchor="middle" fontSize={9.5} style={{ fill: "hsl(var(--muted-foreground))" }}>
+              <text x={mid} y={H + 14} textAnchor="middle" fontSize={9.5} style={{ fill: "var(--muted-foreground)" }}>
                 {row.name}
               </text>
               {/* Invisible hit area over full bar column */}

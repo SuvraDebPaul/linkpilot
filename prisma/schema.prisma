@@ -45,9 +45,17 @@ model User {
   // the member can safely delete the whole account instead of just unlinking it.
   createdAsWorkspaceMember Boolean @default(false)
 
+  // True only for the seeded public-demo account (and its seeded teammates).
+  // Anyone can sign in with these shared credentials, so every redirect
+  // destination they set is forced to a safe fixed URL — see
+  // server/services/demo-guard.service.ts — instead of trusting arbitrary
+  // input, which would otherwise make LinkPilot an open redirector.
+  isDemoAccount Boolean @default(false)
+
   // Preferences
-  theme                String  @default("auto") // "light" | "dark" | "auto"
-  monthlyReportEnabled Boolean @default(false)
+  theme                    String    @default("auto") // "light" | "dark" | "auto"
+  monthlyReportEnabled     Boolean   @default(false)
+  monthlyReportLastSentAt  DateTime?
 
   // Security
   sessionVersion Int @default(0) // bumped to invalidate all existing JWTs
@@ -143,6 +151,13 @@ model Workspace {
   defaultRedirectType    String  @default("302") // "301" | "302" | "307" | "308"
   defaultCloakingEnabled Boolean @default(false)
 
+  // QR code defaults for new links (Starter/Pro only — free links stay
+  // plain black/white). Independent of brandColor/brandLogoUrl above, which
+  // only theme shared campaign reports, never the QR code itself.
+  defaultQrFgColor String @default("#000000")
+  defaultQrBgColor String @default("#ffffff")
+  defaultQrEcLevel String @default("M") // "L" | "M" | "Q" | "H"
+
   members           WorkspaceMember[]
   links             Link[]
   campaigns         Campaign[]
@@ -150,11 +165,29 @@ model Workspace {
   clientAccesses    ClientAccess[]
   geoTemplates      GeoTemplate[]
   campaignTemplates CampaignTemplate[]
+  auditLogs         WorkspaceAuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([slug])
+}
+
+// Human-readable trail of admin actions (role changes, removals, ownership
+// transfers, etc). actorUserId is a plain reference (no FK) so the log
+// entry survives even after the actor's account is later removed.
+model WorkspaceAuditLog {
+  id          String  @id @default(cuid())
+  workspaceId String
+  actorUserId String?
+  message     String
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
+  @@index([createdAt])
 }
 
 // ─── Reusable templates ─────────────────────────────────────────────────────

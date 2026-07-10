@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 
 import { generateShortCode, isReservedSlug, counterToSlug, shortCodeLengthForStyle, type SlugStyle } from "@/lib/slug";
 import { validateSafeUrl } from "@/server/services/url-safety.service";
+import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
 import { prisma } from "@/server/db/prisma";
 import type { CreateLinkInput, UpdateLinkInput } from "@/features/links/schemas/link.schema";
 
@@ -64,11 +65,18 @@ export async function createLinkService(params: {
 
   const workspaceDefaults = await prisma.workspace.findUnique({
     where: { id: workspaceId },
-    select: { slugStyle: true, defaultRedirectType: true, defaultCloakingEnabled: true },
+    select: {
+      slugStyle: true,
+      defaultRedirectType: true,
+      defaultCloakingEnabled: true,
+      defaultQrFgColor: true,
+      defaultQrBgColor: true,
+      defaultQrEcLevel: true,
+    },
   });
   const slugStyle = (workspaceDefaults?.slugStyle ?? "random") as SlugStyle;
 
-  const safeUrl = validateSafeUrl(input.originalUrl);
+  const safeUrl = validateSafeUrl(await enforceDemoRedirect(userId, input.originalUrl));
   const shortCode = await generateUniqueShortCode(workspaceId, slugStyle, input.customSlug || undefined);
 
   const password = input.password?.trim();
@@ -98,9 +106,9 @@ export async function createLinkService(params: {
       tags,
       redirectType: redirectType || workspaceDefaults?.defaultRedirectType || "302",
       isCloaked: workspaceDefaults?.defaultCloakingEnabled ?? false,
-      ...(qrFgColor && { qrFgColor }),
-      ...(qrBgColor && { qrBgColor }),
-      ...(qrEcLevel && { qrEcLevel }),
+      qrFgColor: qrFgColor || workspaceDefaults?.defaultQrFgColor || "#000000",
+      qrBgColor: qrBgColor || workspaceDefaults?.defaultQrBgColor || "#ffffff",
+      qrEcLevel: qrEcLevel || workspaceDefaults?.defaultQrEcLevel || "M",
       ...(qrMargin !== undefined && { qrMargin }),
     },
   });

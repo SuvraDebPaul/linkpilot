@@ -7,6 +7,7 @@ import { prisma } from "@/server/db/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { getUserPlan } from "@/lib/subscription";
 import { PLAN_LIMITS } from "@/lib/plans";
+import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
 
 export type AbVariant = { url: string; weight: number };
 
@@ -53,9 +54,13 @@ export async function updateAbVariantsAction(
   });
   if (!link) return { error: "Link not found" };
 
+  const safeVariants = await Promise.all(
+    variants.map(async (v) => ({ ...v, url: await enforceDemoRedirect(session.user.id, v.url) })),
+  );
+
   await prisma.link.update({
     where: { id: linkId },
-    data: { abVariants: variants.length ? variants : Prisma.DbNull },
+    data: { abVariants: safeVariants.length ? safeVariants : Prisma.DbNull },
   });
 
   return { success: true };

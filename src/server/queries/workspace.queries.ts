@@ -100,6 +100,9 @@ export async function getWorkspaceDefaults(workspaceId: string) {
       slugStyle: true,
       defaultRedirectType: true,
       defaultCloakingEnabled: true,
+      defaultQrFgColor: true,
+      defaultQrBgColor: true,
+      defaultQrEcLevel: true,
     },
   });
 }
@@ -114,4 +117,13 @@ export async function getPendingInvites(workspaceId: string) {
     email: t.identifier.slice(`invite:${workspaceId}:`.length),
     expires: t.expires,
   }));
+}
+
+export async function getWorkspaceAuditLog(workspaceId: string, limit = 20) {
+  return prisma.workspaceAuditLog.findMany({
+    where: { workspaceId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: { id: true, message: true, createdAt: true },
+  });
 }

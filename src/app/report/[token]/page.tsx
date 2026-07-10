@@ -4,10 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 import { getCampaignByShareToken, getCampaignReportData, getCampaignDeviceBreakdown } from "@/server/queries/campaign.queries";
-import { getDemoReportData, getDemoReportDeviceBreakdown } from "@/lib/demo-stats";
 import { ReportContent } from "@/features/campaigns/components/report-content";
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 import { ReportDateFilter } from "@/features/campaigns/components/report-date-filter";
 import { PrintButton } from "@/features/campaigns/components/print-button";
 import { Logo } from "@/components/shared/logo";
@@ -19,9 +16,7 @@ export async function generateMetadata({
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
   const { token } = await params;
-  const campaign = IS_DEMO
-    ? getDemoReportData(token)
-    : await getCampaignByShareToken(token);
+  const campaign = await getCampaignByShareToken(token);
   if (!campaign) return { title: "Report not found" };
   return { title: `${campaign.name} — Campaign Report` };
 }
@@ -39,14 +34,14 @@ export default async function PublicReportPage({
   const from = fromStr ? new Date(fromStr) : null;
   const to = toStr ? new Date(toStr + "T23:59:59") : null;
 
-  const campaign = IS_DEMO
-    ? getDemoReportData(token)
-    : await getCampaignReportData(token, from, to);
+  const campaign = await getCampaignReportData(token, from, to);
   if (!campaign) notFound();
 
-  const deviceBreakdown = IS_DEMO
-    ? getDemoReportDeviceBreakdown()
-    : await getCampaignDeviceBreakdown(campaign.links.map((l: { id: string }) => l.id), from, to);
+  const deviceBreakdown = await getCampaignDeviceBreakdown(
+    campaign.links.map((l: { id: string }) => l.id),
+    from,
+    to,
+  );
 
   const basePath = `/report/${token}`;
   const branding = campaign.workspace;

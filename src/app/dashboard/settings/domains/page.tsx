@@ -2,15 +2,22 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Check, Globe2, Lock, Sparkles } from "lucide-react";
+import { Globe2 } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { getUserPlan } from "@/lib/subscription";
 import { canAddDomain, PLAN_LIMITS } from "@/lib/plans";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 import { CopyButton } from "@/components/shared/copy-button";
+import { LockedFeatureHero } from "@/components/shared/locked-feature-hero";
 import { AddDomainForm } from "@/features/domains/components/add-domain-form";
 import { DomainList } from "@/features/domains/components/domain-list";
 
@@ -35,39 +42,21 @@ export default async function DomainsPage() {
   if (!isPaidPlan) {
     return (
       <div className="max-w-3xl space-y-6">
-        <PageHeader title="Custom Domains" description="Use your own domain for branded short links." />
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-          <div className="relative">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
-              <Lock className="h-5 w-5 text-primary" />
-            </div>
-            <h2 className="mt-4 text-lg font-semibold text-foreground">Custom domains are a Starter feature</h2>
-            <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-              Point your own domain at LinkPilot so every short link is branded to you instead of showing{" "}
-              {APP_DOMAIN}.
-            </p>
-            <ul className="mt-4 space-y-2">
-              {[
-                "1 custom domain on Starter",
-                "Unlimited domains on Pro",
-                "Free automatic SSL",
-                "Simple one-time CNAME setup",
-              ].map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                  <Check className="h-4 w-4 shrink-0 text-primary" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/dashboard/settings/billing"
-              className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              <Sparkles className="h-4 w-4" /> Upgrade to Starter
-            </Link>
-          </div>
-        </div>
+        <PageHeader
+          title="Custom Domains"
+          description="Use your own domain for branded short links."
+        />
+        <LockedFeatureHero
+          title="Custom domains are a Starter feature"
+          description={`Point your own domain at LinkPilot so every short link is branded to you instead of showing ${APP_DOMAIN}.`}
+          features={[
+            "1 custom domain on Starter",
+            "Unlimited domains on Pro",
+            "Free automatic SSL",
+            "Simple one-time CNAME setup",
+          ]}
+          ctaLabel="Upgrade to Starter"
+        />
       </div>
     );
   }
@@ -76,10 +65,13 @@ export default async function DomainsPage() {
   const canAdd = canAddDomain(plan, domains.length);
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <PageHeader title="Custom Domains" description="Use your own domain for branded short links." />
+    <div className="max-w-7xl space-y-6">
+      <PageHeader
+        title="Custom Domains"
+        description="Use your own domain for branded short links."
+      />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Add a domain</CardTitle>
@@ -98,20 +90,32 @@ export default async function DomainsPage() {
                       1
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground">Add a CNAME record</p>
+                      <p className="text-sm font-medium text-foreground">
+                        Add a CNAME record
+                      </p>
                       <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/50 p-3 text-sm font-mono">
                         <div className="min-w-0 truncate">
                           <span className="text-muted-foreground">CNAME </span>
-                          <span className="text-foreground">your-subdomain</span>
+                          <span className="text-foreground">
+                            your-subdomain
+                          </span>
                           <span className="text-muted-foreground"> → </span>
                           <span className="text-primary">{APP_DOMAIN}</span>
                         </div>
-                        <CopyButton value={APP_DOMAIN} size="icon" label="" copiedLabel="" variant="ghost" />
+                        <CopyButton
+                          value={APP_DOMAIN}
+                          size="icon"
+                          label=""
+                          copiedLabel=""
+                          variant="ghost"
+                        />
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        Use a subdomain (e.g. <span className="font-mono">links.yourbrand.com</span>) — CNAME
-                        records can&apos;t be set on a root domain. DNS changes can take up to 30 minutes to
-                        propagate before verification succeeds.
+                        Use a subdomain (e.g.{" "}
+                        <span className="font-mono">links.yourbrand.com</span>)
+                        — CNAME records can&apos;t be set on a root domain. DNS
+                        changes can take up to 30 minutes to propagate before
+                        verification succeeds.
                       </p>
                     </div>
                   </li>
@@ -120,7 +124,9 @@ export default async function DomainsPage() {
                       2
                     </span>
                     <div className="min-w-0 flex-1 space-y-1.5">
-                      <p className="text-sm font-medium text-foreground">Enter your domain and verify</p>
+                      <p className="text-sm font-medium text-foreground">
+                        Enter your domain and verify
+                      </p>
                       <AddDomainForm />
                     </div>
                   </li>
@@ -128,8 +134,12 @@ export default async function DomainsPage() {
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
-                You&apos;ve used your {domainLimit === 1 ? "1 domain" : `${domainLimit} domains`}.{" "}
-                <Link href="/dashboard/settings/billing" className="font-medium text-primary hover:underline">
+                You&apos;ve used your{" "}
+                {domainLimit === 1 ? "1 domain" : `${domainLimit} domains`}.{" "}
+                <Link
+                  href="/dashboard/settings/billing"
+                  className="font-medium text-primary hover:underline"
+                >
                   Upgrade to Pro
                 </Link>{" "}
                 for unlimited custom domains.

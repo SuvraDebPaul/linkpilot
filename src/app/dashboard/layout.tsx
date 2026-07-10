@@ -6,8 +6,6 @@ import { getUserWorkspaces, getActiveWorkspaceId } from "@/server/queries/worksp
 import { getActionItems } from "@/server/queries/notifications.queries";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
-
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
@@ -25,8 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ]);
   const workspaces = memberships.map((m) => ({ id: m.workspace.id, name: m.workspace.name, role: m.role }));
 
-  const actionItems =
-    !IS_DEMO && activeWorkspaceId ? await getActionItems(session.user.id, activeWorkspaceId) : [];
+  const actionItems = activeWorkspaceId ? await getActionItems(session.user.id, activeWorkspaceId) : [];
 
   return (
     <DashboardShell workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} actionItems={actionItems}>

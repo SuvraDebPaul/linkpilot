@@ -27,9 +27,7 @@ export function StatCard({
         : "text-muted-foreground";
 
   const cardClass =
-    variant === "warning"
-      ? "border-amber-200 bg-amber-50/40"
-      : undefined;
+    variant === "warning" ? "border-amber-200 bg-amber-50/40" : undefined;
 
   const content = (
     <Card className={cardClass}>

@@ -18,7 +18,6 @@ const columns = [
       { label: "Free shortener", href: "/" },
       { label: "Features", href: "/features" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Live demo", href: "/demo" },
     ],
   },
   {

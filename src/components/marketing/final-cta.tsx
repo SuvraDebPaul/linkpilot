@@ -25,14 +25,6 @@ export function FinalCta() {
             >
               <Link href="/register">Get started free</Link>
             </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="h-12 border-slate-600 bg-transparent px-8 text-base text-white hover:bg-slate-800"
-            >
-              <Link href="/demo">See example report first</Link>
-            </Button>
           </div>
 
           <p className="mt-5 text-sm text-slate-500">

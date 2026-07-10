@@ -8,9 +8,6 @@ import { authOptions } from "@/lib/auth";
 import { getCampaignsByWorkspace } from "@/server/queries/campaign.queries";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { getUserPlan, getUserUsage, PLAN_LIMITS } from "@/lib/subscription";
-import { getDemoCampaigns } from "@/lib/demo-stats";
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
@@ -32,26 +29,15 @@ export default async function CampaignsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  let campaigns: Awaited<ReturnType<typeof getCampaignsByWorkspace>>;
-  let plan: Awaited<ReturnType<typeof getUserPlan>>;
-  let atLimit = false;
-
-  if (IS_DEMO) {
-    campaigns = getDemoCampaigns() as unknown as Awaited<ReturnType<typeof getCampaignsByWorkspace>>;
-    plan      = "pro";
-  } else {
-    const workspaceId = await ensureWorkspace(session.user.id);
-    const [c, p, usage] = await Promise.all([
-      getCampaignsByWorkspace(workspaceId),
-      getUserPlan(session.user.id),
-      getUserUsage(session.user.id),
-    ]);
-    campaigns = c;
-    plan      = p;
-    const limit   = PLAN_LIMITS[plan].campaigns;
-    const usedCount = plan === "free" ? usage.campaignsCreated : campaigns.length;
-    atLimit = isFinite(limit) && usedCount >= limit;
-  }
+  const workspaceId = await ensureWorkspace(session.user.id);
+  const [campaigns, plan, usage] = await Promise.all([
+    getCampaignsByWorkspace(workspaceId),
+    getUserPlan(session.user.id),
+    getUserUsage(session.user.id),
+  ]);
+  const limit = PLAN_LIMITS[plan].campaigns;
+  const usedCount = plan === "free" ? usage.campaignsCreated : campaigns.length;
+  const atLimit = isFinite(limit) && usedCount >= limit;
 
   const totalLinks = campaigns.reduce((s, c) => s + c._count.links, 0);
 

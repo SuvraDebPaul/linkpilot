@@ -9,7 +9,14 @@ export function Logo() {
         alt="LinkPilot"
         width={200}
         height={100}
-        className="h-10 w-auto"
+        className="h-10 w-auto block dark:hidden"
+      />
+      <Image
+        src={"/logo-dark.png"}
+        alt="LinkPilot"
+        width={200}
+        height={100}
+        className="h-10 w-auto hidden dark:block"
       />
     </Link>
   );
