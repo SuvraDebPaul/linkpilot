@@ -15,9 +15,6 @@ import {
 import { authOptions } from "@/lib/auth";
 import { getCampaignById } from "@/server/queries/campaign.queries";
 import { getUserPlan } from "@/lib/subscription";
-import { getDemoCampaignDetail } from "@/lib/demo-stats";
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,22 +44,10 @@ export default async function CampaignDetailPage({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  let campaign: Awaited<ReturnType<typeof getCampaignById>>;
-  let plan: Awaited<ReturnType<typeof getUserPlan>>;
-
-  if (IS_DEMO) {
-    campaign = getDemoCampaignDetail(id) as unknown as Awaited<
-      ReturnType<typeof getCampaignById>
-    >;
-    plan = "pro";
-  } else {
-    const [c, p] = await Promise.all([
-      getCampaignById(id, session.user.id),
-      getUserPlan(session.user.id),
-    ]);
-    campaign = c;
-    plan = p;
-  }
+  const [campaign, plan] = await Promise.all([
+    getCampaignById(id, session.user.id),
+    getUserPlan(session.user.id),
+  ]);
   if (!campaign) notFound();
 
   const canScheduleEmails = plan === "starter" || plan === "pro";

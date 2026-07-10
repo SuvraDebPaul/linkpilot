@@ -12,7 +12,6 @@ import { getWorkspaceCampaignsForSelect } from "@/server/queries/campaign.querie
 import { getVerifiedDomainsForWorkspace } from "@/server/queries/domain.queries";
 import { prisma } from "@/server/db/prisma";
 import { generateQrCodeDataUrl } from "@/server/services/qr.service";
-import { getDemoLinkDetail, getDemoCampaigns } from "@/lib/demo-stats";
 import { getShortUrl } from "@/lib/short-url";
 
 import { Button } from "@/components/ui/button";
@@ -24,8 +23,6 @@ import type { RetargetingPixel } from "@/features/links/actions/retargeting-pixe
 
 export const metadata: Metadata = { title: "Edit Link" };
 
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
-
 export default async function EditLinkPage({
   params,
 }: {
@@ -35,42 +32,21 @@ export default async function EditLinkPage({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  let link: Awaited<ReturnType<typeof getLinkById>>;
-  let plan: Awaited<ReturnType<typeof getUserPlan>>;
-  let campaigns: Awaited<ReturnType<typeof getWorkspaceCampaignsForSelect>>;
-  let verifiedDomains: Awaited<ReturnType<typeof getVerifiedDomainsForWorkspace>>;
-  let workspace: { brandLogoUrl: string | null; brandColor: string | null } | null;
-
-  if (IS_DEMO) {
-    link            = getDemoLinkDetail(id) as unknown as Awaited<ReturnType<typeof getLinkById>>;
-    plan            = "pro";
-    campaigns       = getDemoCampaigns().map((c) => ({ id: c.id, name: c.name }));
-    verifiedDomains = [{ id: "demo-domain-1", domain: "links.mystore.com" }];
-    workspace       = { brandLogoUrl: null, brandColor: null };
-  } else {
-    const [fetchedLink, fetchedPlan, workspaceId] = await Promise.all([
-      getLinkById(id, session.user.id),
-      getUserPlan(session.user.id),
-      ensureWorkspace(session.user.id),
-    ]);
-    if (!fetchedLink) notFound();
-    link = fetchedLink;
-    plan = fetchedPlan;
-
-    const [fetchedCampaigns, fetchedDomains, fetchedWorkspace] = await Promise.all([
-      getWorkspaceCampaignsForSelect(workspaceId),
-      getVerifiedDomainsForWorkspace(workspaceId),
-      prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        select: { brandLogoUrl: true, brandColor: true },
-      }),
-    ]);
-    campaigns       = fetchedCampaigns;
-    verifiedDomains = fetchedDomains;
-    workspace       = fetchedWorkspace;
-  }
-
+  const [link, plan, workspaceId] = await Promise.all([
+    getLinkById(id, session.user.id),
+    getUserPlan(session.user.id),
+    ensureWorkspace(session.user.id),
+  ]);
   if (!link) notFound();
+
+  const [campaigns, verifiedDomains, workspace] = await Promise.all([
+    getWorkspaceCampaignsForSelect(workspaceId),
+    getVerifiedDomainsForWorkspace(workspaceId),
+    prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { brandLogoUrl: true },
+    }),
+  ]);
 
   const shortUrl  = getShortUrl(link.shortCode, link.customDomain);
   const qrDataUrl = await generateQrCodeDataUrl(shortUrl, {

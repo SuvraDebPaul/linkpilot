@@ -539,9 +539,6 @@ export default function FeaturesPage() {
             <Button asChild size="lg">
               <Link href="/register">Get started free</Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/demo">See example client report</Link>
-            </Button>
           </div>
         </div>
       </section>

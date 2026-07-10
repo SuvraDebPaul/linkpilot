@@ -64,13 +64,6 @@ export function PublicHero() {
             <Button asChild size="lg" className="h-12 px-8 text-base">
               <Link href="/register">Get started free</Link>
             </Button>
-            <Link
-              href="/demo"
-              className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
-            >
-              <FileText className="h-4 w-4" />
-              See example client report
-            </Link>
           </div>
 
           {/* Trust points */}

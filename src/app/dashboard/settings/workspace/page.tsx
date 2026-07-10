@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { Building2, Palette, Users } from "lucide-react";
+import { Building2, Palette, Users, History } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
-import { getUserWorkspaces, getWorkspaceWithMembers, getPendingInvites } from "@/server/queries/workspace.queries";
+import {
+  getUserWorkspaces,
+  getWorkspaceWithMembers,
+  getPendingInvites,
+  getWorkspaceAuditLog,
+} from "@/server/queries/workspace.queries";
 import { getUserPlan } from "@/lib/subscription";
-import { cn } from "@/lib/utils";
+import { PlanBadge } from "@/components/shared/plan-badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 import { RenameWorkspaceForm } from "@/features/workspace/components/rename-workspace-form";
@@ -31,16 +36,18 @@ export default async function WorkspaceSettingsPage() {
   const membership = memberships[0];
   if (!membership) redirect("/dashboard");
 
-  const [workspace, pendingInvites] = await Promise.all([
+  const isOwnerOrAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
+
+  const [workspace, pendingInvites, auditLog] = await Promise.all([
     getWorkspaceWithMembers(membership.workspaceId),
     getPendingInvites(membership.workspaceId),
+    isOwnerOrAdmin ? getWorkspaceAuditLog(membership.workspaceId) : Promise.resolve([]),
   ]);
   if (!workspace) redirect("/dashboard");
 
   const canInvite = plan === "pro" || plan === "starter";
   const isPro = plan === "pro";
   const isPaidPlan = plan === "starter" || plan === "pro";
-  const isOwnerOrAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
 
   const memberSince = workspace.createdAt.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
@@ -59,16 +66,7 @@ export default async function WorkspaceSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 font-semibold capitalize",
-                    plan === "pro" && "bg-primary/10 text-primary",
-                    plan === "starter" && "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
-                    plan === "free" && "bg-muted text-muted-foreground",
-                  )}
-                >
-                  {plan} plan
-                </span>
+                <PlanBadge plan={plan} />
                 <span>·</span>
                 <span>
                   {workspace.members.length} member{workspace.members.length !== 1 ? "s" : ""}
@@ -144,6 +142,39 @@ export default async function WorkspaceSettingsPage() {
           />
         </CardContent>
       </Card>
+
+      {/* Recent activity — audit trail of admin actions, owners/admins only */}
+      {isOwnerOrAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <History className="h-4 w-4 text-primary" /> Recent activity
+            </CardTitle>
+            <CardDescription>Role changes, removals, and other admin actions on this workspace.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {auditLog.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">No activity recorded yet.</p>
+            ) : (
+              <div className="divide-y divide-border">
+                {auditLog.map((entry) => (
+                  <div key={entry.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                    <p className="text-foreground">{entry.message}</p>
+                    <p className="shrink-0 text-xs text-muted-foreground">
+                      {entry.createdAt.toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

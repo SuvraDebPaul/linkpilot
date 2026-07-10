@@ -94,16 +94,10 @@ export function ReportsSection() {
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 bg-slate-50 px-6 py-3 flex items-center justify-between">
+              <div className="border-t border-slate-100 bg-slate-50 px-6 py-3">
                 <p className="text-xs text-slate-400">
                   Shared via public link · No login required
                 </p>
-                <Link
-                  href="/demo"
-                  className="text-xs font-semibold text-primary hover:text-primary hover:underline"
-                >
-                  View live example →
-                </Link>
               </div>
             </div>
           </div>
@@ -134,9 +128,6 @@ export function ReportsSection() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild>
                 <Link href="/register">Start your first campaign</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/demo">See live example report</Link>
               </Button>
             </div>
             <p className="mt-3 text-xs text-slate-400">Shareable reports on Starter and Pro plans</p>

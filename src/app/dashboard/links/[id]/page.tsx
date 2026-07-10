@@ -7,7 +7,6 @@ import { ArrowLeft } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { getLinkById } from "@/server/queries/link.queries";
 import { generateQrCodeDataUrl } from "@/server/services/qr.service";
-import { getDemoLinkDetail, getDemoLinkAnalytics } from "@/lib/demo-stats";
 import { getShortUrl } from "@/lib/short-url";
 import { getLinkAnalytics } from "@/server/queries/link-analytics.queries";
 
@@ -16,8 +15,6 @@ import { LinkDetailSidebar } from "@/features/links/components/link-detail-sideb
 import { LinkDetailTabs } from "@/features/links/components/link-detail-tabs";
 
 export const metadata: Metadata = { title: "Link Details" };
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 
 export default async function LinkDetailPage({
   params,
@@ -28,30 +25,12 @@ export default async function LinkDetailPage({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  let link: Awaited<ReturnType<typeof getLinkById>>;
-  let analytics7:  ReturnType<typeof getDemoLinkAnalytics> | null;
-  let analytics30: ReturnType<typeof getDemoLinkAnalytics> | null;
-  let analytics90: ReturnType<typeof getDemoLinkAnalytics> | null;
-
-  if (IS_DEMO) {
-    link        = getDemoLinkDetail(id) as unknown as Awaited<ReturnType<typeof getLinkById>>;
-    analytics7  = getDemoLinkAnalytics(7);
-    analytics30 = getDemoLinkAnalytics(30);
-    analytics90 = getDemoLinkAnalytics(90);
-  } else {
-    const [fetchedLink, a7, a30, a90] = await Promise.all([
-      getLinkById(id, session.user.id),
-      getLinkAnalytics(id, session.user.id, 7),
-      getLinkAnalytics(id, session.user.id, 30),
-      getLinkAnalytics(id, session.user.id, 90),
-    ]);
-    if (!fetchedLink) notFound();
-    link        = fetchedLink;
-    analytics7  = a7;
-    analytics30 = a30;
-    analytics90 = a90;
-  }
-
+  const [link, analytics7, analytics30, analytics90] = await Promise.all([
+    getLinkById(id, session.user.id),
+    getLinkAnalytics(id, session.user.id, 7),
+    getLinkAnalytics(id, session.user.id, 30),
+    getLinkAnalytics(id, session.user.id, 90),
+  ]);
   if (!link) notFound();
 
   const shortUrl  = getShortUrl(link.shortCode, link.customDomain);

@@ -43,9 +43,9 @@ Redirect behavior has a strict precedence order inside `handleRootRedirect`, and
 
 `src/lib/plans.ts` (`PLAN_LIMITS`, `canCreate*` helpers) defines free/starter/pro limits (links, campaigns, custom domains, client portals, workspaces, etc.). `getUserPlan(userId)` (`src/lib/subscription.ts`) derives the tier from Stripe fields on `User` (`stripePriceId`, `stripeCurrentPeriodEnd`, `lifetimeAccess`) — there is no separate "plan" column. Free-plan usage is tracked via lifetime counters on `User` (`totalLinksCreated`, `totalCampaignsCreated`) since free users could otherwise delete/recreate resources to dodge a live count; paid plans check the live count instead.
 
-### Demo mode
+### Demo data
 
-`NEXT_PUBLIC_DEMO=true` makes every dashboard page branch to hardcoded fixtures in `src/lib/demo-stats.ts` instead of querying the database — used for the public marketing demo. When adding a field to a real query/page, the matching demo fixture usually needs updating too, or the feature silently disappears in demo mode.
+There is no fixture-based demo mode — `prisma/seed.ts` (`npm run seed`) creates a real, fully-populated `demo@linkpilot.com` account (lifetime Pro, multiple workspaces, links, campaigns, domains, clients, click history) backed by the actual database. Safe to re-run; it wipes and recreates its own data each time.
 
 ### Auth (`src/lib/auth.ts`)
 

@@ -6,10 +6,7 @@ import { ArrowLeft, QrCode } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import { getCampaignById } from "@/server/queries/campaign.queries";
-import { getDemoCampaignDetail } from "@/lib/demo-stats";
 import { siteConfig } from "@/config/site";
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 import { Button } from "@/components/ui/button";
 import { CampaignQrGrid } from "@/features/campaigns/components/campaign-qr-grid";
 
@@ -24,11 +21,7 @@ export default async function CampaignQrAssetsPage({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const campaign = IS_DEMO
-    ? (getDemoCampaignDetail(id) as unknown as Awaited<
-        ReturnType<typeof getCampaignById>
-      >)
-    : await getCampaignById(id, session.user.id);
+  const campaign = await getCampaignById(id, session.user.id);
   if (!campaign) notFound();
 
   const links = campaign.links.map((link) => ({

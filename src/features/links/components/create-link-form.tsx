@@ -63,9 +63,19 @@ type Props = {
   plan: PlanTier;
   campaigns: Campaign[];
   verifiedDomains: VerifiedDomain[];
+  defaultQrFgColor?: string;
+  defaultQrBgColor?: string;
+  defaultQrEcLevel?: EcLevel;
 };
 
-export function CreateLinkForm({ plan, campaigns, verifiedDomains }: Props) {
+export function CreateLinkForm({
+  plan,
+  campaigns,
+  verifiedDomains,
+  defaultQrFgColor = "#000000",
+  defaultQrBgColor = "#ffffff",
+  defaultQrEcLevel = "M",
+}: Props) {
   const isPaidPlan = plan === "starter" || plan === "pro";
 
   const router = useRouter();
@@ -81,9 +91,9 @@ export function CreateLinkForm({ plan, campaigns, verifiedDomains }: Props) {
   const [utm, setUtm] = useState({ source: "", medium: "", campaign: "", term: "", content: "" });
 
   const [redirectType, setRedirectType] = useState<RedirectType>("302");
-  const [fgColor, setFgColor] = useState("#0d9488");
-  const [bgColor, setBgColor] = useState("#ffffff");
-  const [ecLevel, setEcLevel] = useState<EcLevel>("M");
+  const [fgColor, setFgColor] = useState(defaultQrFgColor);
+  const [bgColor, setBgColor] = useState(defaultQrBgColor);
+  const [ecLevel, setEcLevel] = useState<EcLevel>(defaultQrEcLevel);
 
   const selectedDomain = verifiedDomains.find((d) => d.id === customDomainId)?.domain;
 
@@ -141,6 +151,10 @@ export function CreateLinkForm({ plan, campaigns, verifiedDomains }: Props) {
       return;
     }
 
+    if (result.message && result.message !== "Link created.") {
+      toast.info(result.message, { duration: 8000 });
+    }
+
     const id = result.data?.id as string | undefined;
     const shortCode = result.data?.shortCode as string | undefined;
 
@@ -178,9 +192,9 @@ export function CreateLinkForm({ plan, campaigns, verifiedDomains }: Props) {
     setShowUtm(false);
     setUtm({ source: "", medium: "", campaign: "", term: "", content: "" });
     setRedirectType("302");
-    setFgColor("#0d9488");
-    setBgColor("#ffffff");
-    setEcLevel("M");
+    setFgColor(defaultQrFgColor);
+    setBgColor(defaultQrBgColor);
+    setEcLevel(defaultQrEcLevel);
     setFieldErrors({});
     setCreatedLink(null);
   }

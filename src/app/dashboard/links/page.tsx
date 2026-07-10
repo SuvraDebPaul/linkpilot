@@ -8,7 +8,6 @@ import { authOptions } from "@/lib/auth";
 import { getLinksByWorkspace } from "@/server/queries/link.queries";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { getUserPlan, getUserUsage, PLAN_LIMITS } from "@/lib/subscription";
-import { getDemoLinks } from "@/lib/demo-stats";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { FreeUsageBanner } from "@/features/billing/components/free-usage-banner";
@@ -17,39 +16,9 @@ import { LinksTable } from "@/features/links/components/links-table";
 
 export const metadata: Metadata = { title: "Links" };
 
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
-
 export default async function LinksPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
-
-  if (IS_DEMO) {
-    const links = getDemoLinks().map((l, i) => ({
-      ...l,
-      customDomain: i === 1 ? { domain: "links.mystore.com" } : null,
-      campaign: i < 3 ? { id: "dc-01", name: "Summer Sale 2024" } : null,
-    }));
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Links"
-          description={`${links.length} links`}
-          action={
-            <div className="flex items-center gap-2">
-              <ImportLinksDialog />
-              <Button asChild>
-                <Link href="/dashboard/links/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New link
-                </Link>
-              </Button>
-            </div>
-          }
-        />
-        <LinksTable links={links} />
-      </div>
-    );
-  }
 
   const workspaceId = await ensureWorkspace(session.user.id);
 

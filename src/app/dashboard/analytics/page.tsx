@@ -28,10 +28,7 @@ import {
   getBusinessOverview,
 } from "@/server/queries/analytics.queries";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
-import { getDemoAnalytics, getDemoBusinessOverview } from "@/lib/demo-stats";
 import { CANONICAL_BROWSERS, CANONICAL_OS, padToSix } from "@/lib/audience-breakdown";
-
-const IS_DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClicksLineChart } from "@/components/charts/clicks-line-chart";
 import { DeviceDonutChart } from "@/components/charts/device-donut-chart";
@@ -60,30 +57,18 @@ export default async function AnalyticsPage({
 
   const { period } = await searchParams;
 
-  let plan: Awaited<ReturnType<typeof getUserPlan>>;
-  let data: Awaited<ReturnType<typeof getAnalytics>>;
-  let overview: Awaited<ReturnType<typeof getBusinessOverview>>;
-
-  if (IS_DEMO) {
-    plan = "pro";
-    const days = ALL_PERIODS.find((p) => p.label === period)?.days ?? 30;
-    data = getDemoAnalytics(days);
-    overview = getDemoBusinessOverview(days);
-  } else {
-    const [fetchedPlan, workspaceId] = await Promise.all([
-      getUserPlan(session.user.id),
-      ensureWorkspace(session.user.id),
-    ]);
-    plan = fetchedPlan;
-    const days =
-      plan === "starter" || plan === "pro"
-        ? (ALL_PERIODS.find((p) => p.label === period)?.days ?? 30)
-        : 7;
-    [data, overview] = await Promise.all([
-      getAnalytics(workspaceId, days, plan),
-      getBusinessOverview(workspaceId, days),
-    ]);
-  }
+  const [plan, workspaceId] = await Promise.all([
+    getUserPlan(session.user.id),
+    ensureWorkspace(session.user.id),
+  ]);
+  const days =
+    plan === "starter" || plan === "pro"
+      ? (ALL_PERIODS.find((p) => p.label === period)?.days ?? 30)
+      : 7;
+  const [data, overview] = await Promise.all([
+    getAnalytics(workspaceId, days, plan),
+    getBusinessOverview(workspaceId, days),
+  ]);
 
   const isStarter = plan === "starter" || plan === "pro";
   const isPro = plan === "pro";
@@ -93,9 +78,6 @@ export default async function AnalyticsPage({
     : isStarter
       ? ALL_PERIODS.slice(0, 2)
       : [];
-  const days = isStarter
-    ? (ALL_PERIODS.find((p) => p.label === period)?.days ?? 30)
-    : 7;
 
   const peakDay = data.clicksPerDay.reduce(
     (best, d) => (d.count > best.count ? d : best),

@@ -8,6 +8,7 @@ import { getUserPlan, canCreateLink, PLAN_LIMITS, getUserUsage } from "@/lib/sub
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { generateShortCode, isReservedSlug } from "@/lib/slug";
 import { validateSafeUrl } from "@/server/services/url-safety.service";
+import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
 
 export type ImportRow = {
   url: string;
@@ -119,7 +120,7 @@ export async function importLinksAction(csvText: string): Promise<ImportResult |
     // Validate URL
     let safeUrl: string;
     try {
-      safeUrl = validateSafeUrl(rawUrl);
+      safeUrl = validateSafeUrl(await enforceDemoRedirect(userId, rawUrl));
     } catch (e) {
       skipped.push({ row: rowNum, url: rawUrl, reason: e instanceof Error ? e.message : "Invalid URL" });
       continue;

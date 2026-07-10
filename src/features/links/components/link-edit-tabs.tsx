@@ -57,7 +57,7 @@ type Props = {
   campaigns: Campaign[];
   verifiedDomains: VerifiedDomain[];
   qrDataUrl: string;
-  workspace: { brandLogoUrl: string | null; brandColor: string | null } | null;
+  workspace: { brandLogoUrl: string | null } | null;
 };
 
 export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl, workspace }: Props) {
@@ -122,7 +122,6 @@ export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl
                 savedEcLevel={link.qrEcLevel}
                 savedMargin={link.qrMargin}
                 savedLogoUrl={link.qrLogoUrl ?? ""}
-                brandColor={workspace?.brandColor}
                 brandLogoUrl={workspace?.brandLogoUrl}
                 verifiedDomains={verifiedDomains}
                 initialCustomDomainId={link.customDomainId}

@@ -28,6 +28,7 @@ const prisma = new PrismaClient({ adapter });
 
 const DEMO_EMAIL = "demo@linkpilot.com";
 const DEMO_PASSWORD = "linkpilot@demo";
+const LINK_PASSWORD = "demo1234"; // unlocks every password-protected demo link
 
 const TEAM_EMAILS = [
   "alex.rivera@demo.linkpilot.dev",
@@ -115,23 +116,6 @@ const BRANDS = [
   "pulsefitness.com",
   "lumenstudio.design",
   "craftedcoffeeco.com",
-];
-
-const PATHS = [
-  "/",
-  "/sale",
-  "/products/new",
-  "/blog/top-tips",
-  "/signup",
-  "/download",
-  "/webinar",
-  "/pricing",
-  "/contact",
-  "/refer-a-friend",
-  "/collections/summer",
-  "/about",
-  "/careers",
-  "/support",
 ];
 
 const TITLES = [
@@ -328,6 +312,7 @@ async function main() {
 
   // 1. Demo user — lifetime Pro access
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
+  const linkPasswordHash = await bcrypt.hash(LINK_PASSWORD, 12);
   const demoUser = await prisma.user.create({
     data: {
       id: id(),
@@ -337,6 +322,7 @@ async function main() {
       emailVerified: new Date(),
       onboardingCompleted: true,
       lifetimeAccess: true,
+      isDemoAccount: true,
       monthlyReportEnabled: true,
       totalLinksCreated: TOTAL_LINKS,
       totalCampaignsCreated: TOTAL_CAMPAIGNS,
@@ -357,6 +343,7 @@ async function main() {
           emailVerified: new Date(),
           onboardingCompleted: true,
           createdAsWorkspaceMember: i < 2,
+          isDemoAccount: true,
         },
       }),
     ),
@@ -471,7 +458,10 @@ async function main() {
     name,
     reportEmailEnabled: i < 5,
     reportEmailFrequency: i < 5 ? pick(["weekly", "monthly"] as const) : null,
-    shareToken: i < 3 ? id() : null,
+    // Every campaign gets a share token so client portals can always link to
+    // a working public report, regardless of which campaigns end up assigned
+    // to which client.
+    shareToken: id(),
   }));
   await prisma.campaign.createMany({
     data: campaigns.map((c) => ({
@@ -511,8 +501,12 @@ async function main() {
   const DAY = 24 * 60 * 60 * 1000;
 
   function buildLink(workspaceId: string, campaignId: string | null) {
-    const brand = pick(BRANDS);
-    const originalUrl = `https://${brand}${pick(PATHS)}`;
+    // Every demo link points at the same real, safe destination — clicking
+    // through during a live presentation always resolves instead of hanging
+    // on a fake placeholder domain. This also matches DEMO_SAFE_URL, the
+    // fixed target enforced server-side for any link a demo account creates
+    // (see src/server/services/demo-guard.service.ts).
+    const originalUrl = "https://linkpilot.com";
     const createdAt = new Date(now - randomInt(0, 120) * DAY);
 
     let expiresAt: Date | null = null;
@@ -548,7 +542,7 @@ async function main() {
       title: pick(TITLES),
       originalUrl,
       shortCode: shortCode(),
-      passwordHash: hasPassword ? "$2b$12$abcdefghijklmnopqrstuv" : null,
+      passwordHash: hasPassword ? linkPasswordHash : null,
       isPasswordProtected: hasPassword,
       expiresAt,
       maxClicks,
@@ -562,13 +556,13 @@ async function main() {
             .slice(0, randomInt(2, 4))
             .map((code) => ({
               country: code,
-              url: `https://${brand}/${code.toLowerCase()}`,
+              url: originalUrl,
             }))
         : undefined,
       abVariants: hasAb
         ? [
             { url: originalUrl, weight: 50 },
-            { url: `https://${brand}${pick(PATHS)}`, weight: 50 },
+            { url: originalUrl, weight: 50 },
           ]
         : undefined,
       retargetingPixels: hasPixels
@@ -654,6 +648,13 @@ async function main() {
     }
     const scale = target / rawTotal;
 
+    // A fixed pool of fake visitors reused across clicks, so "unique visitors"
+    // (distinct ipHash) comes out to a realistic ~60% of total clicks instead
+    // of every click looking like a brand-new visitor.
+    const visitorPool = Array.from({ length: Math.max(50, Math.round(target * 0.6)) }, () =>
+      crypto.randomUUID(),
+    );
+
     const clickRows: Array<{
       id: string;
       linkId: string;
@@ -682,7 +683,7 @@ async function main() {
           linkId,
           ipHash: crypto
             .createHash("sha256")
-            .update(`demo-ip-${id()}`)
+            .update(pick(visitorPool))
             .digest("hex"),
           country: weightedPick(COUNTRY_WEIGHTS),
           city: null,

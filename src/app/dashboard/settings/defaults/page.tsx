@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { authOptions } from "@/lib/auth";
 import { ensureWorkspace, getWorkspaceDefaults } from "@/server/queries/workspace.queries";
+import { getUserPlan } from "@/lib/subscription";
 import { PageHeader } from "@/components/shared/page-header";
 import { DefaultSettingsForm } from "@/features/workspace/components/default-settings-form";
 
@@ -14,7 +15,10 @@ export default async function DefaultSettingsPage() {
   if (!session?.user?.id) redirect("/login");
 
   const workspaceId = await ensureWorkspace(session.user.id);
-  const defaults = await getWorkspaceDefaults(workspaceId);
+  const [defaults, plan] = await Promise.all([
+    getWorkspaceDefaults(workspaceId),
+    getUserPlan(session.user.id),
+  ]);
   if (!defaults) redirect("/dashboard");
 
   return (
@@ -29,6 +33,10 @@ export default async function DefaultSettingsPage() {
         initialSlugStyle={defaults.slugStyle}
         initialRedirectType={defaults.defaultRedirectType}
         initialCloaking={defaults.defaultCloakingEnabled}
+        initialQrFgColor={defaults.defaultQrFgColor}
+        initialQrBgColor={defaults.defaultQrBgColor}
+        initialQrEcLevel={defaults.defaultQrEcLevel}
+        canEditQrDefaults={plan === "starter" || plan === "pro"}
       />
     </div>
   );

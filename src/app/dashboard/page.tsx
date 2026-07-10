@@ -73,7 +73,6 @@ function countryFlag(name: string): string {
     .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
     .join("");
 }
-import { getDemoStats } from "@/lib/demo-stats";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { getUserPlan, getUserUsage, PLAN_LIMITS } from "@/lib/subscription";
 import { siteConfig } from "@/config/site";
@@ -95,22 +94,17 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect("/login");
 
   const workspaceId = await ensureWorkspace(session.user.id);
-  const DEMO = process.env.NEXT_PUBLIC_DEMO === "true";
-  const [realStats, plan, usage] = await Promise.all([
-    DEMO
-      ? Promise.resolve(null)
-      : getDashboardStats(session.user.id, workspaceId),
+  const [stats, plan, usage] = await Promise.all([
+    getDashboardStats(session.user.id, workspaceId),
     getUserPlan(session.user.id),
     getUserUsage(session.user.id),
   ]);
-  const stats = DEMO ? getDemoStats() : realStats!;
 
   const firstName = session.user.name?.split(" ")[0] ?? null;
   const isOnboarding =
-    !DEMO &&
-    (stats.totalLinks === 0 ||
-      stats.totalCampaigns === 0 ||
-      stats.totalClicks === 0);
+    stats.totalLinks === 0 ||
+    stats.totalCampaigns === 0 ||
+    stats.totalClicks === 0;
 
   if (isOnboarding) {
     return (

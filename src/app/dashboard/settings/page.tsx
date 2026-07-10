@@ -18,7 +18,7 @@ import { ThemeSwitcher } from "@/features/settings/components/theme-switcher";
 import { MonthlyReportToggle } from "@/features/settings/components/monthly-report-toggle";
 import { RevokeSessionsButton } from "@/features/settings/components/revoke-sessions-button";
 import { LoginActivityTable } from "@/features/settings/components/login-activity-table";
-import { cn } from "@/lib/utils";
+import { PlanBadge } from "@/components/shared/plan-badge";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -60,16 +60,7 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-              <span
-                className={cn(
-                  "rounded-full px-2 py-0.5 font-semibold capitalize",
-                  plan === "pro" && "bg-primary/10 text-primary",
-                  plan === "starter" && "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
-                  plan === "free" && "bg-muted text-muted-foreground",
-                )}
-              >
-                {plan} plan
-              </span>
+              <PlanBadge plan={plan} />
               <span>·</span>
               <span>Member since {memberSince}</span>
               {workspace && (

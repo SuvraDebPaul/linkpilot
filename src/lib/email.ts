@@ -317,6 +317,55 @@ export async function sendCampaignReportEmail({
 }
 
 // ---------------------------------------------------------------------------
+// Email: monthly account activity report
+// ---------------------------------------------------------------------------
+
+export async function sendMonthlyAccountReportEmail({
+  to,
+  name,
+  totalLinks,
+  totalCampaigns,
+  clicksLast30Days,
+  newLinksLast30Days,
+}: {
+  to: string;
+  name?: string | null;
+  totalLinks: number;
+  totalCampaigns: number;
+  clicksLast30Days: number;
+  newLinksLast30Days: number;
+}) {
+  const dashUrl = `${APP_URL}/dashboard/analytics`;
+
+  const content = `
+    <h1 style="margin:0 0 6px;font-size:22px;font-weight:700;color:#0f172a;letter-spacing:-0.3px">Your monthly LinkPilot report</h1>
+    <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.6">${greeting(name)}</p>
+
+    <div style="background:#f8fafc;border-radius:12px;padding:20px 24px;margin-bottom:20px;text-align:center">
+      <p style="margin:0;font-size:13px;color:#64748b;font-weight:500">Clicks in the last 30 days</p>
+      <p style="margin:6px 0 0;font-size:40px;font-weight:800;color:#0f172a;letter-spacing:-1px">${clicksLast30Days.toLocaleString()}</p>
+    </div>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:20px">
+      ${infoRow("Total links", totalLinks.toLocaleString())}
+      ${infoRow("Total campaigns", totalCampaigns.toLocaleString())}
+      ${infoRow("New links (30d)", newLinksLast30Days.toLocaleString())}
+    </table>
+
+    ${ctaButton("View full analytics →", dashUrl)}
+    <p style="margin:0;color:#94a3b8;font-size:13px">
+      You're receiving this because monthly reports are turned on in your
+      <a href="${APP_URL}/dashboard/settings" style="color:#0d9488;text-decoration:none">account settings</a>.
+    </p>
+  `;
+
+  const subject = "Your monthly LinkPilot report";
+  const preview = `${clicksLast30Days.toLocaleString()} clicks in the last 30 days across ${totalLinks.toLocaleString()} links.`;
+
+  return resend.emails.send({ from: FROM, to, subject, html: emailLayout(content, preview) });
+}
+
+// ---------------------------------------------------------------------------
 // Onboarding email sequence
 // ---------------------------------------------------------------------------
 
