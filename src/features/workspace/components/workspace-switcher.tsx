@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Check, ChevronsUpDown, Plus, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -25,6 +27,15 @@ import {
 } from "@/features/workspace/actions/workspace.actions";
 
 type WorkspaceOption = { id: string; name: string; role: string };
+
+const ICON_ACCENTS = [
+  "bg-teal-500/10 text-teal-600",
+  "bg-violet-500/10 text-violet-600",
+  "bg-amber-500/10 text-amber-600",
+  "bg-sky-500/10 text-sky-600",
+  "bg-rose-500/10 text-rose-600",
+  "bg-emerald-500/10 text-emerald-600",
+];
 
 export function WorkspaceSwitcher({
   workspaces,
@@ -45,6 +56,22 @@ export function WorkspaceSwitcher({
     // setActiveWorkspaceAction redirects on success — an error result means it didn't
     if (result?.error) toast.error(result.error);
   }
+
+  // Cmd/Ctrl+1-9 jumps straight to that workspace, from anywhere in the dashboard.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const n = Number(e.key);
+      if (!Number.isInteger(n) || n < 1 || n > 9) return;
+      const target = workspaces[n - 1];
+      if (!target) return;
+      e.preventDefault();
+      switchTo(target.id);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspaces, activeWorkspaceId]);
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -67,26 +94,44 @@ export function WorkspaceSwitcher({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex w-full items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-left text-sm transition-colors hover:bg-accent">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-              <Building2 className="h-3.5 w-3.5" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Building2 className="h-4 w-4" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium text-foreground">{active.name}</span>
-              <span className="block text-[10px] capitalize text-muted-foreground">{active.role.toLowerCase()}</span>
+              <span className="block truncate font-semibold text-foreground">{active.name}</span>
+              <span className="block truncate text-[11px] capitalize text-muted-foreground">{active.role.toLowerCase()}</span>
             </span>
             <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
-          {workspaces.map((w) => (
-            <DropdownMenuItem key={w.id} onClick={() => switchTo(w.id)} className="gap-2">
-              <span className="min-w-0 flex-1 truncate">{w.name}</span>
-              {w.id === active.id && <Check className="h-3.5 w-3.5 shrink-0 text-primary" />}
-            </DropdownMenuItem>
-          ))}
+        <DropdownMenuContent align="start" className="w-64">
+          <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+          {workspaces.map((w, i) => {
+            const isActive = w.id === active.id;
+            const accent = ICON_ACCENTS[i % ICON_ACCENTS.length];
+            return (
+              <DropdownMenuItem key={w.id} onClick={() => switchTo(w.id)} className="gap-2 py-2">
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${accent}`}>
+                  <Building2 className="h-3.5 w-3.5" />
+                </span>
+                <span className="min-w-0 flex-1 truncate">{w.name}</span>
+                {isActive ? (
+                  <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
+                ) : (
+                  i < 9 && <DropdownMenuShortcut>⌘{i + 1}</DropdownMenuShortcut>
+                )}
+              </DropdownMenuItem>
+            );
+          })}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setCreateOpen(true); }}>
-            <Plus className="h-3.5 w-3.5" /> Create workspace
+          <DropdownMenuItem
+            className="gap-2 py-2"
+            onSelect={(e) => { e.preventDefault(); setCreateOpen(true); }}
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/40 bg-transparent text-muted-foreground">
+              <Plus className="h-3.5 w-3.5" />
+            </span>
+            <span className="text-muted-foreground">Create workspace</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

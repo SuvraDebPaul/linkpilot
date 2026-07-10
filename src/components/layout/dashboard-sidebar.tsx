@@ -4,6 +4,7 @@ import { Logo } from "@/components/shared/logo";
 import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
 import { DashboardNavItem } from "./dashboard-nav-item";
 import { DashboardNavGroup } from "./dashboard-nav-group";
+import { SidebarHighlightProvider } from "./sidebar-highlight-context";
 import {
   LayoutDashboard,
   Link2,
@@ -45,9 +46,9 @@ export function DashboardSidebar({
   activeWorkspaceId: string | null;
 }) {
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card lg:flex">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[background-color,border-color] duration-300 lg:flex">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-border px-5">
+      <div className="flex h-16 items-center border-b border-sidebar-border px-5">
         <Logo />
       </div>
 
@@ -57,20 +58,22 @@ export function DashboardSidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
-        <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-          Main Menu
-        </p>
-        <div className="space-y-0.5">
-          {mainNav.map((item) => (
-            <DashboardNavItem key={item.href} {...item} />
-          ))}
-        </div>
+      <SidebarHighlightProvider>
+        <nav className="flex-1 overflow-y-auto px-3 py-5">
+          <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50">
+            Main Menu
+          </p>
+          <div className="space-y-0.5">
+            {mainNav.map((item) => (
+              <DashboardNavItem key={item.href} {...item} />
+            ))}
+          </div>
 
-        <div className="mt-6">
-          <DashboardNavGroup label="Settings" items={settingsItems} />
-        </div>
-      </nav>
+          <div className="mt-6">
+            <DashboardNavGroup label="Settings" items={settingsItems} />
+          </div>
+        </nav>
+      </SidebarHighlightProvider>
 
       {/* Footer version badge */}
       <div className="border-t border-border px-5 py-3">

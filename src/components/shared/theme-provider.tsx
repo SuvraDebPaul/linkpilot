@@ -27,10 +27,16 @@ export function ThemeProvider({
   initialTheme?: Theme;
   children: React.ReactNode;
 }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === "undefined") return initialTheme;
-    return (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? initialTheme;
-  });
+  // Start from initialTheme on both server and the first client render so
+  // hydration output matches exactly — the real stored value (if any) is
+  // picked up a moment later in the effect below, once we're client-only.
+  const [theme, setThemeState] = useState<Theme>(initialTheme);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+    if (stored && stored !== theme) setThemeState(stored);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     applyTheme(theme);

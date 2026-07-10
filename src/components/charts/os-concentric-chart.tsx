@@ -41,7 +41,7 @@ export function OsConcentricChart({ data }: { data: DataPoint[] }) {
                   strokeWidth={STROKE}
                   strokeDasharray="3 7"
                   strokeLinecap="round"
-                  style={{ stroke: "hsl(var(--muted-foreground) / 0.18)" }}
+                  style={{ stroke: "color-mix(in oklch, var(--muted-foreground) 18%, transparent)" }}
                 />
                 {/* Colored arc — offset start position */}
                 <circle

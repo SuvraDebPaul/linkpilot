@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useSidebarHighlight } from "./sidebar-highlight-context";
 
 interface SubItem {
   href: string;
@@ -20,6 +22,7 @@ interface DashboardNavGroupProps {
 
 export function DashboardNavGroup({ label, items }: DashboardNavGroupProps) {
   const pathname = usePathname();
+  const { hovered, setHovered } = useSidebarHighlight();
 
   // Match the single longest href instead of every prefix independently —
   // otherwise a root item like "/dashboard/settings" would also light up
@@ -39,7 +42,7 @@ export function DashboardNavGroup({ label, items }: DashboardNavGroupProps) {
     <div>
       <button
         onClick={() => setManualOpen(!open)}
-        className="flex w-full items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+        className="flex w-full items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50 transition-colors hover:text-sidebar-foreground/80"
       >
         {label}
         <ChevronDown
@@ -50,28 +53,48 @@ export function DashboardNavGroup({ label, items }: DashboardNavGroupProps) {
         />
       </button>
 
-      {open && (
-        <div className="mt-1 space-y-0.5">
-          {items.map((item) => {
-            const isActive = item.href === activeHref;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <item.icon className="h-[18px] w-[18px] shrink-0" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 38 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-1 space-y-0.5">
+              {items.map((item) => {
+                const isActive = item.href === activeHref;
+                const showHighlight = hovered ? hovered === item.href : isActive;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onMouseEnter={() => setHovered(item.href)}
+                    onMouseLeave={() => setHovered(null)}
+                    className={cn(
+                      "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+                      isActive
+                        ? "text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:text-sidebar-accent-foreground",
+                    )}
+                  >
+                    {showHighlight && (
+                      <motion.span
+                        layoutId="sidebar-nav-highlight"
+                        className="absolute inset-0 rounded-lg bg-sidebar-accent"
+                        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                      />
+                    )}
+                    <item.icon className="relative z-10 h-[18px] w-[18px] shrink-0" />
+                    <span className="relative z-10">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
