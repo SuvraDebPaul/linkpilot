@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, LayoutDashboard, Sun, Moon, MonitorSmartphone } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
+import { DemoDashboardButton } from "@/components/shared/demo-dashboard-button";
 import { useTheme } from "@/components/shared/theme-provider";
 import { cn } from "@/lib/utils";
 
@@ -38,10 +39,18 @@ const navItems = [
 export function PublicHeader() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { status } = useSession();
+  const { status, update } = useSession();
   const { theme, setTheme } = useTheme();
   const isLoggedIn = status === "authenticated";
   const ThemeIcon = THEME_ICON[theme];
+
+  // Landing back on a public page can mean the proxy just force-logged-out a demo
+  // session via a redirect — next-auth's client cache doesn't know that happened on
+  // its own, so re-check on every route change to keep the header honest.
+  useEffect(() => {
+    update();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   function isActivePath(href: string) {
     if (href === "/") {
@@ -103,6 +112,7 @@ export function PublicHeader() {
             </Button>
           ) : (
             <>
+              <DemoDashboardButton size="sm" label="Demo dashboard" />
               <Button asChild variant="ghost">
                 <Link href="/login">Login</Link>
               </Button>
@@ -171,6 +181,7 @@ export function PublicHeader() {
                 </Button>
               ) : (
                 <>
+                  <DemoDashboardButton className="w-full" label="Demo dashboard" />
                   <Button asChild variant="outline">
                     <Link href="/login" onClick={() => setIsOpen(false)}>
                       Login

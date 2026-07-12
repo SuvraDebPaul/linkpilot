@@ -2,6 +2,7 @@
 import { BarChart3, CheckCircle2, FileText, QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { DemoDashboardButton } from "@/components/shared/demo-dashboard-button";
 import { GuestLinkForm } from "@/features/guest-links";
 
 const highlights = [
@@ -25,8 +26,7 @@ export function PublicHero() {
         <div className="absolute bottom-[-20%] left-[35%] h-[380px] w-[380px] rounded-full bg-emerald-100/45 blur-3xl dark:opacity-20" />
       </div>
 
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:px-8 lg:py-20">
-
+      <div className="mx-auto grid max-w-7xl items-start gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:px-8 lg:py-8">
         {/* Left — value proposition */}
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-4 py-2 text-sm font-semibold text-primary shadow-sm backdrop-blur dark:bg-slate-900/80">
@@ -36,8 +36,8 @@ export function PublicHero() {
 
           <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl xl:text-6xl dark:text-white">
             Your clients deserve{" "}
-            <span className="text-primary">a real report,</span>{" "}
-            not a screenshot.
+            <span className="text-primary">a real report,</span> not a
+            screenshot.
           </h1>
 
           <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600 dark:text-slate-400">
@@ -64,12 +64,20 @@ export function PublicHero() {
             <Button asChild size="lg" className="h-12 px-8 text-base">
               <Link href="/register">Get started free</Link>
             </Button>
+            <DemoDashboardButton
+              size="lg"
+              className="h-12 px-8 text-base"
+              label="View demo dashboard"
+            />
           </div>
 
           {/* Trust points */}
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
             {trustPoints.map((point) => (
-              <span key={point} className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+              <span
+                key={point}
+                className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400"
+              >
                 <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                 {point}
               </span>
@@ -84,7 +92,6 @@ export function PublicHero() {
             <GuestLinkForm />
           </div>
         </div>
-
       </div>
     </section>
   );

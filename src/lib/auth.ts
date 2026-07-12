@@ -23,6 +23,11 @@ function getRequestMeta(req?: { headers?: Record<string, string> }) {
   return { ip, browser };
 }
 
+// Demo sessions (however they were reached — the one-click demo button, or someone
+// manually logging in with the seeded demo credentials) never last longer than this,
+// so a forgotten/closed tab can't leave a "logged in" demo session lingering forever.
+const DEMO_SESSION_MAX_AGE_MS = 30 * 60 * 1000;
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
   session: {
@@ -64,6 +69,27 @@ export const authOptions: NextAuthOptions = {
         return { id: user.id, name: user.name, email: user.email, image: user.image };
       },
     }),
+    // Powers the public "Demo Dashboard" button — no password, always resolves to the
+    // single seeded demo account. Safe to expose: it can only ever sign someone into
+    // that one sandbox account, never any real user.
+    CredentialsProvider({
+      id: "demo",
+      name: "Demo",
+      credentials: {},
+      async authorize() {
+        const demoUser = await prisma.user.findFirst({
+          where: { isDemoAccount: true },
+          select: { id: true, name: true, email: true, image: true },
+        });
+        if (!demoUser) return null;
+
+        await prisma.loginEvent.create({
+          data: { userId: demoUser.id, type: "demo", ip: "Unknown", browser: "Unknown" },
+        });
+
+        return demoUser;
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
@@ -71,9 +97,13 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { sessionVersion: true },
+          select: { sessionVersion: true, isDemoAccount: true },
         });
         token.sessionVersion = dbUser?.sessionVersion ?? 0;
+        token.isDemoAccount = dbUser?.isDemoAccount ?? false;
+        token.demoExpires = dbUser?.isDemoAccount
+          ? Date.now() + DEMO_SESSION_MAX_AGE_MS
+          : undefined;
       }
       return token;
     },
@@ -83,9 +113,15 @@ export const authOptions: NextAuthOptions = {
         select: { sessionVersion: true },
       });
 
-      // Session was revoked (sessionVersion bumped) or the user no longer exists —
-      // drop the user from the session so auth guards treat this as signed out.
-      if (!currentUser || currentUser.sessionVersion !== token.sessionVersion) {
+      const demoExpired =
+        token.isDemoAccount &&
+        typeof token.demoExpires === "number" &&
+        Date.now() > token.demoExpires;
+
+      // Session was revoked (sessionVersion bumped), the user no longer exists, or
+      // this was a demo session that hit its absolute time limit — drop the user from
+      // the session so auth guards treat this as signed out.
+      if (!currentUser || currentUser.sessionVersion !== token.sessionVersion || demoExpired) {
         return { ...session, user: undefined } as unknown as typeof session;
       }
 
