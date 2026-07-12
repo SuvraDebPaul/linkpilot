@@ -83,6 +83,7 @@ import { Progress } from "@/components/ui/progress";
 import { ClicksLineChart } from "@/components/charts/clicks-line-chart";
 import { DeviceDonutChart } from "@/components/charts/device-donut-chart";
 import { MiniSparkline } from "@/components/charts/mini-sparkline";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DashboardOnboarding } from "@/features/onboarding/components/dashboard-onboarding";
 import { cn } from "@/lib/utils";
@@ -221,7 +222,7 @@ export default async function DashboardPage() {
             {/* Number + sparkline */}
             <div className="mt-2.5 flex items-end justify-between gap-2">
               <p className="text-4xl font-bold tracking-tight text-foreground">
-                {stats.totalLinks.toLocaleString()}
+                <AnimatedNumber value={stats.totalLinks} />
               </p>
               <MiniSparkline
                 data={spark7}
@@ -254,7 +255,7 @@ export default async function DashboardPage() {
 
             <div className="mt-2.5 flex items-end justify-between gap-2">
               <p className="text-4xl font-bold tracking-tight text-foreground">
-                {stats.totalClicks.toLocaleString()}
+                <AnimatedNumber value={stats.totalClicks} />
               </p>
               <MiniSparkline
                 data={spark7}
@@ -295,7 +296,7 @@ export default async function DashboardPage() {
 
             <div className="mt-2.5 flex items-end justify-between gap-2">
               <p className="text-4xl font-bold tracking-tight text-foreground">
-                {stats.activeLinks.toLocaleString()}
+                <AnimatedNumber value={stats.activeLinks} />
               </p>
               <MiniSparkline
                 data={spark7}
@@ -341,9 +342,9 @@ export default async function DashboardPage() {
 
             <div className="mt-2.5 flex items-end justify-between gap-2">
               <p className="text-4xl font-bold tracking-tight text-foreground">
-                {stats.expiringSoon > 0
-                  ? stats.expiringSoon.toLocaleString()
-                  : stats.totalCampaigns.toLocaleString()}
+                <AnimatedNumber
+                  value={stats.expiringSoon > 0 ? stats.expiringSoon : stats.totalCampaigns}
+                />
               </p>
               <MiniSparkline
                 data={spark7}
@@ -388,7 +389,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xl font-bold text-foreground">
-                    {stats.clicksLast30Days.toLocaleString()}
+                    <AnimatedNumber value={stats.clicksLast30Days} />
                   </span>
                   <span className="text-xs text-muted-foreground">
                     total clicks

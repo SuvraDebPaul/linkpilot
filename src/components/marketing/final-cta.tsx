@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function FinalCta() {
   return (
-    <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+    <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl">
         <div className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-primary/90 px-8 py-16 text-center sm:px-12 lg:px-20">
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">

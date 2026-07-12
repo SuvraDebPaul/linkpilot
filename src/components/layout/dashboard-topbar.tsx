@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Search,
   Bell,
@@ -120,15 +121,20 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
         {/* Notification bell */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.88 }}
               className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               title="Notifications"
             >
               <Bell className="h-[18px] w-[18px]" />
               {actionItems.length > 0 && (
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
+                <motion.span
+                  animate={{ scale: [1, 1.35, 1] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card"
+                />
               )}
-            </button>
+            </motion.button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <div className="flex items-center justify-between px-2 py-1.5">
@@ -179,13 +185,25 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
         </DropdownMenu>
 
         {/* Quick theme toggle — cycles light → dark → auto */}
-        <button
+        <motion.button
           onClick={cycleTheme}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          whileTap={{ scale: 0.88 }}
+          className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           title={`Theme: ${theme} (click to change)`}
         >
-          <ThemeIcon className="h-[18px] w-[18px]" />
-        </button>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={theme}
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex"
+            >
+              <ThemeIcon className="h-[18px] w-[18px]" />
+            </motion.span>
+          </AnimatePresence>
+        </motion.button>
 
         {/* Settings shortcut */}
         <Link
@@ -254,7 +272,7 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer text-destructive focus:text-destructive"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: "/" })}
             >
               <LogOut className="mr-2 h-4 w-4" />
               Sign out

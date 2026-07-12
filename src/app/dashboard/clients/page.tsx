@@ -70,7 +70,7 @@ export default async function ClientsPage() {
       />
 
       {atLimit && plan === "starter" && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
           You&apos;ve used all {limit} client portals on your Starter plan.{" "}
           <Link href="/dashboard/settings/billing" className="font-semibold underline underline-offset-2">
             Upgrade to Pro

@@ -208,8 +208,8 @@ function CellValue({ val }: { val: boolean | string }) {
   if (val === true)
     return <Check className="mx-auto h-4 w-4 text-primary" />;
   if (val === false)
-    return <Minus className="mx-auto h-4 w-4 text-slate-300" />;
-  return <span className="text-slate-600">{val}</span>;
+    return <Minus className="mx-auto h-4 w-4 text-slate-300 dark:text-slate-700" />;
+  return <span className="text-slate-600 dark:text-slate-400">{val}</span>;
 }
 
 export function PricingPlans() {
@@ -224,8 +224,8 @@ export function PricingPlans() {
             onClick={() => setCycle("monthly")}
             className={`rounded-lg px-5 py-2.5 text-sm font-medium transition ${
               cycle === "monthly"
-                ? "bg-slate-950 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
             }`}
           >
             Monthly
@@ -234,8 +234,8 @@ export function PricingPlans() {
             onClick={() => setCycle("yearly")}
             className={`relative rounded-lg px-5 py-2.5 text-sm font-medium transition ${
               cycle === "yearly"
-                ? "bg-slate-950 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
             }`}
           >
             Yearly
@@ -252,7 +252,7 @@ export function PricingPlans() {
       </div>
 
       {/* Guest shortener note */}
-      <p className="text-center text-sm text-slate-500">
+      <p className="text-center text-sm text-slate-500 dark:text-slate-400">
         Don&apos;t want to sign up yet?{" "}
         <Link href="/" className="font-medium text-primary hover:underline">
           Use the free homepage shortener
@@ -271,16 +271,16 @@ export function PricingPlans() {
               key={plan.name}
               className={
                 plan.featured
-                  ? "relative border-primary/30 bg-white shadow-xl shadow-primary/10/60"
+                  ? "relative border-primary/30 bg-white shadow-xl shadow-primary/10/60 dark:bg-slate-900 dark:shadow-none"
                   : plan.agency
-                    ? "border-slate-300 bg-slate-950 text-white shadow-sm"
-                    : "border-slate-200 bg-white shadow-sm"
+                    ? "border-slate-300 bg-slate-950 text-white shadow-sm dark:border-slate-700"
+                    : "border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
               }
             >
               <CardHeader className="pb-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <h2
-                    className={`text-xl font-bold ${plan.agency ? "text-white" : "text-slate-950"}`}
+                    className={`text-xl font-bold ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}
                   >
                     {plan.name}
                   </h2>
@@ -290,7 +290,7 @@ export function PricingPlans() {
                         ? "bg-primary/10 text-primary"
                         : plan.agency
                           ? "bg-slate-800 text-slate-300"
-                          : "bg-slate-100 text-slate-700"
+                          : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                     }
                   >
                     {plan.badge}
@@ -299,12 +299,12 @@ export function PricingPlans() {
 
                 <div className="flex items-baseline gap-1">
                   <span
-                    className={`text-4xl font-black tracking-tight ${plan.agency ? "text-white" : "text-slate-950"}`}
+                    className={`text-4xl font-black tracking-tight ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}
                   >
                     {pricing.price}
                   </span>
                   {!isCustom && (
-                    <span className={`text-sm ${plan.agency ? "text-slate-400" : "text-slate-500"}`}>
+                    <span className={`text-sm ${plan.agency ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>
                       /mo
                     </span>
                   )}
@@ -325,17 +325,17 @@ export function PricingPlans() {
                 )}
 
                 <p
-                  className={`mt-3 text-sm leading-6 ${plan.agency ? "text-slate-300" : "text-slate-500"}`}
+                  className={`mt-3 text-sm leading-6 ${plan.agency ? "text-slate-300" : "text-slate-500 dark:text-slate-400"}`}
                 >
                   {plan.description}
                 </p>
 
                 {plan.name === "Pro" && (
-                  <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-center">
+                  <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-center dark:border-slate-800 dark:bg-slate-950/60">
                     <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Your links look like</p>
                     <div className="flex flex-col items-center gap-1.5">
                       <code className="text-xs font-mono text-slate-400 line-through">lnkplt.co/xk92m</code>
-                      <span className="text-[10px] text-slate-300">↓</span>
+                      <span className="text-[10px] text-slate-300 dark:text-slate-600">↓</span>
                       <code className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-mono font-semibold text-primary">go.yourclient.com/promo</code>
                     </div>
                   </div>
@@ -366,15 +366,15 @@ export function PricingPlans() {
                       <Check
                         className={`mt-0.5 h-4 w-4 shrink-0 ${plan.agency ? "text-primary" : "text-primary"}`}
                       />
-                      <span className={plan.agency ? "text-slate-300" : "text-slate-700"}>
+                      <span className={plan.agency ? "text-slate-300" : "text-slate-700 dark:text-slate-300"}>
                         {f}
                       </span>
                     </div>
                   ))}
                   {plan.unavailable.map((f) => (
                     <div key={f} className="flex items-start gap-2 text-sm">
-                      <Minus className="mt-0.5 h-4 w-4 shrink-0 text-slate-300" />
-                      <span className="text-slate-400">{f}</span>
+                      <Minus className="mt-0.5 h-4 w-4 shrink-0 text-slate-300 dark:text-slate-700" />
+                      <span className="text-slate-400 dark:text-slate-600">{f}</span>
                     </div>
                   ))}
                 </div>
@@ -386,26 +386,26 @@ export function PricingPlans() {
 
       {/* Comparison table */}
       <div>
-        <h2 className="mb-8 text-center text-2xl font-bold text-slate-950">
+        <h2 className="mb-8 text-center text-2xl font-bold text-slate-950 dark:text-white">
           Full feature comparison
         </h2>
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[780px] text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50">
+              <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60">
                 <tr>
-                  <th className="px-6 py-4 font-semibold text-slate-950">Feature</th>
+                  <th className="px-6 py-4 font-semibold text-slate-950 dark:text-white">Feature</th>
                   {["Free", "Starter", "Pro", "Agency"].map((h) => (
-                    <th key={h} className="px-6 py-4 text-center font-semibold text-slate-950">
+                    <th key={h} className="px-6 py-4 text-center font-semibold text-slate-950 dark:text-white">
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {comparison.map((row) => (
-                  <tr key={row.feature} className="hover:bg-slate-50/60">
-                    <td className="px-6 py-3.5 font-medium text-slate-700">{row.feature}</td>
+                  <tr key={row.feature} className="hover:bg-slate-50/60 dark:hover:bg-slate-950/40">
+                    <td className="px-6 py-3.5 font-medium text-slate-700 dark:text-slate-300">{row.feature}</td>
                     <td className="px-6 py-3.5 text-center"><CellValue val={row.free} /></td>
                     <td className="px-6 py-3.5 text-center"><CellValue val={row.starter} /></td>
                     <td className="px-6 py-3.5 text-center"><CellValue val={row.pro} /></td>

@@ -58,16 +58,16 @@ export default function PricingPage() {
   return (
     <main>
       {/* Header */}
-      <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Pricing
           </p>
-          <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
+          <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-white">
             Starter is $5/month.
             <span className="block text-primary">One client report pays for it.</span>
           </h1>
-          <p className="mt-5 text-base leading-7 text-slate-500">
+          <p className="mt-5 text-base leading-7 text-slate-500 dark:text-slate-400">
             Start free with 50 permanent links and 2 campaigns. Upgrade when you need
             longer analytics, more campaigns, or a report you can share with a client
             instead of a screenshot.
@@ -76,12 +76,12 @@ export default function PricingPage() {
       </section>
 
       {/* Value framing strip */}
-      <section className="border-b border-slate-200 bg-white px-4 py-10 sm:px-6 lg:px-8">
+      <section className="border-b border-slate-200 bg-white px-4 py-10 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-5xl">
-          <div className="grid gap-0 overflow-hidden rounded-2xl border border-slate-200 shadow-sm sm:grid-cols-2">
-            <div className="border-b border-slate-200 bg-destructive/10 px-6 py-7 sm:border-b-0 sm:border-r">
+          <div className="grid gap-0 overflow-hidden rounded-2xl border border-slate-200 shadow-sm sm:grid-cols-2 dark:border-slate-800 dark:shadow-none">
+            <div className="border-b border-slate-200 bg-destructive/10 px-6 py-7 sm:border-b-0 sm:border-r dark:border-slate-800">
               <p className="text-xs font-semibold uppercase tracking-widest text-destructive mb-4">Without LinkPilot</p>
-              <ul className="space-y-3 text-sm text-slate-700">
+              <ul className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
                 {[
                   "Sending Google Analytics screenshots to clients",
                   "No idea which channel drove the most clicks",
@@ -98,7 +98,7 @@ export default function PricingPage() {
             </div>
             <div className="bg-primary/10 px-6 py-7">
               <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4">With Starter — $5/month</p>
-              <ul className="space-y-3 text-sm text-slate-700">
+              <ul className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
                 {[
                   "Every link tracked by channel from day one",
                   "Per-channel analytics — Instagram vs email vs Google",
@@ -118,25 +118,25 @@ export default function PricingPage() {
       </section>
 
       {/* Branded domain call-out */}
-      <section className="border-b border-slate-200 bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
+      <section className="border-b border-slate-200 bg-slate-50 px-4 py-12 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-3xl">
           <p className="mb-4 text-center text-sm font-semibold uppercase tracking-widest text-primary">
             Pro feature spotlight
           </p>
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
             <div className="grid sm:grid-cols-[1fr_auto_1fr]">
               {/* Before */}
               <div className="px-8 py-8 text-center">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Free / Starter</p>
-                <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5">
-                  <span className="h-2 w-2 rounded-full bg-slate-300" />
-                  <code className="text-sm font-mono font-semibold text-slate-500">lnkplt.co/xk92m</code>
+                <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-950/60">
+                  <span className="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700" />
+                  <code className="text-sm font-mono font-semibold text-slate-500 dark:text-slate-400">lnkplt.co/xk92m</code>
                 </div>
                 <p className="mt-3 text-xs text-slate-400">Looks like a generic shortener.</p>
               </div>
 
               {/* Arrow */}
-              <div className="flex items-center justify-center border-x border-slate-100 px-4 py-4 sm:py-8">
+              <div className="flex items-center justify-center border-x border-slate-100 px-4 py-4 sm:py-8 dark:border-slate-800">
                 <ArrowRight className="h-5 w-5 text-primary" />
               </div>
 
@@ -147,13 +147,13 @@ export default function PricingPage() {
                   <span className="h-2 w-2 rounded-full bg-primary/100" />
                   <code className="text-sm font-mono font-semibold text-primary">go.acmecorp.com/summer</code>
                 </div>
-                <p className="mt-3 text-xs text-slate-500">Looks like you built something for them.</p>
+                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Looks like you built something for them.</p>
               </div>
             </div>
 
-            <div className="border-t border-slate-100 bg-slate-50 px-8 py-4 text-center">
-              <p className="text-sm text-slate-600">
-                <strong className="text-slate-950">Branded custom domains</strong> are a Pro feature.
+            <div className="border-t border-slate-100 bg-slate-50 px-8 py-4 text-center dark:border-slate-800 dark:bg-slate-950/60">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                <strong className="text-slate-950 dark:text-white">Branded custom domains</strong> are a Pro feature.
                 Your client sees your domain — not ours. That&apos;s the link that justifies your agency fee.
               </p>
             </div>
@@ -162,29 +162,29 @@ export default function PricingPage() {
       </section>
 
       {/* Plans + comparison */}
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl">
           <PricingPlans />
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-t border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-3xl">
-          <h2 className="mb-10 text-center text-2xl font-bold text-slate-950">
+          <h2 className="mb-10 text-center text-2xl font-bold text-slate-950 dark:text-white">
             Common questions
           </h2>
           <div className="space-y-3">
             {faqs.map(({ q, a }) => (
               <details
                 key={q}
-                className="group rounded-xl border border-slate-200 bg-white shadow-sm"
+                className="group rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 text-sm font-semibold text-slate-950 hover:text-primary">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 text-sm font-semibold text-slate-950 hover:text-primary dark:text-white">
                   {q}
                   <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
                 </summary>
-                <div className="border-t border-slate-100 px-6 pb-5 pt-4 text-sm leading-7 text-slate-600">
+                <div className="border-t border-slate-100 px-6 pb-5 pt-4 text-sm leading-7 text-slate-600 dark:border-slate-800 dark:text-slate-400">
                   {a}
                 </div>
               </details>
@@ -194,7 +194,7 @@ export default function PricingPage() {
       </section>
 
       {/* Agency / contact CTA */}
-      <section className="border-t border-slate-200 bg-white px-4 py-16 sm:px-6 lg:px-8">
+      <section className="border-t border-slate-200 bg-white px-4 py-16 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-slate-950 p-8 text-center sm:p-12">
           <h2 className="text-2xl font-bold text-white">
             Need a custom Agency setup?

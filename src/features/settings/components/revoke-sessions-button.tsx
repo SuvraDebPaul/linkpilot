@@ -20,7 +20,7 @@ export function RevokeSessionsButton() {
       return;
     }
     toast.success(result.message);
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ callbackUrl: "/" });
   }
 
   return (
