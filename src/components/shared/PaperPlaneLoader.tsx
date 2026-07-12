@@ -25,9 +25,9 @@ export default function PaperPlaneLoader() {
                 x2="1"
                 y2="1"
               >
-                <stop offset="0%" stopColor="#2563eb" />
-                <stop offset="55%" stopColor="#4f46e5" />
-                <stop offset="100%" stopColor="#7c3aed" />
+                <stop offset="0%" className={styles.gradientStart} />
+                <stop offset="55%" className={styles.gradientMid} />
+                <stop offset="100%" className={styles.gradientEnd} />
               </linearGradient>
 
               <filter
@@ -41,7 +41,7 @@ export default function PaperPlaneLoader() {
                   dx="0"
                   dy="8"
                   stdDeviation="8"
-                  floodColor="#2563eb"
+                  className={styles.planeShadowColor}
                   floodOpacity="0.25"
                 />
               </filter>
@@ -95,9 +95,9 @@ export default function PaperPlaneLoader() {
                 fill="url(#linkPilotGradient)"
               />
 
-              <path d="m-12 2 37-2-29 11Z" fill="#3730a3" opacity="0.8" />
+              <path d="m-12 2 37-2-29 11Z" fill="#6d28d9" opacity="0.8" />
 
-              <path d="M-12 2 25 0-8-4Z" fill="#818cf8" opacity="0.75" />
+              <path d="M-12 2 25 0-8-4Z" fill="#a78bfa" opacity="0.75" />
 
               <path
                 d="m-12 2 7 14 5-12"

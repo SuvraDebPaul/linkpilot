@@ -108,6 +108,7 @@ export function PublicHeader() {
                 initial={{ rotate: -90, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
                 exit={{ rotate: 90, opacity: 0 }}
+                whileTap={{ scale: 0.8 }}
                 transition={{ duration: 0.2 }}
                 className="flex"
               >
@@ -151,6 +152,7 @@ export function PublicHeader() {
                 initial={{ rotate: -90, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
                 exit={{ rotate: 90, opacity: 0 }}
+                whileTap={{ scale: 0.8 }}
                 transition={{ duration: 0.2 }}
                 className="flex"
               >

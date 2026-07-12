@@ -1,11 +1,4 @@
 .loadingScreen {
-  --primary: #2563eb;
-  --primary-dark: #3730a3;
-  --secondary: #7c3aed;
-  --foreground: #111827;
-  --muted: #64748b;
-  --background: #ffffff;
-
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -18,7 +11,7 @@
   background:
     radial-gradient(
       circle at 50% 40%,
-      rgba(37, 99, 235, 0.08),
+      color-mix(in oklch, var(--primary) 10%, transparent),
       transparent 34%
     ),
     var(--background);
@@ -35,14 +28,15 @@
 
   background: radial-gradient(
     circle,
-    rgba(99, 102, 241, 0.09),
-    rgba(124, 58, 237, 0.035) 45%,
+    color-mix(in oklch, var(--primary) 14%, transparent),
+    color-mix(in oklch, #8b5cf6 8%, transparent) 45%,
     transparent 70%
   );
 
   filter: blur(10px);
   transform: translate(-50%, -52%);
-  animation: backgroundPulse 3s ease-in-out infinite;
+  animation: backgroundPulse 3.6s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 .loaderContent {
@@ -75,15 +69,16 @@
 
 .route {
   fill: none;
-  stroke: rgba(99, 102, 241, 0.25);
+  stroke: color-mix(in oklch, var(--primary) 35%, transparent);
   stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 0.025 0.045;
+  stroke-dasharray: 0.032 0.048;
   stroke-dashoffset: 0;
+  will-change: stroke-dashoffset, opacity;
 
   animation:
-    routeVisibility 3.4s ease-in-out infinite,
-    routeMovement 1s linear infinite;
+    routeVisibility 3.6s ease-in-out infinite,
+    routeMovement 1.3s linear infinite;
 }
 
 @keyframes routeVisibility {
@@ -105,7 +100,7 @@
 
 @keyframes routeMovement {
   to {
-    stroke-dashoffset: -0.14;
+    stroke-dashoffset: -0.16;
   }
 }
 
@@ -116,18 +111,20 @@
 .startNode {
   transform-box: fill-box;
   transform-origin: center;
-  animation: startNodeSequence 3.4s ease-in-out infinite;
+  animation: startNodeSequence 3.6s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+  will-change: transform, opacity;
 }
 
 .startNodePulse {
   fill: none;
-  stroke: rgba(37, 99, 235, 0.2);
+  stroke: color-mix(in oklch, var(--primary) 28%, transparent);
   stroke-width: 2;
 
   transform-box: fill-box;
   transform-origin: center;
 
-  animation: startPulse 1.4s ease-out infinite;
+  animation: startPulse 1.5s ease-out infinite;
+  will-change: transform, opacity;
 }
 
 @keyframes startNodeSequence {
@@ -159,7 +156,7 @@
 
 @keyframes startPulse {
   0% {
-    opacity: 0.8;
+    opacity: 0.75;
     transform: scale(0.75);
   }
 
@@ -176,8 +173,9 @@
 .paperPlane {
   transform-box: fill-box;
   transform-origin: center;
+  will-change: transform, opacity;
 
-  animation: sendPlane 3.4s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  animation: sendPlane 3.6s cubic-bezier(0.45, 0, 0.15, 1) infinite;
 }
 
 @keyframes sendPlane {
@@ -192,27 +190,27 @@
     transform: translate(72px, 158px) rotate(-18deg) scale(0.78);
   }
 
-  25% {
+  27% {
     opacity: 1;
     transform: translate(93px, 125px) rotate(-28deg) scale(0.9);
   }
 
-  42% {
+  43% {
     opacity: 1;
     transform: translate(155px, 85px) rotate(-9deg) scale(1);
   }
 
-  57% {
+  58% {
     opacity: 1;
     transform: translate(224px, 82px) rotate(11deg) scale(1);
   }
 
-  70% {
+  71% {
     opacity: 1;
     transform: translate(288px, 137px) rotate(30deg) scale(0.82);
   }
 
-  76% {
+  78% {
     opacity: 0;
     transform: translate(295px, 142px) rotate(34deg) scale(0.3);
   }
@@ -228,24 +226,24 @@
 ------------------------------------------- */
 
 .trailParticles {
-  fill: rgba(99, 102, 241, 0.45);
-  animation: trailSequence 3.4s ease-in-out infinite;
+  fill: color-mix(in oklch, var(--primary) 55%, #8b5cf6 45%);
+  animation: trailSequence 3.6s ease-in-out infinite;
 }
 
 .trailParticles circle:nth-child(1) {
-  animation: particlePulse 750ms ease-in-out infinite;
+  animation: particlePulse 780ms ease-in-out infinite;
 }
 
 .trailParticles circle:nth-child(2) {
-  animation: particlePulse 750ms 100ms ease-in-out infinite;
+  animation: particlePulse 780ms 100ms ease-in-out infinite;
 }
 
 .trailParticles circle:nth-child(3) {
-  animation: particlePulse 750ms 200ms ease-in-out infinite;
+  animation: particlePulse 780ms 200ms ease-in-out infinite;
 }
 
 .trailParticles circle:nth-child(4) {
-  animation: particlePulse 750ms 300ms ease-in-out infinite;
+  animation: particlePulse 780ms 300ms ease-in-out infinite;
 }
 
 @keyframes trailSequence {
@@ -286,23 +284,24 @@
   transform-box: fill-box;
   transform-origin: center;
 
-  animation: destinationSequence 3.4s ease-in-out infinite;
+  animation: destinationSequence 3.6s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+  will-change: transform, opacity;
 }
 
 .destinationCircle {
-  fill: #ffffff;
-  stroke: rgba(99, 102, 241, 0.2);
+  fill: var(--card);
+  stroke: color-mix(in oklch, var(--primary) 28%, transparent);
   stroke-width: 2;
 }
 
 .destinationRipple {
-  fill: rgba(99, 102, 241, 0.08);
-  stroke: rgba(99, 102, 241, 0.18);
+  fill: color-mix(in oklch, var(--primary) 10%, transparent);
+  stroke: color-mix(in oklch, var(--primary) 22%, transparent);
   stroke-width: 2;
 
   transform-box: fill-box;
   transform-origin: center;
-  animation: destinationPulse 3.4s ease-out infinite;
+  animation: destinationPulse 3.6s ease-out infinite;
 }
 
 .checkmark {
@@ -315,7 +314,7 @@
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 
-  animation: drawCheckmark 3.4s ease-in-out infinite;
+  animation: drawCheckmark 3.6s ease-in-out infinite;
 }
 
 @keyframes destinationSequence {
@@ -382,13 +381,14 @@
 ------------------------------------------- */
 
 .decorativeDots {
-  fill: rgba(99, 102, 241, 0.25);
+  fill: color-mix(in oklch, var(--primary) 40%, #8b5cf6 30%);
 }
 
 .decorativeDots circle {
   transform-box: fill-box;
   transform-origin: center;
-  animation: floatingDot 1.8s ease-in-out infinite alternate;
+  animation: floatingDot 2s ease-in-out infinite alternate;
+  will-change: transform, opacity;
 }
 
 .decorativeDots circle:nth-child(2) {
@@ -434,18 +434,19 @@
 
   overflow: hidden;
 
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--border);
   border-radius: 14px;
 
-  background: rgba(255, 255, 255, 0.86);
+  background: color-mix(in oklch, var(--card) 88%, transparent);
   box-shadow:
-    0 18px 50px rgba(15, 23, 42, 0.08),
-    0 4px 14px rgba(37, 99, 235, 0.06);
+    0 18px 50px rgba(0, 0, 0, 0.12),
+    0 4px 14px color-mix(in oklch, var(--primary) 12%, transparent);
 
   backdrop-filter: blur(14px);
 
   transform: translateX(50%);
-  animation: cardFloating 2.2s ease-in-out infinite alternate;
+  animation: cardFloating 2.3s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .browserDot {
@@ -454,7 +455,8 @@
   flex: 0 0 auto;
 
   border-radius: 999px;
-  background: #cbd5e1;
+  background: var(--muted-foreground);
+  opacity: 0.4;
 }
 
 .urlField {
@@ -468,9 +470,9 @@
   padding: 7px 10px;
 
   border-radius: 9px;
-  background: #f8fafc;
+  background: var(--muted);
 
-  color: #64748b;
+  color: var(--muted-foreground);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -497,9 +499,10 @@
   height: 2px;
   border-radius: 999px;
 
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  background: linear-gradient(90deg, var(--primary), #8b5cf6);
 
-  animation: urlProgress 3.4s ease-in-out infinite;
+  animation: urlProgress 3.6s ease-in-out infinite;
+  will-change: width, opacity;
 }
 
 @keyframes cardFloating {
@@ -535,6 +538,26 @@
 }
 
 /* -------------------------------------------
+   Gradient + shadow colors (SVG defs) — theme-aware
+------------------------------------------- */
+
+.gradientStart {
+  stop-color: var(--primary);
+}
+
+.gradientMid {
+  stop-color: color-mix(in oklch, var(--primary) 45%, #8b5cf6 55%);
+}
+
+.gradientEnd {
+  stop-color: #8b5cf6;
+}
+
+.planeShadowColor {
+  flood-color: var(--primary);
+}
+
+/* -------------------------------------------
    Branding and loading text
 ------------------------------------------- */
 
@@ -559,7 +582,7 @@
 
   color: var(--primary);
 
-  animation: logoPulse 1.7s ease-in-out infinite;
+  animation: logoPulse 1.8s ease-in-out infinite;
 }
 
 .logoMark svg {
@@ -575,7 +598,7 @@
   min-height: 20px;
   margin: 9px 0 0;
 
-  color: var(--muted);
+  color: var(--muted-foreground);
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.01em;

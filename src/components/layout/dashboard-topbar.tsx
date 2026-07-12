@@ -121,15 +121,20 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
         {/* Notification bell */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.88 }}
               className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               title="Notifications"
             >
               <Bell className="h-[18px] w-[18px]" />
               {actionItems.length > 0 && (
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
+                <motion.span
+                  animate={{ scale: [1, 1.35, 1] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card"
+                />
               )}
-            </button>
+            </motion.button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <div className="flex items-center justify-between px-2 py-1.5">
@@ -180,8 +185,9 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
         </DropdownMenu>
 
         {/* Quick theme toggle — cycles light → dark → auto */}
-        <button
+        <motion.button
           onClick={cycleTheme}
+          whileTap={{ scale: 0.88 }}
           className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           title={`Theme: ${theme} (click to change)`}
         >
@@ -197,7 +203,7 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
               <ThemeIcon className="h-[18px] w-[18px]" />
             </motion.span>
           </AnimatePresence>
-        </button>
+        </motion.button>
 
         {/* Settings shortcut */}
         <Link

@@ -263,6 +263,7 @@ export function CampaignQrGrid({ links, campaignName }: Props) {
             key={link.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -3 }}
             transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }}
           >
             <QrCard

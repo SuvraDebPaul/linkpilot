@@ -40,11 +40,13 @@ export function CampaignsGrid({
             key={c.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.2, delay: Math.min(i * 0.04, 0.3) }}
           >
             <Link href={`/dashboard/campaigns/${c.id}`} className="group block">
               <Card
-                className={`h-full overflow-hidden border-border/70 transition-all group-hover:-translate-y-0.5 group-hover:shadow-md ${accent.ring}`}
+                className={`h-full overflow-hidden border-border/70 transition-shadow group-hover:shadow-md ${accent.ring}`}
               >
                 <CardContent className="flex h-full flex-col justify-between p-5">
                   <div>
