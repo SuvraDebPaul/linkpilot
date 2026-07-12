@@ -167,7 +167,11 @@ export function BillingPanel({
             </div>
           </div>
           {currentPlan !== "free" && !isLifetime && (
-            <Button variant="outline" onClick={handlePortal} disabled={portalLoading}>
+            <Button
+              variant="outline"
+              onClick={handlePortal}
+              disabled={portalLoading}
+            >
               {portalLoading ? "Opening…" : "Manage subscription"}
             </Button>
           )}
@@ -175,7 +179,11 @@ export function BillingPanel({
 
         {currentPlan === "free" && (
           <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
-            <UsageMeter label="Links created" used={linksCreated} limit={FREE_LIMITS.links} />
+            <UsageMeter
+              label="Links created"
+              used={linksCreated}
+              limit={FREE_LIMITS.links}
+            />
             <UsageMeter
               label="Campaigns created"
               used={campaignsCreated}
@@ -242,18 +250,24 @@ export function BillingPanel({
                   key={tier}
                   className={`flex h-full flex-col ${
                     isFeatured
-                      ? "border-primary/50 bg-gradient-to-b from-primary/[0.06] to-transparent shadow-lg shadow-primary/10 sm:scale-[1.03]"
+                      ? "border-primary/50 bg-linear-to-b from-primary/6 to-transparent shadow-lg shadow-primary/10 sm:scale-[1.03]"
                       : ""
                   }`}
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg capitalize">{tier}</CardTitle>
+                      <CardTitle className="text-lg capitalize">
+                        {tier}
+                      </CardTitle>
                       {isCurrentPlan && (
-                        <Badge className="bg-primary/10 text-primary">Current</Badge>
+                        <Badge className="bg-primary/10 text-primary">
+                          Current
+                        </Badge>
                       )}
                       {isFeatured && !isCurrentPlan && (
-                        <Badge className="bg-primary text-primary-foreground">Most popular</Badge>
+                        <Badge className="bg-primary text-primary-foreground">
+                          Most popular
+                        </Badge>
                       )}
                     </div>
                     <CardDescription>
@@ -277,7 +291,9 @@ export function BillingPanel({
                         <li
                           key={f.text}
                           className={`flex items-start gap-2 text-sm ${
-                            f.highlight ? "font-semibold text-foreground" : "text-foreground"
+                            f.highlight
+                              ? "font-semibold text-foreground"
+                              : "text-foreground"
                           }`}
                         >
                           <CheckCircle2
@@ -310,20 +326,27 @@ export function BillingPanel({
           </div>
 
           {currentPlan !== "pro" && (
-            <Card className="border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:border-amber-500/20 dark:from-amber-500/10 dark:via-card dark:to-orange-500/10">
+            <Card className="border-amber-200 bg-linear-to-br from-amber-50 via-white to-orange-50 dark:border-amber-500/20 dark:from-amber-500/10 dark:via-card dark:to-orange-500/10">
               <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Star className="h-4 w-4 text-amber-500" />
-                    <p className="font-bold text-foreground">Pro Lifetime Access</p>
-                    <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400">One-time</Badge>
+                    <p className="font-bold text-foreground">
+                      Pro Lifetime Access
+                    </p>
+                    <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400">
+                      One-time
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Pay once, use forever. All Pro features, all future updates.
                   </p>
                   <ul className="mt-2 grid gap-1 sm:grid-cols-2">
                     {PLAN_FEATURES.lifetime?.map((f) => (
-                      <li key={f.text} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <li
+                        key={f.text}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                      >
                         <InfinityIcon className="h-3 w-3 shrink-0 text-amber-500" />
                         {f.text}
                       </li>
@@ -337,7 +360,9 @@ export function BillingPanel({
                     disabled={!!loadingPlan}
                     onClick={() => handleUpgrade("lifetime")}
                   >
-                    {loadingPlan === "lifetime" ? "Redirecting…" : "Get lifetime access"}
+                    {loadingPlan === "lifetime"
+                      ? "Redirecting…"
+                      : "Get lifetime access"}
                   </Button>
                 </div>
               </CardContent>
@@ -349,7 +374,15 @@ export function BillingPanel({
   );
 }
 
-function UsageMeter({ label, used, limit }: { label: string; used: number; limit: number }) {
+function UsageMeter({
+  label,
+  used,
+  limit,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+}) {
   const pct = Math.min((used / limit) * 100, 100);
   const isAtLimit = used >= limit;
   const isWarning = pct > 70;
@@ -366,9 +399,9 @@ function UsageMeter({ label, used, limit }: { label: string; used: number; limit
         value={pct}
         className={`h-1.5 ${
           isAtLimit
-            ? "[&_[data-slot=progress-indicator]]:bg-destructive"
+            ? "**:data-[slot=progress-indicator]:bg-destructive"
             : isWarning
-              ? "[&_[data-slot=progress-indicator]]:bg-amber-400"
+              ? "**:data-[slot=progress-indicator]:bg-amber-400"
               : ""
         }`}
       />

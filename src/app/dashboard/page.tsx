@@ -12,8 +12,6 @@ import {
   Plus,
   Folder,
   Zap,
-  Globe,
-  Monitor,
 } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
@@ -27,56 +25,6 @@ import {
   padToSix,
 } from "@/lib/audience-breakdown";
 
-const COUNTRY_CODE: Record<string, string> = {
-  "United States": "US",
-  India: "IN",
-  "United Kingdom": "GB",
-  Germany: "DE",
-  Canada: "CA",
-  Australia: "AU",
-  France: "FR",
-  Brazil: "BR",
-  Japan: "JP",
-  China: "CN",
-  Netherlands: "NL",
-  Spain: "ES",
-  Italy: "IT",
-  Mexico: "MX",
-  "South Korea": "KR",
-  Russia: "RU",
-  Turkey: "TR",
-  Indonesia: "ID",
-  Poland: "PL",
-  Sweden: "SE",
-  Norway: "NO",
-  Denmark: "DK",
-  Switzerland: "CH",
-  Belgium: "BE",
-  Portugal: "PT",
-  Ireland: "IE",
-  "New Zealand": "NZ",
-  Singapore: "SG",
-  Pakistan: "PK",
-  Nigeria: "NG",
-  "South Africa": "ZA",
-  Philippines: "PH",
-  Vietnam: "VN",
-  Thailand: "TH",
-  Malaysia: "MY",
-  Argentina: "AR",
-  Colombia: "CO",
-  Egypt: "EG",
-  "Saudi Arabia": "SA",
-  "United Arab Emirates": "AE",
-};
-
-function countryFlag(name: string): string {
-  const code = COUNTRY_CODE[name];
-  if (!code) return "🌍";
-  return [...code]
-    .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
-    .join("");
-}
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { getUserPlan, getUserUsage, PLAN_LIMITS } from "@/lib/subscription";
 import { siteConfig } from "@/config/site";
@@ -417,7 +365,7 @@ export default async function DashboardPage() {
                   icon={MousePointerClick}
                   title="No clicks yet"
                   description="Share your links to start seeing data here."
-                  className="h-[120px] py-0"
+                  className="h-30 py-0"
                 />
               ) : (
                 <ClicksLineChart data={stats.clicksPerDay} />
@@ -799,7 +747,7 @@ export default async function DashboardPage() {
                         <span className="text-xs text-muted-foreground tabular-nums">
                           {sharePct}%
                         </span>
-                        <div className="text-right min-w-[2.5rem]">
+                        <div className="text-right min-w-10">
                           <p
                             className={cn(
                               "text-sm font-black tabular-nums leading-tight",
@@ -974,7 +922,7 @@ export default async function DashboardPage() {
                             </div>
                             {/* Rows */}
                             <div className="divide-y divide-border/40">
-                              {col.map((row, ri) => {
+                              {col.map((row) => {
                                 const pct = Math.round(
                                   (row.count / total) * 100,
                                 );
