@@ -65,7 +65,7 @@ export default async function DomainsPage() {
   const canAdd = canAddDomain(plan, domains.length);
 
   return (
-    <div className="max-w-7xl space-y-6">
+    <div className="max-w-full space-y-6">
       <PageHeader
         title="Custom Domains"
         description="Use your own domain for branded short links."

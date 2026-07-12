@@ -33,7 +33,12 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<Theme>(initialTheme);
 
   useEffect(() => {
+    // Reading localStorage can only happen client-side, so syncing it into state here
+    // (rather than in the initializer) is what keeps server/client hydration matching —
+    // this is the documented "sync from an external system on mount" exception, not the
+    // cascading-render pattern the lint rule is otherwise right to flag.
     const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored && stored !== theme) setThemeState(stored);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

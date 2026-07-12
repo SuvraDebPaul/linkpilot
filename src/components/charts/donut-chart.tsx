@@ -49,14 +49,19 @@ export function DonutChart({ segments, total, centerLabel = "Total" }: Props) {
   }
 
   // Build cumulative offsets
-  let cumFrac = 0;
-  const arcs = visible.map((seg) => {
-    const frac = seg.value / total;
-    const arcLen = Math.max(frac * C - GAP, 0);
-    const offset = -(cumFrac * C);
-    cumFrac += frac;
-    return { ...seg, frac, arcLen, offset };
-  });
+  const arcs = visible.reduce<
+    { list: Array<Segment & { frac: number; arcLen: number; offset: number }>; cum: number }
+  >(
+    (acc, seg) => {
+      const frac = seg.value / total;
+      const arcLen = Math.max(frac * C - GAP, 0);
+      const offset = -(acc.cum * C);
+      acc.list.push({ ...seg, frac, arcLen, offset });
+      acc.cum += frac;
+      return acc;
+    },
+    { list: [], cum: 0 },
+  ).list;
 
   return (
     <div className="flex flex-col items-center gap-4">

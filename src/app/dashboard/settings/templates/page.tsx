@@ -5,7 +5,10 @@ import { Globe, Megaphone } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
-import { getGeoTemplates, getCampaignTemplates } from "@/server/queries/templates.queries";
+import {
+  getGeoTemplates,
+  getCampaignTemplates,
+} from "@/server/queries/templates.queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { GeoTemplatesPanel } from "@/features/templates/components/geo-templates-panel";
@@ -24,7 +27,7 @@ export default async function TemplatesPage() {
   ]);
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-full space-y-6">
       <PageHeader
         title="Templates"
         description="Reusable geo-targeting rule sets and UTM campaign tags for building your links."
@@ -41,10 +44,16 @@ export default async function TemplatesPage() {
         </TabsList>
 
         <TabsContent value="geo" className="mt-4">
-          <GeoTemplatesPanel workspaceId={workspaceId} initialTemplates={geoTemplates} />
+          <GeoTemplatesPanel
+            workspaceId={workspaceId}
+            initialTemplates={geoTemplates}
+          />
         </TabsContent>
         <TabsContent value="campaign" className="mt-4">
-          <CampaignTemplatesPanel workspaceId={workspaceId} initialTemplates={campaignTemplates} />
+          <CampaignTemplatesPanel
+            workspaceId={workspaceId}
+            initialTemplates={campaignTemplates}
+          />
         </TabsContent>
       </Tabs>
     </div>
