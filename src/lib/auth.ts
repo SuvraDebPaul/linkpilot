@@ -28,6 +28,10 @@ function getRequestMeta(req?: { headers?: Record<string, string> }) {
 // so a forgotten/closed tab can't leave a "logged in" demo session lingering forever.
 const DEMO_SESSION_MAX_AGE_MS = 30 * 60 * 1000;
 
+// The one account the "Demo Dashboard" button signs into — not any of the seeded
+// teammates on that workspace, which are flagged isDemoAccount too.
+const DEMO_USER_EMAIL = "demo@linkpilot.com";
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
   session: {
@@ -77,17 +81,20 @@ export const authOptions: NextAuthOptions = {
       name: "Demo",
       credentials: {},
       async authorize() {
-        const demoUser = await prisma.user.findFirst({
-          where: { isDemoAccount: true },
-          select: { id: true, name: true, email: true, image: true },
+        // Seeded teammates on the demo workspace are also flagged isDemoAccount, so
+        // this must target the primary demo login by email specifically — a bare
+        // isDemoAccount filter would nondeterministically match any of them.
+        const demoUser = await prisma.user.findUnique({
+          where: { email: DEMO_USER_EMAIL },
+          select: { id: true, name: true, email: true, image: true, isDemoAccount: true },
         });
-        if (!demoUser) return null;
+        if (!demoUser?.isDemoAccount) return null;
 
         await prisma.loginEvent.create({
           data: { userId: demoUser.id, type: "demo", ip: "Unknown", browser: "Unknown" },
         });
 
-        return demoUser;
+        return { id: demoUser.id, name: demoUser.name, email: demoUser.email, image: demoUser.image };
       },
     }),
   ],

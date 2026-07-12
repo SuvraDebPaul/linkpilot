@@ -35,6 +35,7 @@ import { DeviceDonutChart } from "@/components/charts/device-donut-chart";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
 import { OsBarChart } from "@/components/charts/os-bar-chart";
 import { WorldMap } from "@/components/charts/world-map";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { PeriodTabs } from "@/features/analytics/components/period-tabs";
 import { LockedCard } from "@/features/analytics/components/locked-card";
 import { cn } from "@/lib/utils";
@@ -162,7 +163,7 @@ export default async function AnalyticsPage({
               >
                 <s.icon className="h-4 w-4 text-white/70" />
                 <p className="mt-2 text-2xl font-black">
-                  {s.value.toLocaleString()}
+                  <AnimatedNumber value={s.value} />
                 </p>
                 <p className="mt-0.5 text-xs text-white/70">{s.label}</p>
               </div>
@@ -232,7 +233,7 @@ export default async function AnalyticsPage({
               </p>
             </div>
             <p className="relative mt-1 text-3xl font-black text-foreground">
-              {data.totalClicks.toLocaleString()}
+              <AnimatedNumber value={data.totalClicks} />
             </p>
             <p className="relative mt-0.5 text-xs text-muted-foreground">
               in the last {days} days
@@ -249,7 +250,7 @@ export default async function AnalyticsPage({
               </p>
             </div>
             <p className="relative mt-1 text-3xl font-black text-foreground">
-              {data.uniqueClicks.toLocaleString()}
+              <AnimatedNumber value={data.uniqueClicks} />
             </p>
             <p className="relative mt-0.5 text-xs text-muted-foreground">
               distinct IP addresses

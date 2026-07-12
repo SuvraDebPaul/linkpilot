@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import JSZip from "jszip";
 import QRCode from "qrcode";
+import { motion } from "motion/react";
 import { Download, Package, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -257,13 +258,19 @@ export function CampaignQrGrid({ links, campaignName }: Props) {
 
       {/* Grid */}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {links.map((link) => (
-          <QrCard
+        {links.map((link, index) => (
+          <motion.div
             key={link.id}
-            link={link}
-            selected={selected.has(link.id)}
-            onToggle={() => toggle(link.id)}
-          />
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }}
+          >
+            <QrCard
+              link={link}
+              selected={selected.has(link.id)}
+              onToggle={() => toggle(link.id)}
+            />
+          </motion.div>
         ))}
       </div>
     </div>

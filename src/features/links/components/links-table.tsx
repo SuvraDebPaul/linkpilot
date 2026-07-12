@@ -4,6 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { motion } from "motion/react";
 import {
   Link2,
   ExternalLink,
@@ -594,7 +595,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
             </thead>
 
             <tbody className="divide-y divide-border">
-              {links.map((link) => {
+              {links.map((link, index) => {
                 const isActive = optimisticActive[link.id] ?? link.isActive;
                 const isFavorite =
                   optimisticFavorite[link.id] ?? link.isFavorite;
@@ -603,8 +604,11 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                 const favicon = faviconUrl(link.originalUrl);
 
                 return (
-                  <tr
+                  <motion.tr
                     key={link.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: Math.min(index * 0.025, 0.3) }}
                     className={cn(
                       "group transition-colors",
                       isSelected ? "bg-primary/5" : "hover:bg-muted/40",
@@ -824,7 +828,7 @@ export function LinksTable({ links: initialLinks }: { links: LinkRow[] }) {
                         </DropdownMenu>
                       </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 );
               })}
             </tbody>

@@ -2,6 +2,7 @@ import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/layout/dashboard-topbar";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
 import { Logo } from "@/components/shared/logo";
+import { RouteTransition } from "@/components/shared/route-transition";
 import type { ActionItem } from "@/server/queries/notifications.queries";
 
 type WorkspaceOption = { id: string; name: string; role: string };
@@ -28,7 +29,9 @@ export function DashboardShell({
           </div>
         </div>
         <DashboardTopbar actionItems={actionItems} />
-        <main className="flex-1 overflow-y-auto p-3 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6">
+          <RouteTransition>{children}</RouteTransition>
+        </main>
       </div>
     </div>
   );

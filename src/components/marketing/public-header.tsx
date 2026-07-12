@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, LayoutDashboard, Sun, Moon, MonitorSmartphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
@@ -99,9 +100,20 @@ export function PublicHeader() {
             onClick={cycleTheme}
             aria-label={`Theme: ${theme} (click to change)`}
             title={`Theme: ${theme} (click to change)`}
-            className="text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+            className="relative overflow-hidden text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
           >
-            <ThemeIcon className="h-[18px] w-[18px]" />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={theme}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex"
+              >
+                <ThemeIcon className="h-[18px] w-[18px]" />
+              </motion.span>
+            </AnimatePresence>
           </Button>
 
           {isLoggedIn ? (
@@ -131,9 +143,20 @@ export function PublicHeader() {
             onClick={cycleTheme}
             aria-label={`Theme: ${theme} (click to change)`}
             title={`Theme: ${theme} (click to change)`}
-            className="text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+            className="relative overflow-hidden text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
           >
-            <ThemeIcon className="h-[18px] w-[18px]" />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={theme}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex"
+              >
+                <ThemeIcon className="h-[18px] w-[18px]" />
+              </motion.span>
+            </AnimatePresence>
           </Button>
           <Button
             type="button"

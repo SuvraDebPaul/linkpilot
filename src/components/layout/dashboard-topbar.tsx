@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Search,
   Bell,
@@ -181,10 +182,21 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
         {/* Quick theme toggle — cycles light → dark → auto */}
         <button
           onClick={cycleTheme}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           title={`Theme: ${theme} (click to change)`}
         >
-          <ThemeIcon className="h-[18px] w-[18px]" />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={theme}
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex"
+            >
+              <ThemeIcon className="h-[18px] w-[18px]" />
+            </motion.span>
+          </AnimatePresence>
         </button>
 
         {/* Settings shortcut */}
