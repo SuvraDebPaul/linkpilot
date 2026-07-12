@@ -12,7 +12,13 @@ import {
 } from "@/server/queries/workspace.queries";
 import { getUserPlan } from "@/lib/subscription";
 import { PlanBadge } from "@/components/shared/plan-badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 import { RenameWorkspaceForm } from "@/features/workspace/components/rename-workspace-form";
 import { InviteMemberForm } from "@/features/workspace/components/invite-member-form";
@@ -36,12 +42,15 @@ export default async function WorkspaceSettingsPage() {
   const membership = memberships[0];
   if (!membership) redirect("/dashboard");
 
-  const isOwnerOrAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
+  const isOwnerOrAdmin =
+    membership.role === "OWNER" || membership.role === "ADMIN";
 
   const [workspace, pendingInvites, auditLog] = await Promise.all([
     getWorkspaceWithMembers(membership.workspaceId),
     getPendingInvites(membership.workspaceId),
-    isOwnerOrAdmin ? getWorkspaceAuditLog(membership.workspaceId) : Promise.resolve([]),
+    isOwnerOrAdmin
+      ? getWorkspaceAuditLog(membership.workspaceId)
+      : Promise.resolve([]),
   ]);
   if (!workspace) redirect("/dashboard");
 
@@ -49,11 +58,17 @@ export default async function WorkspaceSettingsPage() {
   const isPro = plan === "pro";
   const isPaidPlan = plan === "starter" || plan === "pro";
 
-  const memberSince = workspace.createdAt.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const memberSince = workspace.createdAt.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <PageHeader title="Organization" description="Manage your workspace, branding, and team members." />
+    <div className="max-w-full space-y-6">
+      <PageHeader
+        title="Organization"
+        description="Manage your workspace, branding, and team members."
+      />
 
       {/* Workspace name + Branding — side by side when both apply */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -69,12 +84,16 @@ export default async function WorkspaceSettingsPage() {
                 <PlanBadge plan={plan} />
                 <span>·</span>
                 <span>
-                  {workspace.members.length} member{workspace.members.length !== 1 ? "s" : ""}
+                  {workspace.members.length} member
+                  {workspace.members.length !== 1 ? "s" : ""}
                 </span>
                 <span>·</span>
                 <span>Created {memberSince}</span>
               </div>
-              <RenameWorkspaceForm workspaceId={workspace.id} currentName={workspace.name} />
+              <RenameWorkspaceForm
+                workspaceId={workspace.id}
+                currentName={workspace.name}
+              />
             </CardContent>
           </Card>
         )}
@@ -87,7 +106,8 @@ export default async function WorkspaceSettingsPage() {
               </CardTitle>
               <CardDescription>
                 Customise the logo and color shown on shared campaign reports.
-                {!isPro && " Upgrade to Pro to fully remove LinkPilot branding."}
+                {!isPro &&
+                  " Upgrade to Pro to fully remove LinkPilot branding."}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -109,11 +129,14 @@ export default async function WorkspaceSettingsPage() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Users className="h-4 w-4 text-primary" /> Members
           </CardTitle>
-          <CardDescription>{workspace.members.length} member{workspace.members.length !== 1 ? "s" : ""}</CardDescription>
+          <CardDescription>
+            {workspace.members.length} member
+            {workspace.members.length !== 1 ? "s" : ""}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isOwnerOrAdmin && (
-            canInvite ? (
+          {isOwnerOrAdmin &&
+            (canInvite ? (
               <div className="flex flex-wrap items-center gap-2">
                 <InviteMemberForm workspaceId={workspace.id} />
                 <CreateMemberAccountForm workspaceId={workspace.id} />
@@ -122,15 +145,17 @@ export default async function WorkspaceSettingsPage() {
               <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                 Upgrade to Starter or Pro to invite team members.
               </p>
-            )
-          )}
+            ))}
 
           {isOwnerOrAdmin && pendingInvites.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Pending invites
               </p>
-              <PendingInvitesList workspaceId={workspace.id} invites={pendingInvites} />
+              <PendingInvitesList
+                workspaceId={workspace.id}
+                invites={pendingInvites}
+              />
             </div>
           )}
 
@@ -150,15 +175,22 @@ export default async function WorkspaceSettingsPage() {
             <CardTitle className="flex items-center gap-2 text-base">
               <History className="h-4 w-4 text-primary" /> Recent activity
             </CardTitle>
-            <CardDescription>Role changes, removals, and other admin actions on this workspace.</CardDescription>
+            <CardDescription>
+              Role changes, removals, and other admin actions on this workspace.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {auditLog.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">No activity recorded yet.</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                No activity recorded yet.
+              </p>
             ) : (
               <div className="divide-y divide-border">
                 {auditLog.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between gap-3 py-2.5 text-sm"
+                  >
                     <p className="text-foreground">{entry.message}</p>
                     <p className="shrink-0 text-xs text-muted-foreground">
                       {entry.createdAt.toLocaleString("en-US", {

@@ -17,8 +17,11 @@ export default async function BillingPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
-      <PageHeader title="Billing" description="Manage your plan and payment details." />
+    <div className="mx-auto max-w-full space-y-6 p-6">
+      <PageHeader
+        title="Billing"
+        description="Manage your plan and payment details."
+      />
       <Suspense>
         <BillingPanel
           currentPlan={plan}

@@ -21,7 +21,11 @@ import { getDashboardStats } from "@/server/queries/dashboard.queries";
 import { WorldMap } from "@/components/charts/world-map";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
 import { OsBarChart } from "@/components/charts/os-bar-chart";
-import { CANONICAL_BROWSERS, CANONICAL_OS, padToSix } from "@/lib/audience-breakdown";
+import {
+  CANONICAL_BROWSERS,
+  CANONICAL_OS,
+  padToSix,
+} from "@/lib/audience-breakdown";
 
 const COUNTRY_CODE: Record<string, string> = {
   "United States": "US",
@@ -155,7 +159,7 @@ export default async function DashboardPage() {
           <Badge
             variant="secondary"
             className={cn(
-              "capitalize font-medium",
+              "capitalize font-medium rounded text-sm p-3",
               plan === "pro" && "bg-primary/10 text-primary",
               plan === "starter" &&
                 "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
@@ -343,7 +347,11 @@ export default async function DashboardPage() {
             <div className="mt-2.5 flex items-end justify-between gap-2">
               <p className="text-4xl font-bold tracking-tight text-foreground">
                 <AnimatedNumber
-                  value={stats.expiringSoon > 0 ? stats.expiringSoon : stats.totalCampaigns}
+                  value={
+                    stats.expiringSoon > 0
+                      ? stats.expiringSoon
+                      : stats.totalCampaigns
+                  }
                 />
               </p>
               <MiniSparkline
@@ -822,8 +830,12 @@ export default async function DashboardPage() {
           {/* Browsers — ranked card */}
           {stats.clicksByBrowser.length > 0 &&
             (() => {
-              const total = stats.clicksByBrowser.reduce((s, r) => s + r.count, 0) || 1;
-              const browsers = padToSix(stats.clicksByBrowser, CANONICAL_BROWSERS);
+              const total =
+                stats.clicksByBrowser.reduce((s, r) => s + r.count, 0) || 1;
+              const browsers = padToSix(
+                stats.clicksByBrowser,
+                CANONICAL_BROWSERS,
+              );
 
               return (
                 <Card className="flex flex-col">
@@ -909,7 +921,8 @@ export default async function DashboardPage() {
           {/* Operating Systems — SVG bar chart + 2×3 table */}
           {stats.clicksByOs.length > 0 &&
             (() => {
-              const total = stats.clicksByOs.reduce((s, r) => s + r.count, 0) || 1;
+              const total =
+                stats.clicksByOs.reduce((s, r) => s + r.count, 0) || 1;
               const osData = padToSix(stats.clicksByOs, CANONICAL_OS);
               const left = osData.slice(0, 3);
               const right = osData.slice(3, 6);
