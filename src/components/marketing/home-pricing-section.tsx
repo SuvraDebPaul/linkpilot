@@ -72,16 +72,16 @@ const plans = [
 
 export function HomePricingSection() {
   return (
-    <section className="border-b border-slate-200 bg-white px-4 py-20 sm:px-6 lg:px-8">
+    <section className="border-b border-slate-200 bg-white px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Pricing
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
             Start free. Pay for what you actually use.
           </h2>
-          <p className="mt-4 text-base text-slate-500">
+          <p className="mt-4 text-base text-slate-500 dark:text-slate-400">
             Free account includes 50 links, 2 campaigns, and basic analytics — no card needed. Yearly plans save 20%.
           </p>
         </div>
@@ -92,10 +92,10 @@ export function HomePricingSection() {
               key={plan.name}
               className={`rounded-2xl border p-6 ${
                 plan.featured
-                  ? "border-primary/30 bg-white shadow-xl shadow-primary/10/60"
+                  ? "border-primary/30 bg-white shadow-xl shadow-primary/10/60 dark:bg-slate-900 dark:shadow-none"
                   : plan.agency
-                    ? "border-slate-300 bg-slate-950"
-                    : "border-slate-200 bg-slate-50"
+                    ? "border-slate-300 bg-slate-950 dark:border-slate-700"
+                    : "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60"
               }`}
             >
               {plan.featured && (
@@ -103,15 +103,15 @@ export function HomePricingSection() {
                   Most popular
                 </div>
               )}
-              <p className={`text-lg font-bold ${plan.agency ? "text-white" : "text-slate-950"}`}>
+              <p className={`text-lg font-bold ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}>
                 {plan.name}
               </p>
-              <p className={`mt-0.5 text-xs ${plan.agency ? "text-slate-400" : "text-slate-500"}`}>
+              <p className={`mt-0.5 text-xs ${plan.agency ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>
                 {plan.tagline}
               </p>
 
               <div className="mt-4 flex items-baseline gap-1">
-                <span className={`text-3xl font-black ${plan.agency ? "text-white" : "text-slate-950"}`}>
+                <span className={`text-3xl font-black ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}>
                   {plan.monthly}
                 </span>
                 {plan.period && (
@@ -130,7 +130,7 @@ export function HomePricingSection() {
                 {plan.items.map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm">
                     <Check className={`h-3.5 w-3.5 shrink-0 ${plan.agency ? "text-primary" : "text-primary"}`} />
-                    <span className={plan.agency ? "text-slate-300" : "text-slate-600"}>{item}</span>
+                    <span className={plan.agency ? "text-slate-300" : "text-slate-600 dark:text-slate-400"}>{item}</span>
                   </li>
                 ))}
               </ul>
@@ -152,7 +152,7 @@ export function HomePricingSection() {
 
         <p className="mt-6 text-center text-xs text-slate-400">
           Want to try without signing up?{" "}
-          <Link href="/" className="underline hover:text-slate-600">
+          <Link href="/" className="underline hover:text-slate-600 dark:hover:text-slate-300">
             Use the free homepage shortener
           </Link>{" "}
           — no account, links expire in 7 days.

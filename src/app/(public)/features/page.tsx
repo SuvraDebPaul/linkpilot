@@ -106,7 +106,7 @@ export default function FeaturesPage() {
   return (
     <main>
       {/* Hero */}
-      <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="Platform features"
@@ -119,19 +119,19 @@ export default function FeaturesPage() {
       </section>
 
       {/* Feature grid */}
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {corFeatures.map(({ icon: Icon, title, description }) => (
               <div
                 key={title}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-7"
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-7 dark:border-slate-800 dark:bg-slate-900/60"
               >
                 <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                   <Icon className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="text-base font-bold text-slate-950">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+                <h3 className="text-base font-bold text-slate-950 dark:text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{description}</p>
               </div>
             ))}
           </div>
@@ -139,14 +139,14 @@ export default function FeaturesPage() {
       </section>
 
       {/* Deep dive 1 — QR codes */}
-      <section className="border-y border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-y border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
             {/* Mock */}
             <div className="order-2 lg:order-1">
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-100 px-6 py-4">
-                  <p className="text-sm font-semibold text-slate-950">QR code — Summer Flyer</p>
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                <div className="border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+                  <p className="text-sm font-semibold text-slate-950 dark:text-white">QR code — Summer Flyer</p>
                   <p className="mt-0.5 text-xs text-slate-400">lnkplt.co/summer-flyer</p>
                 </div>
 
@@ -186,9 +186,9 @@ export default function FeaturesPage() {
                       { label: "Top city", value: "London", sub: "38% of scans" },
                     ].map(({ label, value, sub }) => (
                       <div key={label} className="flex items-baseline justify-between gap-4">
-                        <span className="text-xs text-slate-500">{label}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
                         <div className="text-right">
-                          <span className="text-sm font-bold text-slate-950">{value}</span>
+                          <span className="text-sm font-bold text-slate-950 dark:text-white">{value}</span>
                           <span className="ml-1 text-xs text-slate-400">{sub}</span>
                         </div>
                       </div>
@@ -196,14 +196,14 @@ export default function FeaturesPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-slate-100 px-6 py-3">
+                <div className="border-t border-slate-100 px-6 py-3 dark:border-slate-800">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-400">Device split</span>
                     <div className="flex gap-3">
-                      <span className="flex items-center gap-1 text-slate-600">
+                      <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
                         <Smartphone className="h-3 w-3 text-primary"/> 74% mobile
                       </span>
-                      <span className="flex items-center gap-1 text-slate-600">
+                      <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
                         <Monitor className="h-3 w-3 text-slate-400"/> 26% desktop
                       </span>
                     </div>
@@ -217,10 +217,10 @@ export default function FeaturesPage() {
               <p className="text-sm font-semibold uppercase tracking-widest text-primary">
                 QR codes
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
                 Every scan is a data point.
               </h2>
-              <p className="mt-4 text-base leading-7 text-slate-600">
+              <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
                 Put a QR code on your flyer, menu, event banner, or product packaging.
                 Every time someone scans it, you see it — the city, the device, the time of day.
                 You stop guessing whether the print campaign worked.
@@ -232,7 +232,7 @@ export default function FeaturesPage() {
                   "Track QR scans separately from digital clicks",
                   "See device type: were they on mobile or desktop?",
                 ].map((point) => (
-                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700">
+                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     {point}
                   </li>
@@ -247,7 +247,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* Deep dive 2 — Campaigns */}
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
             {/* Copy */}
@@ -255,10 +255,10 @@ export default function FeaturesPage() {
               <p className="text-sm font-semibold uppercase tracking-widest text-primary">
                 Campaigns
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
                 One campaign. Every channel. One report.
               </h2>
-              <p className="mt-4 text-base leading-7 text-slate-600">
+              <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
                 Create a separate link for each channel — Instagram, email, Google Ad, printed flyer.
                 Group them into a campaign. Now you can see which channel actually drives the click.
                 That&apos;s how agencies justify their strategy fee.
@@ -270,7 +270,7 @@ export default function FeaturesPage() {
                   "See total campaign performance at a glance",
                   "Share the full report with one link — no login needed",
                 ].map((point) => (
-                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700">
+                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     {point}
                   </li>
@@ -282,14 +282,14 @@ export default function FeaturesPage() {
             </div>
 
             {/* Mock — campaign summary */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-100 bg-slate-50 px-6 py-4">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+              <div className="border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/60">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
                       Campaign
                     </p>
-                    <p className="mt-0.5 text-base font-bold text-slate-950">
+                    <p className="mt-0.5 text-base font-bold text-slate-950 dark:text-white">
                       Spring Product Launch
                     </p>
                   </div>
@@ -300,7 +300,7 @@ export default function FeaturesPage() {
                 </div>
               </div>
 
-              <div className="divide-y divide-slate-100 px-6 py-2">
+              <div className="divide-y divide-slate-100 px-6 py-2 dark:divide-slate-800">
                 {[
                   { channel: "Google Ads", clicks: 847, pct: 100, color: "bg-primary/100" },
                   { channel: "Instagram Bio", clicks: 612, pct: 72, color: "bg-blue-400" },
@@ -310,20 +310,20 @@ export default function FeaturesPage() {
                 ].map(({ channel, clicks, pct, color }) => (
                   <div key={channel} className="py-3">
                     <div className="mb-1.5 flex items-center justify-between text-xs">
-                      <span className="font-medium text-slate-700">{channel}</span>
-                      <span className="font-semibold text-slate-950">{clicks.toLocaleString()}</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">{channel}</span>
+                      <span className="font-semibold text-slate-950 dark:text-white">{clicks.toLocaleString()}</span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                       <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-slate-100 bg-slate-50 px-6 py-3">
+              <div className="border-t border-slate-100 bg-slate-50 px-6 py-3 dark:border-slate-800 dark:bg-slate-950/60">
                 <p className="text-xs text-slate-400">
-                  Google Ads drove <strong className="text-slate-700">37%</strong> of all clicks.
-                  QR flyer drove <strong className="text-slate-700">7%</strong> — worth scaling.
+                  Google Ads drove <strong className="text-slate-700 dark:text-slate-300">37%</strong> of all clicks.
+                  QR flyer drove <strong className="text-slate-700 dark:text-slate-300">7%</strong> — worth scaling.
                 </p>
               </div>
             </div>
@@ -332,30 +332,30 @@ export default function FeaturesPage() {
       </section>
 
       {/* Deep dive 3 — Analytics */}
-      <section className="border-y border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-y border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
             {/* Mock — analytics summary */}
             <div className="order-2 lg:order-1">
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-100 px-6 py-4">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                <div className="border-b border-slate-100 px-6 py-4 dark:border-slate-800">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-slate-950">Analytics — last 30 days</p>
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">Analytics — last 30 days</p>
                     <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
                       Starter plan
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
+                <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
                   {[
                     { label: "Total clicks", value: "4,820", trend: "+24%" },
                     { label: "Unique visitors", value: "3,101", trend: "+18%" },
                     { label: "QR scans", value: "892", trend: "+61%" },
                   ].map(({ label, value, trend }) => (
                     <div key={label} className="px-4 py-4 text-center">
-                      <p className="text-lg font-bold text-slate-950">{value}</p>
-                      <p className="mt-0.5 text-xs text-slate-500">{label}</p>
+                      <p className="text-lg font-bold text-slate-950 dark:text-white">{value}</p>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{label}</p>
                       <p className="mt-1 text-xs font-semibold text-primary">{trend}</p>
                     </div>
                   ))}
@@ -373,22 +373,22 @@ export default function FeaturesPage() {
                       { label: "Other", pct: 3 },
                     ].map(({ label, pct }) => (
                       <div key={label} className="flex items-center gap-3">
-                        <span className="w-14 text-right text-xs text-slate-500">{label}</span>
-                        <div className="flex-1 overflow-hidden rounded-full bg-slate-100 h-1.5">
+                        <span className="w-14 text-right text-xs text-slate-500 dark:text-slate-400">{label}</span>
+                        <div className="flex-1 overflow-hidden rounded-full bg-slate-100 h-1.5 dark:bg-slate-800">
                           <div
                             className="h-full rounded-full bg-primary/100"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="w-8 text-xs font-semibold text-slate-950">{pct}%</span>
+                        <span className="w-8 text-xs font-semibold text-slate-950 dark:text-white">{pct}%</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="border-t border-slate-100 bg-slate-50 px-6 py-3 flex items-center gap-2">
+                <div className="border-t border-slate-100 bg-slate-50 px-6 py-3 flex items-center gap-2 dark:border-slate-800 dark:bg-slate-950/60">
                   <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     68% of your audience is on mobile. Is your landing page optimised for it?
                   </p>
                 </div>
@@ -400,10 +400,10 @@ export default function FeaturesPage() {
               <p className="text-sm font-semibold uppercase tracking-widest text-primary">
                 Analytics
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
                 Stop guessing. Start knowing.
               </h2>
-              <p className="mt-4 text-base leading-7 text-slate-600">
+              <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
                 Total clicks, unique visitors, QR scans, device types, top countries — all per
                 link and per campaign. The data you need to tell your client a confident story,
                 and to decide where to spend the next budget.
@@ -415,7 +415,7 @@ export default function FeaturesPage() {
                   "Compare QR scans vs digital clicks in the same view",
                   "Per-link performance inside each campaign",
                 ].map((point) => (
-                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700">
+                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     {point}
                   </li>
@@ -430,7 +430,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* Deep dive 4 — Branded domains */}
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
             {/* Copy */}
@@ -438,11 +438,11 @@ export default function FeaturesPage() {
               <p className="text-sm font-semibold uppercase tracking-widest text-primary">
                 Branded custom domains
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
                 Your domain. Your client&apos;s trust.
               </h2>
-              <p className="mt-4 text-base leading-7 text-slate-600">
-                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm font-mono text-slate-500">lnkplt.co/xk92m</code> looks
+              <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
+                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm font-mono text-slate-500 dark:bg-slate-800 dark:text-slate-400">lnkplt.co/xk92m</code> looks
                 like a free tool. <code className="rounded bg-primary/10 px-1.5 py-0.5 text-sm font-mono text-primary">go.acmecorp.com/summer</code> looks
                 like you built it for them. That single change is the difference between a freelancer
                 and an agency — and it&apos;s the link that lets you charge more.
@@ -454,7 +454,7 @@ export default function FeaturesPage() {
                   "Clients see your domain in every email, message, and QR code",
                   "One domain per workspace — Agency plan for multiple clients",
                 ].map((point) => (
-                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700">
+                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     {point}
                   </li>
@@ -468,15 +468,15 @@ export default function FeaturesPage() {
             {/* Visual — before/after */}
             <div className="space-y-4">
               {/* Before */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/60">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-400">Free / Starter — generic link</p>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 shadow-sm">
+                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                   <div className="flex gap-1">
                     <span className="h-2.5 w-2.5 rounded-full bg-destructive/40" />
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
                     <span className="h-2.5 w-2.5 rounded-full bg-green-300" />
                   </div>
-                  <code className="flex-1 text-center text-sm font-mono text-slate-400">lnkplt.co/<span className="text-slate-300">xk92m</span></code>
+                  <code className="flex-1 text-center text-sm font-mono text-slate-400">lnkplt.co/<span className="text-slate-300 dark:text-slate-600">xk92m</span></code>
                 </div>
                 <p className="mt-3 text-center text-xs text-slate-400">
                   Looks like a shortener. Client wonders who &ldquo;lnkplt&rdquo; is.
@@ -493,7 +493,7 @@ export default function FeaturesPage() {
               {/* After */}
               <div className="rounded-2xl border border-primary/20 bg-primary/10 p-6">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary">Pro — your branded domain</p>
-                <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-white px-5 py-3.5 shadow-sm">
+                <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-white px-5 py-3.5 shadow-sm dark:bg-slate-900">
                   <div className="flex gap-1">
                     <span className="h-2.5 w-2.5 rounded-full bg-destructive/40" />
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
@@ -513,7 +513,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* How it works */}
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="How it works"
@@ -526,11 +526,11 @@ export default function FeaturesPage() {
             {steps.map(({ n, title, description }) => (
               <div
                 key={n}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-7"
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-7 dark:border-slate-800 dark:bg-slate-900/60"
               >
                 <div className="mb-5 text-3xl font-black text-primary-foreground select-none">{n}</div>
-                <h3 className="text-base font-bold text-slate-950">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+                <h3 className="text-base font-bold text-slate-950 dark:text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{description}</p>
               </div>
             ))}
           </div>

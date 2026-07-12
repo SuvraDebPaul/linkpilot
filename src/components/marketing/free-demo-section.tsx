@@ -4,7 +4,7 @@ export function FreeDemoSection() {
   return (
     <section
       id="try-it"
-      className="border-b border-slate-200 bg-white px-4 py-20 sm:px-6 lg:px-8"
+      className="border-b border-slate-200 bg-white px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950"
     >
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl">
@@ -12,10 +12,10 @@ export function FreeDemoSection() {
             <p className="text-sm font-semibold uppercase tracking-widest text-primary">
               No login required
             </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
               Try it now — see what your link becomes
             </h2>
-            <p className="mt-3 text-base text-slate-500">
+            <p className="mt-3 text-base text-slate-500 dark:text-slate-400">
               Create a short link and QR code in seconds. Sign up to track
               performance, manage campaigns, and share client reports.
             </p>

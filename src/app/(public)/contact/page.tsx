@@ -69,7 +69,7 @@ export default function ContactPage() {
   return (
     <main>
       {/* Hero */}
-      <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="Agency plan"
@@ -99,14 +99,14 @@ export default function ContactPage() {
       </section>
 
       {/* Main content */}
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1.1fr]">
 
           {/* Left — why contact */}
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-slate-950">Why agencies choose LinkPilot</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500">
+              <h2 className="text-xl font-bold text-slate-950 dark:text-white">Why agencies choose LinkPilot</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 Pricing is custom and scales with your team. Fill in the form and we&apos;ll propose
                 a setup that fits your workflow.
               </p>
@@ -114,21 +114,21 @@ export default function ContactPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               {whyContact.map((item) => (
-                <Card key={item.title} className="border-slate-200 bg-white shadow-sm">
+                <Card key={item.title} className="border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                   <CardContent className="p-5">
                     <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
                       <item.icon className="h-4 w-4 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-slate-950">{item.title}</h3>
-                    <p className="mt-1.5 text-xs leading-5 text-slate-500">{item.description}</p>
+                    <h3 className="font-semibold text-slate-950 dark:text-white">{item.title}</h3>
+                    <p className="mt-1.5 text-xs leading-5 text-slate-500 dark:text-slate-400">{item.description}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <Card className="border-primary/10 bg-gradient-to-br from-primary/5 via-white to-blue-50 shadow-sm">
+            <Card className="border-primary/10 bg-gradient-to-br from-primary/5 via-white to-blue-50 shadow-sm dark:via-slate-900 dark:to-blue-500/10">
               <CardContent className="p-5">
-                <div className="flex items-center gap-3 text-slate-950">
+                <div className="flex items-center gap-3 text-slate-950 dark:text-white">
                   <Mail className="h-4 w-4 text-primary" />
                   <p className="font-semibold text-sm">Prefer to email directly?</p>
                 </div>
@@ -141,10 +141,10 @@ export default function ContactPage() {
           </div>
 
           {/* Right — form */}
-          <Card className="border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+          <Card className="border-slate-200 bg-white shadow-xl shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
             <CardContent className="p-6 sm:p-8">
-              <h2 className="mb-1 text-lg font-bold text-slate-950">Tell us about your team</h2>
-              <p className="mb-6 text-sm text-slate-500">
+              <h2 className="mb-1 text-lg font-bold text-slate-950 dark:text-white">Tell us about your team</h2>
+              <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
                 We&apos;ll get back to you with a custom plan and pricing.
               </p>
               <ContactForm />
