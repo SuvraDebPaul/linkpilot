@@ -5,9 +5,10 @@ import { markGuestLinkExpired } from "@/server/services/cleanup.service";
 import { hasUnlockAccess } from "@/server/redirects/handle-password-redirect";
 import { recordClick } from "@/server/redirects/record-click";
 import { resolveSlug } from "@/server/redirects/resolve-slug";
+import { validateSafeUrl } from "@/server/services/url-safety.service";
 
 export async function handleRootRedirect(req: Request, slug: string) {
-  const resolved = await resolveSlug(slug);
+  const resolved = await resolveSlug(slug, req.headers.get("host"));
 
   if (!resolved) {
     return NextResponse.redirect(new URL("/link-unavailable", req.url));
@@ -62,6 +63,18 @@ export async function handleRootRedirect(req: Request, slug: string) {
     destination === resolved.originalUrl
   ) {
     destination = pickWeightedVariant(resolved.abVariants);
+  }
+
+  // Defense in depth: geo/A-B destinations are validated when saved, but this
+  // re-checks at redirect time too, so any URL that predates that validation
+  // (or somehow got stored unsafely) can never actually be served — falls back
+  // to the link's own always-validated originalUrl instead.
+  if (destination !== resolved.originalUrl) {
+    try {
+      destination = validateSafeUrl(destination);
+    } catch {
+      destination = resolved.originalUrl;
+    }
   }
 
   if (resolved.type === "managed") {

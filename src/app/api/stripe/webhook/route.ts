@@ -54,7 +54,7 @@ export async function POST(req: Request) {
           data: {
             stripeSubscriptionId: sub.id,
             stripePriceId: sub.items.data[0]?.price.id ?? null,
-            stripeCurrentPeriodEnd: new Date((sub as any).current_period_end * 1000),
+            stripeCurrentPeriodEnd: new Date(sub.items.data[0].current_period_end * 1000),
           },
         });
         break;
@@ -63,7 +63,8 @@ export async function POST(req: Request) {
       // Renewal or mid-period plan change
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subId = (invoice as any).subscription as string | null;
+        const subRef = invoice.parent?.subscription_details?.subscription;
+        const subId = typeof subRef === "string" ? subRef : subRef?.id;
         if (!subId) break;
 
         const sub = await stripe.subscriptions.retrieve(subId);
@@ -74,7 +75,7 @@ export async function POST(req: Request) {
           where: { id: userId },
           data: {
             stripePriceId: sub.items.data[0]?.price.id ?? null,
-            stripeCurrentPeriodEnd: new Date((sub as any).current_period_end * 1000),
+            stripeCurrentPeriodEnd: new Date(sub.items.data[0].current_period_end * 1000),
           },
         });
         break;
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
           data: {
             stripeSubscriptionId: sub.id,
             stripePriceId: sub.items.data[0]?.price.id ?? null,
-            stripeCurrentPeriodEnd: new Date((sub as any).current_period_end * 1000),
+            stripeCurrentPeriodEnd: new Date(sub.items.data[0].current_period_end * 1000),
           },
         });
         break;

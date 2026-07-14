@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, Download, CheckCircle, XCircle, Loader2, FileText } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -91,10 +91,15 @@ export function ImportLinksDialog() {
   async function handleImport() {
     if (!csvText) return;
     setImporting(true);
-    const res = await importLinksAction(csvText);
-    setImporting(false);
-    if ("error" in res) { toast.error(res.error); return; }
-    setResult(res);
+    try {
+      const res = await importLinksAction(csvText);
+      if ("error" in res) { toast.error(res.error); return; }
+      setResult(res);
+    } catch {
+      toast.error("Something went wrong during the import. Please try again.");
+    } finally {
+      setImporting(false);
+    }
   }
 
   return (

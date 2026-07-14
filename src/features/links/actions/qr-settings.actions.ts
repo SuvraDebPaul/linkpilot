@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -6,6 +7,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { isReservedSlug } from "@/lib/slug";
+import { getUserPlan } from "@/lib/subscription";
 
 const schema = z.object({
   fgColor:        z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#000000"),
@@ -30,7 +32,12 @@ type Result = { success: true } | { success: false; message: string };
 
 export async function saveQrSettingsAction(linkId: string, input: Input): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
+
+  const plan = await getUserPlan(session.user.id);
+  if (plan !== "starter" && plan !== "pro") {
+    return { success: false, message: "QR customization requires a Starter or Pro plan." };
+  }
 
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Invalid settings." };

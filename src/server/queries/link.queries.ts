@@ -21,6 +21,7 @@ export async function getLinkBySlug(shortCode: string) {
       ogTitle: true,
       ogDescription: true,
       ogImage: true,
+      customDomain: { select: { domain: true } },
       _count: { select: { clicks: true } },
     },
   });

@@ -9,6 +9,7 @@ type CopyButtonProps = {
   value: string;
   label?: string;
   copiedLabel?: string;
+  ariaLabel?: string;
   variant?: "default" | "secondary" | "outline" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
 };
@@ -17,6 +18,7 @@ export function CopyButton({
   value,
   label = "Copy",
   copiedLabel = "Copied",
+  ariaLabel,
   variant = "secondary",
   size = "default",
 }: CopyButtonProps) {
@@ -31,17 +33,19 @@ export function CopyButton({
     }, 1500);
   }
 
+  const accessibleName = ariaLabel || (copied ? copiedLabel : label) || "Copy";
+
   return (
-    <Button type="button" variant={variant} size={size} onClick={handleCopy}>
+    <Button type="button" variant={variant} size={size} onClick={handleCopy} aria-label={accessibleName}>
       {copied ? (
         <>
-          <Check className="mr-2 h-4 w-4" />
-          {copiedLabel}
+          <Check className={size === "icon" ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+          {size !== "icon" && copiedLabel}
         </>
       ) : (
         <>
-          <Copy className="mr-2 h-4 w-4" />
-          {label}
+          <Copy className={size === "icon" ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+          {size !== "icon" && label}
         </>
       )}
     </Button>

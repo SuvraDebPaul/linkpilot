@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -8,6 +9,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { getUserPlan } from "@/lib/subscription";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
+import { validateSafeUrl } from "@/server/services/url-safety.service";
 
 export type AbVariant = { url: string; weight: number };
 
@@ -28,7 +30,7 @@ export async function updateAbVariantsAction(
   variants: AbVariant[],
 ): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Not authenticated" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const plan = await getUserPlan(session.user.id);
   if (plan === "free") return { error: "A/B testing requires a Starter or Pro plan" };
@@ -54,9 +56,17 @@ export async function updateAbVariantsAction(
   });
   if (!link) return { error: "Link not found" };
 
-  const safeVariants = await Promise.all(
-    variants.map(async (v) => ({ ...v, url: await enforceDemoRedirect(session.user.id, v.url) })),
-  );
+  let safeVariants: AbVariant[];
+  try {
+    safeVariants = await Promise.all(
+      variants.map(async (v) => ({
+        ...v,
+        url: validateSafeUrl(await enforceDemoRedirect(session.user.id, v.url)),
+      })),
+    );
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Invalid destination URL" };
+  }
 
   await prisma.link.update({
     where: { id: linkId },

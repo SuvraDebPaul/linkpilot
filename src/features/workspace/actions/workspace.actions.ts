@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -29,7 +30,7 @@ const createWorkspaceSchema = z.object({
 
 export async function createWorkspaceAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = createWorkspaceSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -71,7 +72,7 @@ export async function createWorkspaceAction(input: unknown) {
 
 export async function setActiveWorkspaceAction(workspaceId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const member = await getWorkspaceMember(session.user.id, workspaceId);
   if (!member) return { error: "Not a member of this workspace" };
@@ -103,7 +104,7 @@ export async function updateWorkspaceBrandingAction(data: {
   hideBranding: boolean;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = brandingSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -141,7 +142,7 @@ const renameSchema = z.object({
 
 export async function renameWorkspaceAction(formData: FormData) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = renameSchema.safeParse({
     workspaceId: formData.get("workspaceId"),
@@ -178,7 +179,7 @@ const inviteSchema = z.object({
 
 export async function inviteMemberAction(formData: FormData) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = inviteSchema.safeParse({
     workspaceId: formData.get("workspaceId"),
@@ -189,6 +190,11 @@ export async function inviteMemberAction(formData: FormData) {
   const member = await getWorkspaceMember(session.user.id, parsed.data.workspaceId);
   if (!member || (member.role !== "OWNER" && member.role !== "ADMIN")) {
     return { error: "Insufficient permissions" };
+  }
+
+  const plan = await getUserPlan(session.user.id);
+  if (plan !== "starter" && plan !== "pro") {
+    return { error: "Upgrade to Starter or Pro to invite team members" };
   }
 
   const workspace = await prisma.workspace.findUnique({ where: { id: parsed.data.workspaceId } });
@@ -217,7 +223,8 @@ export async function inviteMemberAction(formData: FormData) {
     },
   });
 
-  await sendWorkspaceInviteEmail(parsed.data.email, workspace.name, token, session.user.name ?? "Someone");
+  await sendWorkspaceInviteEmail(parsed.data.email, workspace.name, token, session.user.name ?? "Someone")
+    .catch((err) => console.error("[workspace-invite] email failed:", err));
 
   await logActivity(
     parsed.data.workspaceId,
@@ -246,7 +253,7 @@ const createMemberAccountSchema = z.object({
 
 export async function createMemberAccountAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = createMemberAccountSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -254,6 +261,11 @@ export async function createMemberAccountAction(input: unknown) {
   const member = await getWorkspaceMember(session.user.id, parsed.data.workspaceId);
   if (!member || (member.role !== "OWNER" && member.role !== "ADMIN")) {
     return { error: "Insufficient permissions" };
+  }
+
+  const plan = await getUserPlan(session.user.id);
+  if (plan !== "starter" && plan !== "pro") {
+    return { error: "Upgrade to Starter or Pro to invite team members" };
   }
 
   const email = parsed.data.email.toLowerCase().trim();
@@ -308,7 +320,7 @@ export async function createMemberAccountAction(input: unknown) {
 
 export async function changeMemberRoleAction(memberId: string, workspaceId: string, role: "ADMIN" | "MEMBER") {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const requester = await getWorkspaceMember(session.user.id, workspaceId);
   if (!requester || requester.role !== "OWNER") return { error: "Only owners can change roles" };
@@ -337,7 +349,7 @@ export async function changeMemberRoleAction(memberId: string, workspaceId: stri
 
 export async function removeMemberAction(memberId: string, workspaceId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const requester = await getWorkspaceMember(session.user.id, workspaceId);
   if (!requester || (requester.role !== "OWNER" && requester.role !== "ADMIN")) {
@@ -397,7 +409,7 @@ export async function updateWorkspaceDefaultsAction(data: {
   defaultCloakingEnabled: boolean;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = defaultsSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -438,7 +450,7 @@ export async function updateQrDefaultsAction(data: {
   defaultQrEcLevel: string;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = qrDefaultsSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -470,7 +482,7 @@ export async function updateQrDefaultsAction(data: {
 
 export async function transferOwnershipAction(memberId: string, workspaceId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const requester = await getWorkspaceMember(session.user.id, workspaceId);
   if (!requester || requester.role !== "OWNER") return { error: "Only the owner can transfer ownership" };
@@ -504,7 +516,7 @@ export async function transferOwnershipAction(memberId: string, workspaceId: str
 
 export async function resendInviteAction(workspaceId: string, email: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const requester = await getWorkspaceMember(session.user.id, workspaceId);
   if (!requester || (requester.role !== "OWNER" && requester.role !== "ADMIN")) {
@@ -522,7 +534,8 @@ export async function resendInviteAction(workspaceId: string, email: string) {
     data: { identifier, token, expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
   });
 
-  await sendWorkspaceInviteEmail(email, workspace.name, token, session.user.name ?? "Someone");
+  await sendWorkspaceInviteEmail(email, workspace.name, token, session.user.name ?? "Someone")
+    .catch((err) => console.error("[workspace-invite] resend email failed:", err));
 
   revalidatePath("/dashboard/settings/workspace");
   return { success: true };
@@ -530,7 +543,7 @@ export async function resendInviteAction(workspaceId: string, email: string) {
 
 export async function revokeInviteAction(workspaceId: string, email: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const requester = await getWorkspaceMember(session.user.id, workspaceId);
   if (!requester || (requester.role !== "OWNER" && requester.role !== "ADMIN")) {
@@ -551,11 +564,52 @@ export async function revokeInviteAction(workspaceId: string, email: string) {
   return { success: true };
 }
 
+// ─── Delete workspace ────────────────────────────────────────────────────────
+// Owner-only, permanent. Blocked if it's the owner's only workspace — they'd
+// otherwise immediately land back in a brand-new empty one via ensureWorkspace,
+// which is more confusing than helpful. All workspace-scoped data (links,
+// campaigns, members, domains, client portals, audit log) cascade-deletes with it.
+
+export async function deleteWorkspaceAction(workspaceId: string, confirmName: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
+
+  const requester = await getWorkspaceMember(session.user.id, workspaceId);
+  if (!requester || requester.role !== "OWNER") {
+    return { error: "Only the owner can delete this workspace" };
+  }
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { name: true },
+  });
+  if (!workspace) return { error: "Workspace not found" };
+  if (confirmName.trim() !== workspace.name) {
+    return { error: "Workspace name didn't match" };
+  }
+
+  const ownedCount = await prisma.workspaceMember.count({
+    where: { userId: session.user.id, role: "OWNER" },
+  });
+  if (ownedCount <= 1) {
+    return { error: "You can't delete your only workspace" };
+  }
+
+  await prisma.workspace.delete({ where: { id: workspaceId } });
+
+  const cookieStore = await cookies();
+  if (cookieStore.get(ACTIVE_WORKSPACE_COOKIE)?.value === workspaceId) {
+    cookieStore.delete(ACTIVE_WORKSPACE_COOKIE);
+  }
+
+  redirect("/dashboard");
+}
+
 // ─── Leave workspace ─────────────────────────────────────────────────────────
 
 export async function leaveWorkspaceAction(workspaceId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const member = await getWorkspaceMember(session.user.id, workspaceId);
   if (!member) return { error: "Not a member" };

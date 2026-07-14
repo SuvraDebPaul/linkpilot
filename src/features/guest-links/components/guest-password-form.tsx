@@ -12,8 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/shared/password-input";
 
 type GuestPasswordFormProps = {
   slug: string;
@@ -78,9 +78,8 @@ export function GuestPasswordForm({ slug }: GuestPasswordFormProps) {
           <div>
             <Label htmlFor="password">Password</Label>
 
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Enter link password"

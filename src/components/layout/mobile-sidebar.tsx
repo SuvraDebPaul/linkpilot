@@ -7,6 +7,7 @@ import { Logo } from "@/components/shared/logo";
 import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
 import { DashboardNavItem } from "./dashboard-nav-item";
 import { DashboardNavGroup } from "./dashboard-nav-group";
+import { SidebarHighlightProvider } from "./sidebar-highlight-context";
 import {
   LayoutDashboard,
   Link2,
@@ -84,25 +85,27 @@ export function MobileSidebar({
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 overflow-y-auto px-3 py-5">
-              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                Main Menu
-              </p>
-              <div className="space-y-0.5">
-                {mainNav.map((item) => (
-                  <div key={item.href} onClick={() => setOpen(false)}>
-                    <DashboardNavItem {...item} />
-                  </div>
-                ))}
-              </div>
+            <SidebarHighlightProvider>
+              <nav className="flex-1 overflow-y-auto px-3 py-5">
+                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                  Main Menu
+                </p>
+                <div className="space-y-0.5">
+                  {mainNav.map((item) => (
+                    <div key={item.href} onClick={() => setOpen(false)}>
+                      <DashboardNavItem {...item} />
+                    </div>
+                  ))}
+                </div>
 
-              <div className="mt-6" onClick={(e) => {
-                const link = (e.target as HTMLElement).closest("a");
-                if (link) setOpen(false);
-              }}>
-                <DashboardNavGroup label="Settings" items={settingsItems} />
-              </div>
-            </nav>
+                <div className="mt-6" onClick={(e) => {
+                  const link = (e.target as HTMLElement).closest("a");
+                  if (link) setOpen(false);
+                }}>
+                  <DashboardNavGroup label="Settings" items={settingsItems} />
+                </div>
+              </nav>
+            </SidebarHighlightProvider>
 
             {/* Footer */}
             <div className="border-t border-border px-5 py-3">

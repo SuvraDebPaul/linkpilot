@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClicksLineChart } from "@/components/charts/clicks-line-chart";
 import { LinkDevicesCard } from "@/features/links/components/link-devices-card";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
-import { WorldMap } from "@/components/charts/world-map";
+import { WorldMap } from "@/components/charts/world-map-lazy";
 import { LinkReferrersCard } from "@/features/links/components/link-referrers-card";
 import { LinkUtmBarList } from "@/features/links/components/link-utm-bar-list";
 import { LinkUtmCampaignsCard } from "@/features/links/components/link-utm-campaigns-card";

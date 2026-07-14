@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -15,7 +16,7 @@ type Result = { success: boolean; message: string };
 
 export async function createGeoTemplateAction(input: unknown): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
 
   const parsed = createGeoTemplateSchema.safeParse(input);
   if (!parsed.success) {
@@ -39,7 +40,7 @@ export async function createGeoTemplateAction(input: unknown): Promise<Result> {
 
 export async function deleteGeoTemplateAction(id: string): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
 
   const template = await prisma.geoTemplate.findUnique({ where: { id }, select: { workspaceId: true } });
   if (!template) return { success: false, message: "Template not found." };
@@ -54,7 +55,7 @@ export async function deleteGeoTemplateAction(id: string): Promise<Result> {
 
 export async function createCampaignTemplateAction(input: unknown): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
 
   const parsed = createCampaignTemplateSchema.safeParse(input);
   if (!parsed.success) {
@@ -82,7 +83,7 @@ export async function createCampaignTemplateAction(input: unknown): Promise<Resu
 
 export async function deleteCampaignTemplateAction(id: string): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
 
   const template = await prisma.campaignTemplate.findUnique({ where: { id }, select: { workspaceId: true } });
   if (!template) return { success: false, message: "Template not found." };

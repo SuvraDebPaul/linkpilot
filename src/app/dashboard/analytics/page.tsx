@@ -34,7 +34,7 @@ import { ClicksLineChart } from "@/components/charts/clicks-line-chart";
 import { DeviceDonutChart } from "@/components/charts/device-donut-chart";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
 import { OsBarChart } from "@/components/charts/os-bar-chart";
-import { WorldMap } from "@/components/charts/world-map";
+import { WorldMap } from "@/components/charts/world-map-lazy";
 import { AnimatedNumber } from "@/components/shared/animated-number";
 import { PeriodTabs } from "@/features/analytics/components/period-tabs";
 import { LockedCard } from "@/features/analytics/components/locked-card";

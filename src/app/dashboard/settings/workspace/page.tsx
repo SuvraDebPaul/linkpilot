@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { Building2, Palette, Users, History } from "lucide-react";
+import { Building2, Palette, Users, History, AlertTriangle } from "lucide-react";
 
 import { authOptions } from "@/lib/auth";
 import {
-  getUserWorkspaces,
+  ensureWorkspace,
+  getWorkspaceMember,
   getWorkspaceWithMembers,
   getPendingInvites,
   getWorkspaceAuditLog,
@@ -26,6 +27,8 @@ import { CreateMemberAccountForm } from "@/features/workspace/components/create-
 import { PendingInvitesList } from "@/features/workspace/components/pending-invites-list";
 import { MembersTable } from "@/features/workspace/components/members-table";
 import { WorkspaceBrandingForm } from "@/features/workspace/components/workspace-branding-form";
+import { LeaveWorkspaceButton } from "@/features/workspace/components/leave-workspace-button";
+import { DeleteWorkspaceDialog } from "@/features/workspace/components/delete-workspace-dialog";
 
 export const metadata: Metadata = { title: "Workspace" };
 
@@ -33,23 +36,21 @@ export default async function WorkspaceSettingsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const [memberships, plan] = await Promise.all([
-    getUserWorkspaces(session.user.id),
+  const workspaceId = await ensureWorkspace(session.user.id);
+  const [membership, plan] = await Promise.all([
+    getWorkspaceMember(session.user.id, workspaceId),
     getUserPlan(session.user.id),
   ]);
-
-  // Show first workspace (personal). Multi-workspace switcher is a future phase.
-  const membership = memberships[0];
   if (!membership) redirect("/dashboard");
 
   const isOwnerOrAdmin =
     membership.role === "OWNER" || membership.role === "ADMIN";
 
   const [workspace, pendingInvites, auditLog] = await Promise.all([
-    getWorkspaceWithMembers(membership.workspaceId),
-    getPendingInvites(membership.workspaceId),
+    getWorkspaceWithMembers(workspaceId),
+    getPendingInvites(workspaceId),
     isOwnerOrAdmin
-      ? getWorkspaceAuditLog(membership.workspaceId)
+      ? getWorkspaceAuditLog(workspaceId)
       : Promise.resolve([]),
   ]);
   if (!workspace) redirect("/dashboard");
@@ -204,6 +205,37 @@ export default async function WorkspaceSettingsPage() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Danger zone — owner deletes the workspace, everyone else can leave it */}
+      {membership.role === "OWNER" ? (
+        <Card className="border-destructive/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base text-destructive">
+              <AlertTriangle className="h-4 w-4" /> Danger zone
+            </CardTitle>
+            <CardDescription>
+              Permanently delete this workspace and everything in it. This cannot be undone.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DeleteWorkspaceDialog workspaceId={workspace.id} workspaceName={workspace.name} />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-destructive/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base text-destructive">
+              <AlertTriangle className="h-4 w-4" /> Leave workspace
+            </CardTitle>
+            <CardDescription>
+              You&apos;ll lose access to this workspace&apos;s links, campaigns, and reports.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LeaveWorkspaceButton workspaceId={workspace.id} workspaceName={workspace.name} />
           </CardContent>
         </Card>
       )}

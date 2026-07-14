@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -17,8 +18,9 @@ type UnlockPageProps = {
 
 export default async function UnlockPage({ params }: UnlockPageProps) {
   const { slug } = await params;
+  const headerList = await headers();
 
-  const resolved = await resolveSlug(slug);
+  const resolved = await resolveSlug(slug, headerList.get("host"));
 
   if (!resolved || !resolved.isActive) {
     redirect("/link-unavailable");

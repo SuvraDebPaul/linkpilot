@@ -16,7 +16,7 @@ import {
 
 import { authOptions } from "@/lib/auth";
 import { getDashboardStats } from "@/server/queries/dashboard.queries";
-import { WorldMap } from "@/components/charts/world-map";
+import { WorldMap } from "@/components/charts/world-map-lazy";
 import { BrowserAreaChart } from "@/components/charts/browser-area-chart";
 import { OsBarChart } from "@/components/charts/os-bar-chart";
 import {
@@ -655,7 +655,7 @@ export default async function DashboardPage() {
             {stats.topLinks.length === 0 ? (
               <EmptyState
                 icon={MousePointerClick}
-                title="No click data yet"
+                title="No clicks yet"
                 description="Your top performers will appear here once you have clicks."
               />
             ) : (

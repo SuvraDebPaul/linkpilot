@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { FileText, FolderKanban, Zap } from "lucide-react";
 
 import { updateLinkAction } from "@/features/links/actions/link.actions";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PasswordInput } from "@/components/shared/password-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -138,10 +139,9 @@ export function EditLinkForm({ link, campaigns }: Props) {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="edit-password">New password</Label>
-            <Input
+            <PasswordInput
               id="edit-password"
               name="password"
-              type="password"
               placeholder={link.isPasswordProtected ? "Change password…" : "Add password…"}
               disabled={isPending}
             />

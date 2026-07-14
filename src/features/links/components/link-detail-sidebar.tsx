@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   ExternalLink,
   Lock,
@@ -191,10 +191,10 @@ export function LinkDetailSidebar({
             >
               {shortUrl.replace(/^https?:\/\//, "")}
             </a>
-            <a href={shortUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-primary">
+            <a href={shortUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-primary" aria-label="Open short URL">
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
-            <CopyButton value={shortUrl} size="icon" label="" copiedLabel="" variant="ghost" />
+            <CopyButton value={shortUrl} size="icon" label="" copiedLabel="" variant="ghost" ariaLabel="Copy short URL" />
           </div>
 
           {/* Destination URL */}

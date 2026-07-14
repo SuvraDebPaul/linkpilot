@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -6,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { getUserPlan } from "@/lib/subscription";
 import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
+import { validateSafeUrl } from "@/server/services/url-safety.service";
 
 export type GeoTarget = { country: string; url: string };
 
@@ -26,7 +28,7 @@ export async function updateGeoTargetsAction(
   targets: GeoTarget[],
 ): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Not authenticated" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const plan = await getUserPlan(session.user.id);
   if (plan === "free") return { error: "Geo targeting requires a Starter or Pro plan" };
@@ -41,9 +43,17 @@ export async function updateGeoTargetsAction(
   });
   if (!link) return { error: "Link not found" };
 
-  const safeTargets = await Promise.all(
-    targets.map(async (t) => ({ ...t, url: await enforceDemoRedirect(session.user.id, t.url) })),
-  );
+  let safeTargets: GeoTarget[];
+  try {
+    safeTargets = await Promise.all(
+      targets.map(async (t) => ({
+        ...t,
+        url: validateSafeUrl(await enforceDemoRedirect(session.user.id, t.url)),
+      })),
+    );
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Invalid destination URL" };
+  }
 
   await prisma.link.update({
     where: { id: linkId },

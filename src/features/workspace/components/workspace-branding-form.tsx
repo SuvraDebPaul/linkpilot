@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,7 +107,7 @@ export function WorkspaceBrandingForm({
       <div className="flex items-center justify-between rounded-lg border border-border p-4">
         <div className="space-y-0.5">
           <p className="text-sm font-medium text-foreground">
-            Hide "Powered by LinkPilot"
+            Hide &quot;Powered by LinkPilot&quot;
             {!isPro && (
               <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                 Pro
@@ -131,7 +131,7 @@ export function WorkspaceBrandingForm({
       <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
         Changes apply to all shared report links from this workspace.
         {!isPro && !hideBranding && (
-          <span> Starter plan: a small "Powered by LinkPilot" note is shown at the bottom.</span>
+          <span> Starter plan: a small &quot;Powered by LinkPilot&quot; note is shown at the bottom.</span>
         )}
       </div>
 

@@ -26,48 +26,65 @@ export async function registerAction(input: unknown): Promise<RegisterResult> {
   const { name, email, password } = parsed.data;
   const normalizedEmail = email.toLowerCase().trim();
 
-  const existing = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
-    select: { id: true },
-  });
+  let user: { id: string };
+  try {
+    const existing = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: { id: true },
+    });
 
-  if (existing) {
-    return {
-      success: false,
-      message: "An account with this email already exists.",
-      fieldErrors: { email: ["Email is already in use"] },
-    };
+    if (existing) {
+      return {
+        success: false,
+        message: "An account with this email already exists.",
+        fieldErrors: { email: ["Email is already in use"] },
+      };
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    user = await prisma.user.create({
+      data: {
+        name,
+        email: normalizedEmail,
+        password: passwordHash,
+      },
+      select: { id: true },
+    });
+
+    // Create a default personal workspace for the new user
+    const workspaceSlug = `${normalizedEmail.split("@")[0]}-${user.id.slice(-6)}`;
+
+    const workspace = await prisma.workspace.create({
+      data: {
+        name: `${name}'s Workspace`,
+        slug: workspaceSlug,
+      },
+      select: { id: true },
+    });
+
+    await prisma.workspaceMember.create({
+      data: {
+        userId: user.id,
+        workspaceId: workspace.id,
+        role: "OWNER",
+      },
+    });
+  } catch (err) {
+    // A unique-constraint violation here means a concurrent double-submit
+    // raced past the dup-check above (two requests both saw "no existing
+    // user" before either INSERT committed) — report it the same way as the
+    // normal dup-check. Anything else is a genuine, unrelated failure.
+    const isDuplicate =
+      err instanceof Error && "code" in err && (err as { code?: string }).code === "P2002";
+    return isDuplicate
+      ? {
+          success: false,
+          message: "An account with this email already exists.",
+          fieldErrors: { email: ["Email is already in use"] },
+        }
+      : { success: false, message: "Something went wrong creating your account. Please try again." };
   }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email: normalizedEmail,
-      password: passwordHash,
-    },
-    select: { id: true },
-  });
-
-  // Create a default personal workspace for the new user
-  const workspaceSlug = `${normalizedEmail.split("@")[0]}-${user.id.slice(-6)}`;
-
-  const workspace = await prisma.workspace.create({
-    data: {
-      name: `${name}'s Workspace`,
-      slug: workspaceSlug,
-    },
-    select: { id: true },
-  });
-
-  await prisma.workspaceMember.create({
-    data: {
-      userId: user.id,
-      workspaceId: workspace.id,
-      role: "OWNER",
-    },
-  });
 
   try {
     const hdrs = await headers();

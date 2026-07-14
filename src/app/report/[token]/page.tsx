@@ -17,8 +17,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { token } = await params;
   const campaign = await getCampaignByShareToken(token);
-  if (!campaign) return { title: "Report not found" };
-  return { title: `${campaign.name} — Campaign Report` };
+  if (!campaign) return { title: "Report not found", robots: { index: false, follow: false } };
+  return {
+    title: `${campaign.name} — Campaign Report`,
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function PublicReportPage({

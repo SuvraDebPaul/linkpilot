@@ -5,6 +5,7 @@ import { AlertCircle, Link2, Lock, Timer } from "lucide-react";
 
 import { FormError } from "@/components/shared/form-error";
 import { LoadingButton } from "@/components/shared/loading-button";
+import { PasswordInput } from "@/components/shared/password-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,7 +31,7 @@ import type {
   CreateGuestLinkResponse,
   GuestLinkExpiryPreset,
 } from "@/features/guest-links/types/guest-link.types";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export function GuestLinkForm() {
   const [originalUrl, setOriginalUrl] = useState("");
@@ -196,8 +197,7 @@ export function GuestLinkForm() {
 
             {enablePassword ? (
               <div className="mt-4">
-                <Input
-                  type="password"
+                <PasswordInput
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter password"

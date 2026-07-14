@@ -1,10 +1,24 @@
 import { getGuestLinkBySlug } from "@/server/queries/guest-link.queries";
 import { getLinkBySlug } from "@/server/queries/link.queries";
 
-export async function resolveSlug(slug: string) {
+function normalizeHost(host: string | null) {
+  return host?.split(":")[0]?.toLowerCase() ?? null;
+}
+
+export async function resolveSlug(slug: string, host: string | null = null) {
   // Check managed links first (they take priority)
   const managedLink = await getLinkBySlug(slug);
   if (managedLink) {
+    // A link bound to a custom domain only resolves through that domain —
+    // otherwise anyone hitting the default domain with a guessed shortCode
+    // could pull up a link its owner set up to live exclusively on their brand.
+    if (managedLink.customDomain) {
+      const requestHost = normalizeHost(host);
+      if (requestHost !== managedLink.customDomain.domain.toLowerCase()) {
+        return null;
+      }
+    }
+
     return {
       type: "managed" as const,
       id: managedLink.id,

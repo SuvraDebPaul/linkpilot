@@ -60,11 +60,14 @@ export async function getDashboardStats(userId: string, workspaceId: string) {
         _count: { select: { clicks: true } },
       },
     }),
-    prisma.linkClickEvent.groupBy({
-      by: ["createdAt"],
-      where: { link: { workspaceId }, createdAt: { gte: eightyFourDaysAgo } },
-      _count: { id: true },
-    }),
+    prisma.$queryRaw<{ day: Date; count: bigint }[]>`
+      SELECT date_trunc('day', lce."createdAt") AS day, COUNT(*)::bigint AS count
+      FROM "LinkClickEvent" lce
+      JOIN "Link" l ON l.id = lce."linkId"
+      WHERE l."workspaceId" = ${workspaceId}
+        AND lce."createdAt" >= ${eightyFourDaysAgo}
+      GROUP BY day
+    `,
     prisma.linkClickEvent.groupBy({
       by: ["device"],
       where: { link: { workspaceId }, createdAt: { gte: thirtyDaysAgo } },
@@ -126,9 +129,10 @@ export async function getDashboardStats(userId: string, workspaceId: string) {
   }
 
   for (const row of clicksByDay84) {
-    const key = new Date(row.createdAt).toISOString().slice(0, 10);
-    if (key in dayMap30) dayMap30[key] += row._count.id;
-    if (key in dayMap84) dayMap84[key] += row._count.id;
+    const key = new Date(row.day).toISOString().slice(0, 10);
+    const count = Number(row.count);
+    if (key in dayMap30) dayMap30[key] += count;
+    if (key in dayMap84) dayMap84[key] += count;
   }
 
   // Click trend: % change last 7d vs prev 7d

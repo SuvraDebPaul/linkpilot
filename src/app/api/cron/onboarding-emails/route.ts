@@ -17,9 +17,6 @@ export async function GET(req: Request) {
   const now = new Date();
   const results = { day1: 0, day3: 0, day7: 0, errors: 0 };
 
-  // Only process accounts created in the last 30 days to avoid emailing stale users
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
   // -- Day 1: signed up 1–2 days ago, day1 email not yet sent --
   const oneDayAgo = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
   const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);

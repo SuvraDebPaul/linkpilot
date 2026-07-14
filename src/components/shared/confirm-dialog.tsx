@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "destructive" | "default";
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
 };
 
 export function ConfirmDialog({
@@ -34,8 +35,25 @@ export function ConfirmDialog({
   variant = "destructive",
   onConfirm,
 }: ConfirmDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleConfirm(e: React.MouseEvent<HTMLButtonElement>) {
+    // Stop Radix's default auto-close so the dialog stays open (with a
+    // pending state) until we know the action actually finished — otherwise
+    // a thrown error or slow request leaves the user with zero feedback.
+    e.preventDefault();
+    setIsPending(true);
+    try {
+      await onConfirm();
+      setOpen(false);
+    } finally {
+      setIsPending(false);
+    }
+  }
+
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={(next) => !isPending && setOpen(next)}>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -45,11 +63,13 @@ export function ConfirmDialog({
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             className={cn(buttonVariants({ variant }))}
-            onClick={onConfirm}
+            onClick={handleConfirm}
+            disabled={isPending}
           >
+            {isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

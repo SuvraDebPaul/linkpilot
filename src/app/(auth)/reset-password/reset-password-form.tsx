@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormError } from "@/components/shared/form-error";
+import { PasswordInput } from "@/components/shared/password-input";
+import { PasswordStrengthMeter } from "@/features/settings/components/password-strength-meter";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export function ResetPasswordForm() {
 
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
 
   if (!token) {
     return (
@@ -30,28 +32,32 @@ export function ResetPasswordForm() {
     e.preventDefault();
     setError(null);
     const fd = new FormData(e.currentTarget);
-    const password = fd.get("password") as string;
     const confirm = fd.get("confirm") as string;
 
     if (password !== confirm) { setError("Passwords don't match."); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
 
     setIsPending(true);
-    const res = await fetch("/api/auth/reset-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, password }),
-    });
-    const data = await res.json();
-    setIsPending(false);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, password }),
+      });
+      const data = await res.json().catch(() => null);
 
-    if (!res.ok) {
-      setError(data.error ?? "Something went wrong. Your link may have expired.");
-      return;
+      if (!res.ok) {
+        setError(data?.error ?? "Something went wrong. Your link may have expired.");
+        return;
+      }
+
+      toast.success("Password updated! You can now sign in.");
+      router.push("/login");
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setIsPending(false);
     }
-
-    toast.success("Password updated! You can now sign in.");
-    router.push("/login");
   }
 
   return (
@@ -64,11 +70,21 @@ export function ResetPasswordForm() {
         {error && <FormError message={error} />}
         <div className="space-y-1.5">
           <Label htmlFor="password">New password</Label>
-          <Input id="password" name="password" type="password" required minLength={8} placeholder="Min. 8 characters" disabled={isPending} />
+          <PasswordInput
+            id="password"
+            name="password"
+            required
+            minLength={8}
+            placeholder="Min. 8 characters"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isPending}
+          />
+          <PasswordStrengthMeter password={password} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="confirm">Confirm password</Label>
-          <Input id="confirm" name="confirm" type="password" required placeholder="••••••••" disabled={isPending} />
+          <PasswordInput id="confirm" name="confirm" required placeholder="••••••••" disabled={isPending} />
         </div>
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? "Saving…" : "Update password"}

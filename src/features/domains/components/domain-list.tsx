@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useTransition } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { CheckCircle2, XCircle, Clock, Trash2, RefreshCw, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/shared/copy-button";
@@ -66,7 +66,7 @@ export function DomainList({ domains, appDomain }: { domains: Domain[]; appDomai
   }
 
   if (!domains.length) {
-    return <EmptyState icon={Globe} title="No custom domains yet" description="Add one to get started." />;
+    return <EmptyState icon={Globe} title="No custom domains yet" description="Add one to get started." className="py-16" />;
   }
 
   return (
@@ -130,7 +130,7 @@ export function DomainList({ domains, appDomain }: { domains: Domain[]; appDomai
                   <span className="text-muted-foreground">CNAME target: </span>
                   <span className="text-primary">{appDomain}</span>
                 </div>
-                <CopyButton value={appDomain} size="icon" label="" copiedLabel="" variant="ghost" />
+                <CopyButton value={appDomain} size="icon" label="" copiedLabel="" variant="ghost" ariaLabel="Copy CNAME target" />
               </div>
             )}
           </div>

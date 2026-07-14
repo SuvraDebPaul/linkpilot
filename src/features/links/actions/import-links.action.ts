@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -9,6 +10,9 @@ import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { generateShortCode, isReservedSlug } from "@/lib/slug";
 import { validateSafeUrl } from "@/server/services/url-safety.service";
 import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
+import { checkImportRateLimit, recordImportAttempt } from "@/lib/rate-limit";
+
+const MAX_IMPORT_ROWS = 1000;
 
 export type ImportRow = {
   url: string;
@@ -71,18 +75,29 @@ async function generateUniqueShortCode(): Promise<string | null> {
 
 export async function importLinksAction(csvText: string): Promise<ImportResult | { error: string }> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const userId = session.user.id;
-  const workspaceId = await ensureWorkspace(userId);
 
-  const plan = await getUserPlan(userId);
+  let allowed: boolean;
+  let workspaceId: string;
+  let plan: Awaited<ReturnType<typeof getUserPlan>>;
+  let currentCount: number;
+  try {
+    allowed = await checkImportRateLimit(userId);
+    if (!allowed) return { error: "Too many imports. Please try again in an hour." };
+
+    workspaceId = await ensureWorkspace(userId);
+    plan = await getUserPlan(userId);
+    const usage = await getUserUsage(userId);
+    currentCount = plan === "free"
+      ? usage.linksCreated
+      : await prisma.link.count({ where: { userId } });
+  } catch {
+    return { error: "Something went wrong starting the import. Please try again." };
+  }
+
   const limit = PLAN_LIMITS[plan].links;
-  const usage = await getUserUsage(userId);
-
-  let currentCount = plan === "free"
-    ? usage.linksCreated
-    : await prisma.link.count({ where: { userId } });
 
   // Parse CSV
   const rows = parseCsv(csvText);
@@ -92,6 +107,12 @@ export async function importLinksAction(csvText: string): Promise<ImportResult |
   const firstRow = rows[0].map((h) => h.toLowerCase());
   const hasHeader = firstRow.includes("url") || firstRow.includes("originalurl");
   const dataRows = hasHeader ? rows.slice(1) : rows;
+
+  if (dataRows.length > MAX_IMPORT_ROWS) {
+    return { error: `CSV files are limited to ${MAX_IMPORT_ROWS} rows. Please split this into smaller files.` };
+  }
+
+  await recordImportAttempt(userId);
 
   const urlIdx = hasHeader ? (firstRow.indexOf("url") !== -1 ? firstRow.indexOf("url") : firstRow.indexOf("originalurl")) : 0;
   const titleIdx = hasHeader ? firstRow.indexOf("title") : 1;
@@ -126,46 +147,53 @@ export async function importLinksAction(csvText: string): Promise<ImportResult |
       continue;
     }
 
-    // Resolve short code
-    const rawSlug = slugIdx !== -1 ? r[slugIdx]?.trim() : "";
-    let shortCode: string | null = null;
+    // Resolve short code and create the link — wrapped per-row so a transient
+    // DB error on one row (e.g. a lock timeout) skips just that row instead of
+    // aborting the whole import with no result and no way to know how many of
+    // the rows before it actually got created.
+    try {
+      const rawSlug = slugIdx !== -1 ? r[slugIdx]?.trim() : "";
+      let shortCode: string | null = null;
 
-    if (rawSlug) {
-      if (isReservedSlug(rawSlug)) {
-        skipped.push({ row: rowNum, url: rawUrl, reason: `Slug "${rawSlug}" is reserved` });
-        continue;
+      if (rawSlug) {
+        if (isReservedSlug(rawSlug)) {
+          skipped.push({ row: rowNum, url: rawUrl, reason: `Slug "${rawSlug}" is reserved` });
+          continue;
+        }
+        const taken = await prisma.link.findUnique({ where: { shortCode: rawSlug }, select: { id: true } });
+        if (taken) {
+          skipped.push({ row: rowNum, url: rawUrl, reason: `Slug "${rawSlug}" is already taken` });
+          continue;
+        }
+        shortCode = rawSlug;
+      } else {
+        shortCode = await generateUniqueShortCode();
+        if (!shortCode) {
+          skipped.push({ row: rowNum, url: rawUrl, reason: "Could not generate a unique slug" });
+          continue;
+        }
       }
-      const taken = await prisma.link.findUnique({ where: { shortCode: rawSlug }, select: { id: true } });
-      if (taken) {
-        skipped.push({ row: rowNum, url: rawUrl, reason: `Slug "${rawSlug}" is already taken` });
-        continue;
-      }
-      shortCode = rawSlug;
-    } else {
-      shortCode = await generateUniqueShortCode();
-      if (!shortCode) {
-        skipped.push({ row: rowNum, url: rawUrl, reason: "Could not generate a unique slug" });
-        continue;
-      }
+
+      const title = titleIdx !== -1 ? r[titleIdx]?.trim() || null : null;
+      const tags = tagsIdx !== -1 && r[tagsIdx]
+        ? r[tagsIdx].split(",").map((t) => t.trim()).filter(Boolean)
+        : [];
+
+      await prisma.link.create({
+        data: { userId, workspaceId, originalUrl: safeUrl, shortCode, title, tags },
+      });
+
+      // Track lifetime counter (free plan)
+      await prisma.user.update({
+        where: { id: userId },
+        data: { totalLinksCreated: { increment: 1 } },
+      });
+
+      currentCount++;
+      created.push(shortCode);
+    } catch {
+      skipped.push({ row: rowNum, url: rawUrl, reason: "Unexpected error creating this link" });
     }
-
-    const title = titleIdx !== -1 ? r[titleIdx]?.trim() || null : null;
-    const tags = tagsIdx !== -1 && r[tagsIdx]
-      ? r[tagsIdx].split(",").map((t) => t.trim()).filter(Boolean)
-      : [];
-
-    await prisma.link.create({
-      data: { userId, workspaceId, originalUrl: safeUrl, shortCode, title, tags },
-    });
-
-    // Track lifetime counter (free plan)
-    await prisma.user.update({
-      where: { id: userId },
-      data: { totalLinksCreated: { increment: 1 } },
-    });
-
-    currentCount++;
-    created.push(shortCode);
   }
 
   revalidatePath("/dashboard/links");

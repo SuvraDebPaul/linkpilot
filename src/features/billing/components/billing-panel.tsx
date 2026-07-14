@@ -8,7 +8,7 @@ import {
   Infinity as InfinityIcon,
   Star,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import type { PlanKey } from "@/lib/stripe";
 import type { PlanTier } from "@/lib/plans";

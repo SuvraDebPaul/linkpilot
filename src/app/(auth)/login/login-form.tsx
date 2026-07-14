@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { PasswordInput } from "@/components/shared/password-input";
 import { FieldError, FormError } from "@/components/shared/form-error";
 import { GoogleButton } from "@/features/auth/components/google-button";
 import { loginSchema } from "@/features/auth/schemas/auth.schema";
@@ -105,10 +106,9 @@ export function LoginForm() {
               Forgot password?
             </Link>
           </div>
-          <Input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="current-password"
             placeholder="••••••••"
             disabled={isPending}

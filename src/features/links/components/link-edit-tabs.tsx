@@ -21,6 +21,7 @@ import type { PlanTier } from "@/lib/plans";
 
 type Campaign = { id: string; name: string };
 type VerifiedDomain = { id: string; domain: string };
+type GeoTemplate = { id: string; name: string; targets: unknown };
 
 type LinkData = {
   id: string;
@@ -58,9 +59,10 @@ type Props = {
   verifiedDomains: VerifiedDomain[];
   qrDataUrl: string;
   workspace: { brandLogoUrl: string | null } | null;
+  geoTemplates?: GeoTemplate[];
 };
 
-export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl, workspace }: Props) {
+export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl, workspace, geoTemplates = [] }: Props) {
   const isPaidPlan = plan === "starter" || plan === "pro";
 
   const targetingCount = link.geoTargets.length + link.abVariants.length + link.retargetingPixels.length;
@@ -141,7 +143,7 @@ export function LinkEditTabs({ link, plan, campaigns, verifiedDomains, qrDataUrl
       <TabsContent value="targeting">
         <div className="space-y-3">
           {/* Destination waterfall — geo rules are checked first, A/B split only applies to the rest */}
-          <GeoTargetsForm linkId={link.id} isPaidPlan={isPaidPlan} initialTargets={link.geoTargets} />
+          <GeoTargetsForm linkId={link.id} isPaidPlan={isPaidPlan} initialTargets={link.geoTargets} templates={geoTemplates} />
 
           <div className="flex items-center gap-2 pl-3 text-xs text-muted-foreground">
             <ArrowDown className="h-3.5 w-3.5 shrink-0" />

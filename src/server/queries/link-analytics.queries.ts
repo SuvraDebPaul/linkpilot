@@ -15,11 +15,13 @@ export async function getLinkAnalytics(linkId: string, userId: string, days = 30
   const [clicksByDay, clicksByDevice, clicksByBrowser, topReferrers, topCountries,
     utmSources, utmMediums, utmCampaigns] =
     await Promise.all([
-      prisma.linkClickEvent.groupBy({
-        by: ["createdAt"],
-        where,
-        _count: { id: true },
-      }),
+      prisma.$queryRaw<{ day: Date; count: bigint }[]>`
+        SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
+        FROM "LinkClickEvent"
+        WHERE "linkId" = ${linkId}
+          AND "createdAt" >= ${since}
+        GROUP BY day
+      `,
       prisma.linkClickEvent.groupBy({
         by: ["device"],
         where,
@@ -78,8 +80,8 @@ export async function getLinkAnalytics(linkId: string, userId: string, days = 30
     dayMap[d.toISOString().slice(0, 10)] = 0;
   }
   for (const row of clicksByDay) {
-    const key = new Date(row.createdAt).toISOString().slice(0, 10);
-    if (key in dayMap) dayMap[key] += row._count.id;
+    const key = new Date(row.day).toISOString().slice(0, 10);
+    if (key in dayMap) dayMap[key] += Number(row.count);
   }
 
   return {

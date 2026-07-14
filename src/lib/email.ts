@@ -1,6 +1,21 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY!);
+let _resend: Resend | null = null;
+
+function getResend(): Resend {
+  if (!_resend) {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) throw new Error("RESEND_API_KEY is not set — email sending isn't configured.");
+    _resend = new Resend(key);
+  }
+  return _resend;
+}
+
+export const resend = new Proxy({} as Resend, {
+  get(_, prop, receiver) {
+    return Reflect.get(getResend(), prop, receiver);
+  },
+});
 
 const FROM = process.env.EMAIL_FROM ?? "LinkPilot <noreply@yourdomain.com>";
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://linkpilot.app";

@@ -733,6 +733,7 @@ async function main() {
   await prisma.clientAccess.createMany({
     data: clients.map((c) => ({
       id: c.id,
+      token: crypto.randomBytes(24).toString("hex"),
       clientName: c.clientName,
       clientEmail: c.clientEmail,
       createdByUserId: demoUser.id,
