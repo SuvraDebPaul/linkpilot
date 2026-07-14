@@ -84,19 +84,25 @@ export async function getAnalytics(workspaceId: string, days: number = 30, plan:
   const isStarter = plan === "starter" || plan === "pro";
   const isPro = plan === "pro";
 
-  const uniqueClicksResult = await prisma.linkClickEvent.findMany({
-    where: { link: { workspaceId }, createdAt: { gte: since }, ipHash: { not: null } },
-    select: { ipHash: true },
-    distinct: ["ipHash"],
-  });
-  const uniqueClicks = uniqueClicksResult.length;
+  const [{ count: uniqueClicksCount }] = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT COUNT(DISTINCT lce."ipHash")::bigint AS count
+    FROM "LinkClickEvent" lce
+    JOIN "Link" l ON l.id = lce."linkId"
+    WHERE l."workspaceId" = ${workspaceId}
+      AND lce."createdAt" >= ${since}
+      AND lce."ipHash" IS NOT NULL
+  `;
+  const uniqueClicks = Number(uniqueClicksCount);
 
   const [clicksByDay, clicksByDevice] = await Promise.all([
-    prisma.linkClickEvent.groupBy({
-      by: ["createdAt"],
-      where: { link: { workspaceId }, createdAt: { gte: since } },
-      _count: { id: true },
-    }),
+    prisma.$queryRaw<{ day: Date; count: bigint }[]>`
+      SELECT date_trunc('day', lce."createdAt") AS day, COUNT(*)::bigint AS count
+      FROM "LinkClickEvent" lce
+      JOIN "Link" l ON l.id = lce."linkId"
+      WHERE l."workspaceId" = ${workspaceId}
+        AND lce."createdAt" >= ${since}
+      GROUP BY day
+    `,
     prisma.linkClickEvent.groupBy({
       by: ["device"],
       where: { link: { workspaceId }, createdAt: { gte: since } },
@@ -176,8 +182,8 @@ export async function getAnalytics(workspaceId: string, days: number = 30, plan:
     dayMap[d.toISOString().slice(0, 10)] = 0;
   }
   for (const row of clicksByDay) {
-    const key = new Date(row.createdAt).toISOString().slice(0, 10);
-    if (key in dayMap) dayMap[key] += row._count.id;
+    const key = new Date(row.day).toISOString().slice(0, 10);
+    if (key in dayMap) dayMap[key] += Number(row.count);
   }
 
   const totalClicks = Object.values(dayMap).reduce((a, b) => a + b, 0);

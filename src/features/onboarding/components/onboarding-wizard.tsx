@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "@/lib/toast";
 import { Building2, Image as ImageIcon, Check, ArrowRight, Sparkles } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
@@ -47,12 +48,20 @@ export function OnboardingWizard({ userName }: { userName: string | null }) {
 
   function handleFinish() {
     startTransition(async () => {
-      await completeOnboardingAction({
-        workspaceName: workspaceName.trim(),
-        brandLogoUrl:  brandLogoUrl  || undefined,
-        brandColor:    HEX_RE.test(brandColor) ? brandColor : undefined,
-      });
-      router.push("/dashboard");
+      try {
+        const result = await completeOnboardingAction({
+          workspaceName: workspaceName.trim(),
+          brandLogoUrl:  brandLogoUrl  || undefined,
+          brandColor:    HEX_RE.test(brandColor) ? brandColor : undefined,
+        });
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
+        router.push("/dashboard");
+      } catch {
+        toast.error("Something went wrong. Please try again.");
+      }
     });
   }
 

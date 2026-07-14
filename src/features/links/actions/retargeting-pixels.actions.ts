@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -29,7 +30,7 @@ export async function updateRetargetingPixelsAction(
   pixels: RetargetingPixel[],
 ): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Not authenticated" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const plan = await getUserPlan(session.user.id);
   if (plan === "free") return { error: "Retargeting pixels require a Starter or Pro plan" };

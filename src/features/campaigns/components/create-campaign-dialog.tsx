@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createCampaignAction } from "@/features/campaigns/actions/campaign.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

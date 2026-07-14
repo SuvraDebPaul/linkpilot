@@ -10,6 +10,7 @@ import { prisma } from "@/server/db/prisma";
 import { ensureWorkspace, getWorkspaceDefaults } from "@/server/queries/workspace.queries";
 import { getWorkspaceCampaignsForSelect } from "@/server/queries/campaign.queries";
 import { getVerifiedDomainsForWorkspace } from "@/server/queries/domain.queries";
+import { getCampaignTemplates } from "@/server/queries/templates.queries";
 import { Button } from "@/components/ui/button";
 import { CreateLinkForm } from "@/features/links/components/create-link-form";
 
@@ -37,10 +38,11 @@ export default async function NewLinkPage() {
     }
   }
 
-  const [campaigns, verifiedDomains, workspaceDefaults] = await Promise.all([
+  const [campaigns, verifiedDomains, workspaceDefaults, campaignTemplates] = await Promise.all([
     getWorkspaceCampaignsForSelect(workspaceId),
     getVerifiedDomainsForWorkspace(workspaceId),
     getWorkspaceDefaults(workspaceId),
+    getCampaignTemplates(workspaceId),
   ]);
 
   return (
@@ -63,6 +65,7 @@ export default async function NewLinkPage() {
         plan={plan}
         campaigns={campaigns}
         verifiedDomains={verifiedDomains}
+        campaignTemplates={campaignTemplates}
         defaultQrFgColor={workspaceDefaults?.defaultQrFgColor}
         defaultQrBgColor={workspaceDefaults?.defaultQrBgColor}
         defaultQrEcLevel={workspaceDefaults?.defaultQrEcLevel as "L" | "M" | "Q" | "H" | undefined}

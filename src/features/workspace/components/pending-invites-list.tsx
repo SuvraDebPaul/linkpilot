@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Mail, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resendInviteAction, revokeInviteAction } from "@/features/workspace/actions/workspace.actions";

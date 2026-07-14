@@ -69,7 +69,7 @@ export default async function CampaignDetailPage({
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-1 flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-bold text-foreground">
               {campaign.name}
@@ -80,7 +80,7 @@ export default async function CampaignDetailPage({
               </p>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Button asChild variant="outline" size="sm" className="gap-1.5">
               <Link href={`/dashboard/campaigns/${campaign.id}/qr-assets`}>
                 <QrCode className="h-4 w-4" /> QR Assets
@@ -152,10 +152,7 @@ export default async function CampaignDetailPage({
           <CardTitle className="flex items-center gap-2 text-base">
             <Link2 className="h-4 w-4 text-primary" /> Links in this campaign
           </CardTitle>
-          <AddLinkToCampaign
-            campaignId={campaign.id}
-            userId={session.user.id}
-          />
+          <AddLinkToCampaign campaignId={campaign.id} />
         </CardHeader>
         <CardContent>
           {campaign.links.length === 0 ? (
@@ -234,10 +231,7 @@ export default async function CampaignDetailPage({
                             />
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <RemoveLinkFromCampaign
-                              linkId={link.id}
-                              campaignId={campaign.id}
-                            />
+                            <RemoveLinkFromCampaign linkId={link.id} />
                           </td>
                         </tr>
                       );

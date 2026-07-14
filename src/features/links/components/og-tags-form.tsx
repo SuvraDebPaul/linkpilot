@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { Share2 } from "lucide-react";
 import { updateOgTagsAction } from "@/features/links/actions/og-tags.actions";

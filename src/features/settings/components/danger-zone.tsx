@@ -1,7 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Trash2 } from "lucide-react";
 
 import { deleteAccountAction } from "@/features/settings/actions/settings.actions";
@@ -10,12 +10,16 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 export function DangerZone() {
   async function handleDelete() {
-    const result = await deleteAccountAction();
-    if (result.success) {
-      toast.success("Account deleted.");
-      await signOut({ callbackUrl: "/" });
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await deleteAccountAction();
+      if (result.success) {
+        toast.success("Account deleted.");
+        await signOut({ callbackUrl: "/" });
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error("Something went wrong deleting your account. Please try again.");
     }
   }
 

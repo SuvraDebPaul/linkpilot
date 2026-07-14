@@ -10,6 +10,7 @@ import { getUserPlan } from "@/lib/subscription";
 import { ensureWorkspace } from "@/server/queries/workspace.queries";
 import { getWorkspaceCampaignsForSelect } from "@/server/queries/campaign.queries";
 import { getVerifiedDomainsForWorkspace } from "@/server/queries/domain.queries";
+import { getGeoTemplates } from "@/server/queries/templates.queries";
 import { prisma } from "@/server/db/prisma";
 import { generateQrCodeDataUrl } from "@/server/services/qr.service";
 import { getShortUrl } from "@/lib/short-url";
@@ -39,13 +40,14 @@ export default async function EditLinkPage({
   ]);
   if (!link) notFound();
 
-  const [campaigns, verifiedDomains, workspace] = await Promise.all([
+  const [campaigns, verifiedDomains, workspace, geoTemplates] = await Promise.all([
     getWorkspaceCampaignsForSelect(workspaceId),
     getVerifiedDomainsForWorkspace(workspaceId),
     prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: { brandLogoUrl: true },
     }),
+    getGeoTemplates(workspaceId),
   ]);
 
   const shortUrl  = getShortUrl(link.shortCode, link.customDomain);
@@ -120,6 +122,7 @@ export default async function EditLinkPage({
           verifiedDomains={verifiedDomains}
           qrDataUrl={qrDataUrl}
           workspace={workspace}
+          geoTemplates={geoTemplates}
         />
       </div>
     </div>

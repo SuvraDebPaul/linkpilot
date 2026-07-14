@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { deleteCampaignAction, updateCampaignAction } from "@/features/campaigns/actions/campaign.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,7 @@ export function CampaignActions({ campaign }: { campaign: Campaign }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+          <Button variant="outline" size="icon" aria-label="Campaign actions"><MoreHorizontal className="h-4 w-4" /></Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setEditOpen(true)}>
@@ -59,7 +59,7 @@ export function CampaignActions({ campaign }: { campaign: Campaign }) {
               </DropdownMenuItem>
             }
             title={`Delete "${campaign.name}"?`}
-            description="The campaign will be deleted. Your links will not be affected."
+            description="The campaign will be deleted. Your links will not be affected. This cannot be undone."
             confirmLabel="Delete"
             onConfirm={handleDelete}
           />

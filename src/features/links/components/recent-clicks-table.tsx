@@ -270,6 +270,7 @@ export function RecentClicksTable({ clicks }: { clicks: Click[] }) {
                 className="h-7 w-7"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={safePage === 1}
+                aria-label="Previous page"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
@@ -282,6 +283,7 @@ export function RecentClicksTable({ clicks }: { clicks: Click[] }) {
                 className="h-7 w-7"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={safePage === totalPages}
+                aria-label="Next page"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>

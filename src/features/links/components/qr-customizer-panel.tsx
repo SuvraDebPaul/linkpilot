@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import QRCode from "qrcode";
 import { Download, Save, Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

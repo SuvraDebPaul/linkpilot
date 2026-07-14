@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { contactAction } from "@/features/contact/actions/contact.action";
 import { Button } from "@/components/ui/button";

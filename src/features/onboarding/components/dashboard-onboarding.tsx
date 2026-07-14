@@ -141,7 +141,7 @@ export function DashboardOnboarding({ firstName, totalLinks, totalCampaigns, tot
 
       {completedCount === 3 && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 px-5 py-4 text-center text-sm text-foreground">
-          You've completed all three steps. Explore your{" "}
+          You&apos;ve completed all three steps. Explore your{" "}
           <Link href="/dashboard/analytics" className="font-semibold text-primary underline">
             analytics
           </Link>{" "}

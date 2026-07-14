@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Plus, ChevronDown, ChevronUp } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { createLinkAction } from "@/features/links/actions/link.actions";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FieldError } from "@/components/shared/form-error";
+import { PasswordInput } from "@/components/shared/password-input";
 
 function buildUtmUrl(base: string, params: Record<string, string>): string {
   if (!base) return "";
@@ -283,7 +284,7 @@ export function CreateLinkDialog() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="password">Password <span className="text-muted-foreground text-xs">(optional)</span></Label>
-              <Input id="password" name="password" type="password" placeholder="••••••••" disabled={isPending} />
+              <PasswordInput id="password" name="password" placeholder="••••••••" disabled={isPending} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="expiresAt">Expires <span className="text-muted-foreground text-xs">(optional)</span></Label>

@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -22,7 +23,7 @@ type ActionResult =
 
 async function getAuthContext() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error(SESSION_EXPIRED_MESSAGE);
 
   const userId = session.user.id;
   const workspaceId = await ensureWorkspace(userId);

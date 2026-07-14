@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { Repeat } from "lucide-react";
 import { updateRedirectTypeAction } from "@/features/links/actions/redirect-type.actions";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import QRCode from "qrcode";
 import {
   CheckCircle2,
@@ -362,7 +362,7 @@ function QrDefaultsCard({
         <div className="flex items-center gap-4">
           <canvas
             ref={canvasRef}
-            className="h-[88px] w-[88px] shrink-0 rounded-md border border-border"
+            className="h-22 w-22 shrink-0 rounded-md border border-border"
           />
           <div className="grid flex-1 gap-3">
             <div className="space-y-1.5">

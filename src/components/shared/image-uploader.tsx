@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { ImagePlus, X, Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -75,6 +75,7 @@ export function ImageUploader({
       formData.append("timestamp", String(sig.timestamp));
       formData.append("signature", sig.signature);
       formData.append("folder", sig.folder);
+      formData.append("allowed_formats", sig.allowedFormats);
 
       const res = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`, {
         method: "POST",

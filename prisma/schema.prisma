@@ -109,6 +109,39 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// Failed credentials-login attempts only — used to rate-limit brute-force
+// attacks by email and by IP. Successful logins are tracked in LoginEvent.
+model LoginAttempt {
+  id         String   @id @default(cuid())
+  identifier String // lowercased email being guessed
+  ip         String
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, createdAt])
+  @@index([ip, createdAt])
+}
+
+// Failed password-protected-link unlock attempts — rate-limits brute force
+// against a single link's password.
+model UnlockAttempt {
+  id        String   @id @default(cuid())
+  slug      String
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([slug, ip, createdAt])
+}
+
+// One row per CSV import call — rate-limits repeated bulk imports, independent
+// of how many rows each import contains.
+model ImportAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
 model LoginEvent {
   id     String @id @default(cuid())
   userId String
@@ -386,6 +419,7 @@ model LinkClickEvent {
   createdAt DateTime @default(now())
 
   @@index([linkId])
+  @@index([linkId, ipHash, createdAt])
   @@index([createdAt])
   @@index([device])
   @@index([country])
@@ -398,7 +432,7 @@ model LinkClickEvent {
 
 model ClientAccess {
   id          String  @id @default(cuid())
-  token       String  @unique @default(cuid())
+  token       String  @unique
   clientName  String?
   clientEmail String
 
@@ -480,6 +514,7 @@ model GuestClickEvent {
   createdAt DateTime @default(now())
 
   @@index([guestLinkId])
+  @@index([guestLinkId, ipHash, createdAt])
   @@index([createdAt])
   @@index([ipHash])
   @@index([device])

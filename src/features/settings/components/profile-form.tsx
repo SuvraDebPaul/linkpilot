@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { BadgeCheck, BadgeAlert } from "lucide-react";
 import { updateProfileAction, resendVerificationEmailAction } from "@/features/settings/actions/settings.actions";
 import { Button } from "@/components/ui/button";
@@ -25,18 +25,28 @@ export function ProfileForm({ name, email, image, emailVerified }: Props) {
     e.preventDefault();
     setIsPending(true);
     const fd = new FormData(e.currentTarget);
-    const result = await updateProfileAction({ name: fd.get("name"), image: imageUrl });
-    setIsPending(false);
-    if (result.success) toast.success(result.message);
-    else toast.error(result.message);
+    try {
+      const result = await updateProfileAction({ name: fd.get("name"), image: imageUrl });
+      if (result.success) toast.success(result.message);
+      else toast.error(result.message);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
   }
 
   async function handleResend() {
     setIsResending(true);
-    const result = await resendVerificationEmailAction();
-    setIsResending(false);
-    if (result.success) toast.success(result.message);
-    else toast.error(result.message);
+    try {
+      const result = await resendVerificationEmailAction();
+      if (result.success) toast.success(result.message);
+      else toast.error(result.message);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsResending(false);
+    }
   }
 
   return (

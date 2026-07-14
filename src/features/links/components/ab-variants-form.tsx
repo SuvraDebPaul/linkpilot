@@ -2,16 +2,14 @@
 
 import { useState } from "react";
 import { Plus, X, Loader2, FlaskConical, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import { updateAbVariantsAction, type AbVariant } from "@/features/links/actions/ab-variants.actions";
 
 const LABELS = ["A", "B", "C", "D", "E"];
-const MAX_FREE = 0;
 
 interface Props {
   linkId: string;

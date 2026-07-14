@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -16,7 +17,7 @@ type Result = { success: true } | { success: false; message: string };
 
 export async function completeOnboardingAction(input: unknown): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
 
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { success: false, message: "Please check your input." };
@@ -24,21 +25,25 @@ export async function completeOnboardingAction(input: unknown): Promise<Result> 
   const { workspaceName, brandLogoUrl, brandColor } = parsed.data;
   const userId = session.user.id;
 
-  const workspaceId = await ensureWorkspace(userId);
+  try {
+    const workspaceId = await ensureWorkspace(userId);
 
-  await prisma.workspace.update({
-    where: { id: workspaceId },
-    data: {
-      name: workspaceName,
-      ...(brandLogoUrl ? { brandLogoUrl } : {}),
-      ...(brandColor   ? { brandColor }   : {}),
-    },
-  });
+    await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: {
+        name: workspaceName,
+        ...(brandLogoUrl ? { brandLogoUrl } : {}),
+        ...(brandColor   ? { brandColor }   : {}),
+      },
+    });
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { onboardingCompleted: true },
-  });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { onboardingCompleted: true },
+    });
 
-  return { success: true };
+    return { success: true };
+  } catch {
+    return { success: false, message: "Something went wrong. Please try again." };
+  }
 }

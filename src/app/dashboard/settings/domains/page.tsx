@@ -108,6 +108,7 @@ export default async function DomainsPage() {
                           label=""
                           copiedLabel=""
                           variant="ghost"
+                          ariaLabel="Copy CNAME target"
                         />
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">

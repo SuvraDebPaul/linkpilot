@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/server/db/prisma";
+import { checkLoginRateLimit, recordFailedLoginAttempt } from "@/lib/rate-limit";
 
 function getRequestMeta(req?: { headers?: Record<string, string> }) {
   const headers = req?.headers ?? {};
@@ -55,17 +56,28 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const email = credentials.email.toLowerCase().trim();
+        const { ip, browser } = getRequestMeta(req as { headers?: Record<string, string> } | undefined);
+
+        const allowed = await checkLoginRateLimit(email, ip);
+        if (!allowed) return null;
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
+          where: { email },
           select: { id: true, name: true, email: true, image: true, password: true },
         });
 
-        if (!user?.password) return null;
+        if (!user?.password) {
+          await recordFailedLoginAttempt(email, ip);
+          return null;
+        }
 
         const passwordMatch = await bcrypt.compare(credentials.password, user.password);
-        if (!passwordMatch) return null;
+        if (!passwordMatch) {
+          await recordFailedLoginAttempt(email, ip);
+          return null;
+        }
 
-        const { ip, browser } = getRequestMeta(req as { headers?: Record<string, string> } | undefined);
         await prisma.loginEvent.create({
           data: { userId: user.id, type: "credentials", ip, browser },
         });

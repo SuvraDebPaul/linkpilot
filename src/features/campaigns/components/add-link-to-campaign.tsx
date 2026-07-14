@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { assignLinkToCampaignAction } from "@/features/campaigns/actions/campaign.actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +25,8 @@ type LinkOption = { id: string; title: string | null; shortCode: string };
 
 export function AddLinkToCampaign({
   campaignId,
-  userId,
 }: {
   campaignId: string;
-  userId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [links, setLinks] = useState<LinkOption[]>([]);

@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { changePasswordAction } from "@/features/settings/actions/settings.actions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/shared/password-input";
 import { PasswordStrengthMeter } from "@/features/settings/components/password-strength-meter";
 
 export function PasswordForm() {
@@ -17,18 +17,23 @@ export function PasswordForm() {
     e.preventDefault();
     setIsPending(true);
     const fd = new FormData(e.currentTarget);
-    const result = await changePasswordAction({
-      currentPassword: fd.get("currentPassword"),
-      newPassword: fd.get("newPassword"),
-      confirmPassword: fd.get("confirmPassword"),
-    });
-    setIsPending(false);
-    if (result.success) {
-      toast.success(result.message);
-      formRef.current?.reset();
-      setNewPassword("");
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await changePasswordAction({
+        currentPassword: fd.get("currentPassword"),
+        newPassword: fd.get("newPassword"),
+        confirmPassword: fd.get("confirmPassword"),
+      });
+      if (result.success) {
+        toast.success(result.message);
+        formRef.current?.reset();
+        setNewPassword("");
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
     }
   }
 
@@ -36,14 +41,13 @@ export function PasswordForm() {
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="currentPassword">Current password</Label>
-        <Input id="currentPassword" name="currentPassword" type="password" placeholder="••••••••" disabled={isPending} />
+        <PasswordInput id="currentPassword" name="currentPassword" placeholder="••••••••" disabled={isPending} />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="newPassword">New password</Label>
-        <Input
+        <PasswordInput
           id="newPassword"
           name="newPassword"
-          type="password"
           placeholder="Min. 8 characters"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
@@ -53,7 +57,7 @@ export function PasswordForm() {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="confirmPassword">Confirm new password</Label>
-        <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" disabled={isPending} />
+        <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="••••••••" disabled={isPending} />
       </div>
       <Button type="submit" disabled={isPending}>
         {isPending ? "Changing…" : "Change password"}

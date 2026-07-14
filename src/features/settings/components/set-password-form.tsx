@@ -2,11 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { setPasswordAction } from "@/features/settings/actions/settings.actions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/shared/password-input";
 import { PasswordStrengthMeter } from "@/features/settings/components/password-strength-meter";
 
 export function SetPasswordForm() {
@@ -19,18 +19,23 @@ export function SetPasswordForm() {
     e.preventDefault();
     setIsPending(true);
     const fd = new FormData(e.currentTarget);
-    const result = await setPasswordAction({
-      newPassword: fd.get("newPassword"),
-      confirmPassword: fd.get("confirmPassword"),
-    });
-    setIsPending(false);
-    if (result.success) {
-      toast.success(result.message);
-      formRef.current?.reset();
-      setNewPassword("");
-      router.refresh();
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await setPasswordAction({
+        newPassword: fd.get("newPassword"),
+        confirmPassword: fd.get("confirmPassword"),
+      });
+      if (result.success) {
+        toast.success(result.message);
+        formRef.current?.reset();
+        setNewPassword("");
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
     }
   }
 
@@ -42,10 +47,9 @@ export function SetPasswordForm() {
       </p>
       <div className="space-y-1.5">
         <Label htmlFor="setNewPassword">New password</Label>
-        <Input
+        <PasswordInput
           id="setNewPassword"
           name="newPassword"
-          type="password"
           placeholder="Min. 8 characters"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
@@ -55,7 +59,7 @@ export function SetPasswordForm() {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="setConfirmPassword">Confirm password</Label>
-        <Input id="setConfirmPassword" name="confirmPassword" type="password" placeholder="••••••••" disabled={isPending} />
+        <PasswordInput id="setConfirmPassword" name="confirmPassword" placeholder="••••••••" disabled={isPending} />
       </div>
       <Button type="submit" disabled={isPending}>
         {isPending ? "Setting…" : "Set password"}

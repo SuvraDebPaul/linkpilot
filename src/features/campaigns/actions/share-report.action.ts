@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import crypto from "crypto";
 import { getServerSession } from "next-auth";
@@ -12,7 +13,7 @@ type Result = { success: boolean; message: string; token?: string };
 
 export async function enableShareReportAction(campaignId: string): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
 
   const plan = await getUserPlan(session.user.id);
   if (plan !== "pro") {
@@ -20,7 +21,7 @@ export async function enableShareReportAction(campaignId: string): Promise<Resul
   }
 
   const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, userId: session.user.id },
+    where: { id: campaignId, workspace: { members: { some: { userId: session.user.id } } } },
     select: { id: true, shareToken: true },
   });
   if (!campaign) return { success: false, message: "Campaign not found" };
@@ -37,10 +38,10 @@ export async function enableShareReportAction(campaignId: string): Promise<Resul
 
 export async function disableShareReportAction(campaignId: string): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) return { success: false, message: SESSION_EXPIRED_MESSAGE };
 
   await prisma.campaign.updateMany({
-    where: { id: campaignId, userId: session.user.id },
+    where: { id: campaignId, workspace: { members: { some: { userId: session.user.id } } } },
     data: { shareToken: null },
   });
   revalidatePath(`/dashboard/campaigns/${campaignId}/report`);

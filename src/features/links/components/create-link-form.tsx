@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Sparkles, Zap, FolderKanban, Palette, Globe, FileText, Hash } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { createLinkAction } from "@/features/links/actions/link.actions";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FieldError } from "@/components/shared/form-error";
+import { PasswordInput } from "@/components/shared/password-input";
 import { LinkCreatedDialog } from "@/features/links/components/link-created-dialog";
 import { LinkLivePreview } from "@/features/links/components/link-live-preview";
 import { cn } from "@/lib/utils";
@@ -58,11 +59,21 @@ function buildUtmUrl(base: string, params: Record<string, string>): string {
 
 type Campaign = { id: string; name: string };
 type VerifiedDomain = { id: string; domain: string };
+type CampaignTemplate = {
+  id: string;
+  name: string;
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  term: string | null;
+  content: string | null;
+};
 
 type Props = {
   plan: PlanTier;
   campaigns: Campaign[];
   verifiedDomains: VerifiedDomain[];
+  campaignTemplates?: CampaignTemplate[];
   defaultQrFgColor?: string;
   defaultQrBgColor?: string;
   defaultQrEcLevel?: EcLevel;
@@ -72,6 +83,7 @@ export function CreateLinkForm({
   plan,
   campaigns,
   verifiedDomains,
+  campaignTemplates = [],
   defaultQrFgColor = "#000000",
   defaultQrBgColor = "#ffffff",
   defaultQrEcLevel = "M",
@@ -111,6 +123,18 @@ export function CreateLinkForm({
 
   const hasUtmParams = Object.values(utm).some((v) => v.trim() !== "");
   const utmPreviewDiffers = assembledUrl && assembledUrl !== destinationUrl;
+
+  function applyCampaignTemplate(templateId: string) {
+    const template = campaignTemplates.find((t) => t.id === templateId);
+    if (!template) return;
+    setUtm({
+      source: template.source ?? "",
+      medium: template.medium ?? "",
+      campaign: template.campaign ?? "",
+      term: template.term ?? "",
+      content: template.content ?? "",
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -244,9 +268,25 @@ export function CreateLinkForm({
 
                 {showUtm && (
                   <div className="mt-3 rounded-lg border border-border bg-muted/40 p-4 space-y-4">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      UTM Parameters
-                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        UTM Parameters
+                      </p>
+                      {campaignTemplates.length > 0 && (
+                        <Select onValueChange={applyCampaignTemplate}>
+                          <SelectTrigger className="h-7 w-auto gap-1.5 text-xs">
+                            <SelectValue placeholder="Load from template" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {campaignTemplates.map((t) => (
+                              <SelectItem key={t.id} value={t.id}>
+                                {t.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {(
                         [
@@ -385,7 +425,7 @@ export function CreateLinkForm({
                 <Label htmlFor="password">
                   Password <span className="text-xs text-muted-foreground">(optional)</span>
                 </Label>
-                <Input id="password" name="password" type="password" placeholder="••••••••" disabled={isPending} />
+                <PasswordInput id="password" name="password" placeholder="••••••••" disabled={isPending} />
                 <p className="text-xs text-muted-foreground">Visitors must enter this to access the link</p>
               </div>
 

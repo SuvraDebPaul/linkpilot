@@ -10,7 +10,16 @@ type UnlockRouteContext = {
 
 export async function POST(req: Request, context: UnlockRouteContext) {
   const { slug } = await context.params;
-  const body = (await req.json()) as { password?: string };
+
+  let body: { password?: string };
+  try {
+    body = (await req.json()) as { password?: string };
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Invalid request." },
+      { status: 400 },
+    );
+  }
 
   if (!body.password) {
     return NextResponse.json(
@@ -22,9 +31,14 @@ export async function POST(req: Request, context: UnlockRouteContext) {
     );
   }
 
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "Unknown";
+
   const result = await unlockProtectedLink({
     slug,
     password: body.password,
+    ip,
+    host: req.headers.get("host"),
   });
 
   return NextResponse.json(result, {

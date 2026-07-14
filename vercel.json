@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/monthly-account-reports",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/reverify-domains",
+      "schedule": "0 3 * * *"
     }
   ]
 }

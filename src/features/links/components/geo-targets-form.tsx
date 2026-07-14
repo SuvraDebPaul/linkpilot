@@ -2,27 +2,43 @@
 
 import { useState } from "react";
 import { Plus, X, Globe, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PlanGateCard } from "@/components/shared/plan-gate-card";
 import { COUNTRIES } from "@/constants/countries";
 import { updateGeoTargetsAction, type GeoTarget } from "@/features/links/actions/geo-targets.actions";
+
+type GeoTemplate = { id: string; name: string; targets: unknown };
 
 interface Props {
   linkId: string;
   isPaidPlan: boolean;
   initialTargets: GeoTarget[];
+  templates?: GeoTemplate[];
 }
 
-export function GeoTargetsForm({ linkId, isPaidPlan, initialTargets }: Props) {
+export function GeoTargetsForm({ linkId, isPaidPlan, initialTargets, templates = [] }: Props) {
   const [targets, setTargets] = useState<GeoTarget[]>(initialTargets);
   const [country, setCountry] = useState("");
   const [url, setUrl] = useState("");
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
+
+  function applyTemplate(templateId: string) {
+    const template = templates.find((t) => t.id === templateId);
+    if (!template) return;
+    setTargets(template.targets as GeoTarget[]);
+  }
 
   const filtered = search.trim()
     ? COUNTRIES.filter(
@@ -75,13 +91,31 @@ export function GeoTargetsForm({ linkId, isPaidPlan, initialTargets }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Globe className="h-4 w-4 text-primary" /> Geo targeting
-        </CardTitle>
-        <CardDescription>
-          Redirect visitors to a different URL based on their country. Falls back to the main URL for
-          countries without a rule.
-        </CardDescription>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" /> Geo targeting
+            </CardTitle>
+            <CardDescription>
+              Redirect visitors to a different URL based on their country. Falls back to the main URL for
+              countries without a rule.
+            </CardDescription>
+          </div>
+          {templates.length > 0 && (
+            <Select onValueChange={applyTemplate}>
+              <SelectTrigger className="h-7 w-auto shrink-0 gap-1.5 text-xs">
+                <SelectValue placeholder="Load from template" />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Existing rules */}

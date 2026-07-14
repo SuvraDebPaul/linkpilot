@@ -13,9 +13,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { token } = await params;
   const access = await getClientAccessByToken(token);
-  if (!access) return { title: "Portal not found" };
+  if (!access) return { title: "Portal not found", robots: { index: false, follow: false } };
   return {
     title: `${access.clientName ?? "Your"} campaign portal — ${access.workspace.name}`,
+    robots: { index: false, follow: false },
   };
 }
 

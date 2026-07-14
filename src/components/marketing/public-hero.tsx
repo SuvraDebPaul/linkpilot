@@ -21,16 +21,16 @@ export function PublicHero() {
   return (
     <section className="relative overflow-hidden border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute left-[-8%] top-[-18%] h-[500px] w-[500px] rounded-full bg-primary/20/35 blur-3xl dark:opacity-40" />
-        <div className="absolute right-[-10%] top-[5%] h-[420px] w-[420px] rounded-full bg-blue-200/30 blur-3xl dark:opacity-20" />
-        <div className="absolute bottom-[-20%] left-[35%] h-[380px] w-[380px] rounded-full bg-emerald-100/45 blur-3xl dark:opacity-20" />
+        <div className="absolute left-[-8%] top-[-18%] h-125 w-125 rounded-full bg-primary/20/35 blur-3xl dark:opacity-40" />
+        <div className="absolute right-[-10%] top-[5%] h-105 w-105 rounded-full bg-blue-200/30 blur-3xl dark:opacity-20" />
+        <div className="absolute bottom-[-20%] left-[35%] h-95 w-95 rounded-full bg-emerald-100/45 blur-3xl dark:opacity-20" />
       </div>
 
       <div className="mx-auto grid max-w-7xl items-start gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:px-8 lg:py-8">
         {/* Left — value proposition */}
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-4 py-2 text-sm font-semibold text-primary shadow-sm backdrop-blur dark:bg-slate-900/80">
-            <span className="h-2 w-2 rounded-full bg-primary/100" />
+            <span className="h-2 w-2 rounded-full bg-primary" />
             Campaign link management
           </div>
 
@@ -87,7 +87,7 @@ export function PublicHero() {
 
         {/* Right — shortener form */}
         <div className="relative">
-          <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-primary/20/30 via-white/60 to-blue-200/40 blur-xl dark:via-slate-900/60 dark:opacity-50" />
+          <div className="absolute -inset-4 rounded-[2rem] bg-linear-to-br from-primary/20/30 via-white/60 to-blue-200/40 blur-xl dark:via-slate-900/60 dark:opacity-50" />
           <div className="relative">
             <GuestLinkForm />
           </div>

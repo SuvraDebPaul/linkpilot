@@ -1,15 +1,16 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { z } from "zod/v4";
-import dns from "dns/promises";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { getUserPlan } from "@/lib/subscription";
 import { canAddDomain } from "@/lib/plans";
 import { getUserWorkspaces } from "@/server/queries/workspace.queries";
+import { checkDomainCname } from "@/server/services/domain-verification.service";
 
 const domainSchema = z.object({
   domain: z
@@ -21,7 +22,7 @@ const domainSchema = z.object({
 
 export async function addDomainAction(formData: FormData) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const plan = await getUserPlan(session.user.id);
   if (plan === "free") return { error: "Custom domains require a Starter or Pro plan" };
@@ -33,65 +34,69 @@ export async function addDomainAction(formData: FormData) {
   if (!memberships.length) return { error: "No workspace found" };
   const workspaceId = memberships[0].workspaceId;
 
-  const existing = await prisma.customDomain.findUnique({ where: { domain: parsed.data.domain } });
-  if (existing) return { error: "This domain is already registered" };
+  try {
+    const existing = await prisma.customDomain.findUnique({ where: { domain: parsed.data.domain } });
+    if (existing) return { error: "This domain is already registered" };
 
-  const domainCount = await prisma.customDomain.count({ where: { userId: session.user.id } });
-  if (!canAddDomain(plan, domainCount)) {
-    return { error: "You have reached your custom domain limit. Upgrade to Pro for unlimited domains." };
+    const domainCount = await prisma.customDomain.count({ where: { userId: session.user.id } });
+    if (!canAddDomain(plan, domainCount)) {
+      return { error: "You have reached your custom domain limit. Upgrade to Pro for unlimited domains." };
+    }
+
+    await prisma.customDomain.create({
+      data: {
+        domain: parsed.data.domain,
+        userId: session.user.id,
+        workspaceId,
+        status: "PENDING",
+      },
+    });
+
+    revalidatePath("/dashboard/settings/domains");
+    return { success: true };
+  } catch {
+    return { error: "Something went wrong adding this domain. Please try again." };
   }
-
-  await prisma.customDomain.create({
-    data: {
-      domain: parsed.data.domain,
-      userId: session.user.id,
-      workspaceId,
-      status: "PENDING",
-    },
-  });
-
-  revalidatePath("/dashboard/settings/domains");
-  return { success: true };
 }
 
 export async function verifyDomainAction(domainId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
-
-  const record = await prisma.customDomain.findUnique({ where: { id: domainId } });
-  if (!record || record.userId !== session.user.id) return { error: "Not found" };
-
-  const expectedTarget = process.env.APP_DOMAIN ?? "linkpilot.app";
-  let verified = false;
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   try {
-    const addresses = await dns.resolveCname(record.domain);
-    verified = addresses.some((a) => a.includes(expectedTarget));
+    const record = await prisma.customDomain.findUnique({ where: { id: domainId } });
+    if (!record || record.userId !== session.user.id) return { error: "Not found" };
+
+    const verified = await checkDomainCname(record.domain);
+
+    await prisma.customDomain.update({
+      where: { id: domainId },
+      data: {
+        status: verified ? "VERIFIED" : "FAILED",
+        verifiedAt: verified ? new Date() : null,
+        lastChecked: new Date(),
+      },
+    });
+
+    revalidatePath("/dashboard/settings/domains");
+    return { success: true, verified };
   } catch {
-    verified = false;
+    return { error: "Something went wrong verifying this domain. Please try again." };
   }
-
-  await prisma.customDomain.update({
-    where: { id: domainId },
-    data: {
-      status: verified ? "VERIFIED" : "FAILED",
-      verifiedAt: verified ? new Date() : null,
-      lastChecked: new Date(),
-    },
-  });
-
-  revalidatePath("/dashboard/settings/domains");
-  return { success: true, verified };
 }
 
 export async function removeDomainAction(domainId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
-  const record = await prisma.customDomain.findUnique({ where: { id: domainId } });
-  if (!record || record.userId !== session.user.id) return { error: "Not found" };
+  try {
+    const record = await prisma.customDomain.findUnique({ where: { id: domainId } });
+    if (!record || record.userId !== session.user.id) return { error: "Not found" };
 
-  await prisma.customDomain.delete({ where: { id: domainId } });
-  revalidatePath("/dashboard/settings/domains");
-  return { success: true };
+    await prisma.customDomain.delete({ where: { id: domainId } });
+    revalidatePath("/dashboard/settings/domains");
+    return { success: true };
+  } catch {
+    return { error: "Something went wrong removing this domain. Please try again." };
+  }
 }

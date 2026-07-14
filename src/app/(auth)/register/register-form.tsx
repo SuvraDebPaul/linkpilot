@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { registerAction } from "@/features/auth/actions/register.action";
 import { registerSchema } from "@/features/auth/schemas/auth.schema";
@@ -12,10 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { FieldError } from "@/components/shared/form-error";
 import { GoogleButton } from "@/features/auth/components/google-button";
+import { PasswordInput } from "@/components/shared/password-input";
+import { PasswordStrengthMeter } from "@/features/settings/components/password-strength-meter";
 
 export function RegisterForm() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
+  const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -26,7 +29,7 @@ export function RegisterForm() {
     const raw = {
       name: formData.get("name"),
       email: formData.get("email"),
-      password: formData.get("password"),
+      password,
       confirmPassword: formData.get("confirmPassword"),
     };
 
@@ -41,24 +44,29 @@ export function RegisterForm() {
     }
 
     setIsPending(true);
-    const result = await registerAction(raw);
-    setIsPending(false);
+    try {
+      const result = await registerAction(raw);
 
-    if (!result.success) {
-      if (result.fieldErrors) {
-        const errors: Record<string, string> = {};
-        for (const [key, msgs] of Object.entries(result.fieldErrors)) {
-          if (msgs?.[0]) errors[key] = msgs[0];
+      if (!result.success) {
+        if (result.fieldErrors) {
+          const errors: Record<string, string> = {};
+          for (const [key, msgs] of Object.entries(result.fieldErrors)) {
+            if (msgs?.[0]) errors[key] = msgs[0];
+          }
+          setFieldErrors(errors);
+        } else {
+          toast.error(result.message);
         }
-        setFieldErrors(errors);
-      } else {
-        toast.error(result.message);
+        return;
       }
-      return;
-    }
 
-    toast.success(result.message);
-    router.push("/login");
+      toast.success(result.message);
+      router.push("/login");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (
@@ -100,23 +108,24 @@ export function RegisterForm() {
 
         <div className="space-y-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="new-password"
             placeholder="Min. 8 characters"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             disabled={isPending}
           />
+          <PasswordStrengthMeter password={password} />
           <FieldError errors={fieldErrors} field="password" />
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="confirmPassword">Confirm password</Label>
-          <Input
+          <PasswordInput
             id="confirmPassword"
             name="confirmPassword"
-            type="password"
             autoComplete="new-password"
             placeholder="••••••••"
             disabled={isPending}

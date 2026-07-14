@@ -1,5 +1,7 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
+import crypto from "crypto";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -24,7 +26,7 @@ export async function createClientAccessAction(
   data: z.infer<typeof createSchema>,
 ): Promise<Result & { token?: string }> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Not authenticated" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const parsed = createSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -48,6 +50,7 @@ export async function createClientAccessAction(
 
   const access = await prisma.clientAccess.create({
     data: {
+      token: crypto.randomBytes(24).toString("hex"),
       clientName,
       clientEmail,
       createdByUserId: session.user.id,
@@ -81,10 +84,10 @@ export async function deleteClientAccessAction(
   clientAccessId: string,
 ): Promise<Result> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Not authenticated" };
+  if (!session?.user?.id) return { error: SESSION_EXPIRED_MESSAGE };
 
   const access = await prisma.clientAccess.findFirst({
-    where: { id: clientAccessId, createdByUserId: session.user.id },
+    where: { id: clientAccessId, workspace: { members: { some: { userId: session.user.id } } } },
     select: { id: true },
   });
   if (!access) return { error: "Not found" };

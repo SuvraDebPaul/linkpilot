@@ -1,4 +1,5 @@
 "use server";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth-messages";
 
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -17,7 +18,7 @@ type Result = { success: boolean; message: string; data?: { id: string } };
 
 async function getAuthContext() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error(SESSION_EXPIRED_MESSAGE);
 
   const userId = session.user.id;
   const workspaceId = await ensureWorkspace(userId);
@@ -167,12 +168,21 @@ export async function updateReportEmailScheduleAction(
 
 export async function assignLinkToCampaignAction(linkId: string, campaignId: string | null): Promise<Result> {
   try {
-    const { userId } = await getAuthContext();
+    const { userId, workspaceId } = await getAuthContext();
     const link = await prisma.link.findFirst({
       where: { id: linkId, workspace: { members: { some: { userId } } } },
       select: { id: true },
     });
     if (!link) return { success: false, message: "Link not found." };
+
+    if (campaignId !== null) {
+      const campaign = await prisma.campaign.findFirst({
+        where: { id: campaignId, workspaceId },
+        select: { id: true },
+      });
+      if (!campaign) return { success: false, message: "Campaign not found." };
+    }
+
     await prisma.link.update({ where: { id: linkId }, data: { campaignId } });
     revalidatePath("/dashboard/campaigns");
     revalidatePath("/dashboard/links");

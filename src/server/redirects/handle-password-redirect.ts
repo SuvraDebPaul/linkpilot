@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
 import { resolveSlug } from "@/server/redirects/resolve-slug";
+import { checkUnlockRateLimit, recordFailedUnlockAttempt } from "@/lib/rate-limit";
 
 const UNLOCK_COOKIE_PREFIX = "linkpilot_unlock_";
 
@@ -19,8 +20,18 @@ export async function hasUnlockAccess(slug: string) {
 export async function unlockProtectedLink(params: {
   slug: string;
   password: string;
+  ip: string;
+  host: string | null;
 }) {
-  const resolved = await resolveSlug(params.slug);
+  const allowed = await checkUnlockRateLimit(params.slug, params.ip);
+  if (!allowed) {
+    return {
+      success: false,
+      message: "Too many attempts. Please try again later.",
+    };
+  }
+
+  const resolved = await resolveSlug(params.slug, params.host);
 
   if (!resolved || !resolved.isActive) {
     return {
@@ -46,6 +57,7 @@ export async function unlockProtectedLink(params: {
   const isValid = await bcrypt.compare(params.password, resolved.passwordHash);
 
   if (!isValid) {
+    await recordFailedUnlockAttempt(params.slug, params.ip);
     return {
       success: false,
       message: "Incorrect password.",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { MoreHorizontal, Crown, ShieldCheck, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,7 +79,12 @@ export function MembersTable({
     <div className="divide-y divide-border/50 rounded-lg border border-border">
       {members.map((m) => {
         const isMe = m.user.id === currentUserId;
-        const canManage = currentUserRole === "OWNER" && !isMe && m.role !== "OWNER";
+        const isOwner = currentUserRole === "OWNER";
+        const isAdmin = currentUserRole === "ADMIN";
+        // Owners can change roles, transfer ownership, and remove; admins can only
+        // remove — matches what changeMemberRoleAction/transferOwnershipAction vs.
+        // removeMemberAction actually permit server-side.
+        const canManage = (isOwner || isAdmin) && !isMe && m.role !== "OWNER";
         const rs = ROLE_STYLE[m.role];
 
         return (
@@ -111,32 +116,36 @@ export function MembersTable({
               {canManage && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isPending}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isPending} aria-label="Member actions">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {m.role === "MEMBER" ? (
-                      <DropdownMenuItem onClick={() => changeRole(m.id, "ADMIN")}>
-                        <ShieldCheck className="h-3.5 w-3.5" /> Make admin
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem onClick={() => changeRole(m.id, "MEMBER")}>
-                        <UserIcon className="h-3.5 w-3.5" /> Make member
-                      </DropdownMenuItem>
+                    {isOwner && (
+                      <>
+                        {m.role === "MEMBER" ? (
+                          <DropdownMenuItem onClick={() => changeRole(m.id, "ADMIN")}>
+                            <ShieldCheck className="h-3.5 w-3.5" /> Make admin
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => changeRole(m.id, "MEMBER")}>
+                            <UserIcon className="h-3.5 w-3.5" /> Make member
+                          </DropdownMenuItem>
+                        )}
+                        <ConfirmDialog
+                          trigger={
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                              <Crown className="h-3.5 w-3.5" /> Transfer ownership
+                            </DropdownMenuItem>
+                          }
+                          title={`Make ${m.user.name ?? m.user.email} the owner?`}
+                          description="You will become an admin. This cannot be undone by yourself — only the new owner can transfer it back."
+                          confirmLabel="Transfer ownership"
+                          onConfirm={() => transferOwnership(m.id)}
+                        />
+                        <DropdownMenuSeparator />
+                      </>
                     )}
-                    <ConfirmDialog
-                      trigger={
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Crown className="h-3.5 w-3.5" /> Transfer ownership
-                        </DropdownMenuItem>
-                      }
-                      title={`Make ${m.user.name ?? m.user.email} the owner?`}
-                      description="You will become an admin. This cannot be undone by yourself — only the new owner can transfer it back."
-                      confirmLabel="Transfer ownership"
-                      onConfirm={() => transferOwnership(m.id)}
-                    />
-                    <DropdownMenuSeparator />
                     <ConfirmDialog
                       trigger={
                         <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
