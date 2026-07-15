@@ -52,6 +52,17 @@ model User {
   // input, which would otherwise make LinkPilot an open redirector.
   isDemoAccount Boolean @default(false)
 
+  // Platform owner/operator — grants access to /admin and everything in it.
+  // Deliberately a single flag (not a role enum) since there's exactly one
+  // admin tier for now; see AdminAuditLog for the accountability trail every
+  // admin action must leave behind.
+  isSuperAdmin Boolean @default(false)
+
+  // Set by a super-admin to immediately block all access (ToS violations,
+  // abuse, etc) without deleting the account or its data.
+  suspended   Boolean   @default(false)
+  suspendedAt DateTime?
+
   // Preferences
   theme                    String    @default("auto") // "light" | "dark" | "auto"
   monthlyReportEnabled     Boolean   @default(false)
@@ -200,6 +211,11 @@ model Workspace {
   campaignTemplates CampaignTemplate[]
   auditLogs         WorkspaceAuditLog[]
 
+  // Set by a super-admin to immediately block all member access (ToS
+  // violations, abuse) without deleting the workspace or its data.
+  suspended   Boolean   @default(false)
+  suspendedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -220,6 +236,28 @@ model WorkspaceAuditLog {
   createdAt DateTime @default(now())
 
   @@index([workspaceId])
+  @@index([createdAt])
+}
+
+// Accountability trail for every action taken from the super-admin panel
+// (/admin) — force logout, plan grants, suspensions, deletions, impersonation
+// start/end, etc. actorUserId is a plain reference (no FK), matching
+// WorkspaceAuditLog, so the trail survives even if the admin account is later
+// removed. targetType + targetId identify what the action was performed on
+// (e.g. "User" / user id, "Workspace" / workspace id) without a real FK,
+// since the target may belong to any of several different models.
+model AdminAuditLog {
+  id          String  @id @default(cuid())
+  actorUserId String?
+  action      String // e.g. "user.force_logout", "user.impersonate_start"
+  targetType  String? // e.g. "User", "Workspace"
+  targetId    String?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([targetType, targetId])
   @@index([createdAt])
 }
 

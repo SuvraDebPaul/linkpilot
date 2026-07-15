@@ -20,6 +20,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const onDashboard = pathname.startsWith("/dashboard") || pathname === "/onboarding";
+  const onAdmin = pathname.startsWith("/admin");
 
   // getToken() detects the secure vs non-secure cookie name itself from the request's
   // own protocol — more reliable than hardcoding a cookie name off an env var string,
@@ -31,6 +32,21 @@ export async function proxy(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Protect /admin — unauthenticated visitors go to login, authenticated non-admins
+  // (including someone currently impersonating a user, since token.id no longer
+  // refers to the admin while impersonating) get bounced to the regular dashboard
+  // rather than told an admin area exists at all.
+  if (onAdmin) {
+    if (!token) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!token.isSuperAdmin || token.impersonatedBy) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   // Demo account sessions (however they were reached — the one-click demo button, or

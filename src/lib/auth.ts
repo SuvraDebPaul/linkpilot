@@ -5,12 +5,16 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/server/db/prisma";
-import { checkLoginRateLimit, recordFailedLoginAttempt } from "@/lib/rate-limit";
+import {
+  checkLoginRateLimit,
+  recordFailedLoginAttempt,
+} from "@/lib/rate-limit";
 
 function getRequestMeta(req?: { headers?: Record<string, string> }) {
   const headers = req?.headers ?? {};
   const forwardedFor = headers["x-forwarded-for"];
-  const ip = (forwardedFor ? forwardedFor.split(",")[0].trim() : null) ?? "Unknown";
+  const ip =
+    (forwardedFor ? forwardedFor.split(",")[0].trim() : null) ?? "Unknown";
   const userAgent = headers["user-agent"] ?? "";
   const browser = /Chrome/.test(userAgent)
     ? "Chrome"
@@ -57,14 +61,23 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         const email = credentials.email.toLowerCase().trim();
-        const { ip, browser } = getRequestMeta(req as { headers?: Record<string, string> } | undefined);
+        const { ip, browser } = getRequestMeta(
+          req as { headers?: Record<string, string> } | undefined,
+        );
 
         const allowed = await checkLoginRateLimit(email, ip);
         if (!allowed) return null;
 
         const user = await prisma.user.findUnique({
           where: { email },
-          select: { id: true, name: true, email: true, image: true, password: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            password: true,
+            suspended: true,
+          },
         });
 
         if (!user?.password) {
@@ -72,17 +85,30 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          user.password,
+        );
         if (!passwordMatch) {
           await recordFailedLoginAttempt(email, ip);
           return null;
         }
 
+        // A suspended account's session callback would drop them right back out
+        // anyway, but rejecting here avoids issuing a token at all and skips the
+        // login-event/rate-limit bookkeping for an account that can't use it.
+        if (user.suspended) return null;
+
         await prisma.loginEvent.create({
           data: { userId: user.id, type: "credentials", ip, browser },
         });
 
-        return { id: user.id, name: user.name, email: user.email, image: user.image };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        };
       },
     }),
     // Powers the public "Demo Dashboard" button — no password, always resolves to the
@@ -98,38 +124,108 @@ export const authOptions: NextAuthOptions = {
         // isDemoAccount filter would nondeterministically match any of them.
         const demoUser = await prisma.user.findUnique({
           where: { email: DEMO_USER_EMAIL },
-          select: { id: true, name: true, email: true, image: true, isDemoAccount: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            isDemoAccount: true,
+          },
         });
         if (!demoUser?.isDemoAccount) return null;
 
         await prisma.loginEvent.create({
-          data: { userId: demoUser.id, type: "demo", ip: "Unknown", browser: "Unknown" },
+          data: {
+            userId: demoUser.id,
+            type: "demo",
+            ip: "Unknown",
+            browser: "Unknown",
+          },
         });
 
-        return { id: demoUser.id, name: demoUser.name, email: demoUser.email, image: demoUser.image };
+        return {
+          id: demoUser.id,
+          name: demoUser.name,
+          email: demoUser.email,
+          image: demoUser.image,
+        };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    // Credentials sign-in already rejects suspended accounts in authorize() above;
+    // this additionally covers Google OAuth, which skips authorize() entirely.
+    async signIn({ user }) {
+      if (!user.id) return true;
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { suspended: true },
+      });
+      return !dbUser?.suspended;
+    },
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { sessionVersion: true, isDemoAccount: true },
+          select: {
+            sessionVersion: true,
+            isDemoAccount: true,
+            isSuperAdmin: true,
+          },
         });
         token.sessionVersion = dbUser?.sessionVersion ?? 0;
         token.isDemoAccount = dbUser?.isDemoAccount ?? false;
+        token.isSuperAdmin = dbUser?.isSuperAdmin ?? false;
         token.demoExpires = dbUser?.isDemoAccount
           ? Date.now() + DEMO_SESSION_MAX_AGE_MS
           : undefined;
       }
+
+      // Impersonation start/end — triggered by the client calling
+      // useSession().update(...) after impersonateUserAction/endImpersonationAction
+      // have already verified permissions and written the audit log entry
+      // server-side. The checks here (isSuperAdmin, target not an admin, no
+      // stacking) are a second, independent gate: token.isSuperAdmin was set
+      // above from the DB at this session's own login, so a non-admin calling
+      // update() on themselves can never forge their way into this branch.
+      if (trigger === "update" && session) {
+        const update = session as {
+          impersonateUserId?: string;
+          endImpersonation?: boolean;
+        };
+
+        if (
+          update.impersonateUserId &&
+          token.isSuperAdmin &&
+          !token.impersonatedBy
+        ) {
+          const target = await prisma.user.findUnique({
+            where: { id: update.impersonateUserId },
+            select: { id: true, sessionVersion: true, isSuperAdmin: true },
+          });
+          if (target && !target.isSuperAdmin) {
+            token.impersonatedBy = token.id;
+            token.id = target.id;
+            token.sessionVersion = target.sessionVersion;
+          }
+        } else if (update.endImpersonation && token.impersonatedBy) {
+          const admin = await prisma.user.findUnique({
+            where: { id: token.impersonatedBy },
+            select: { sessionVersion: true },
+          });
+          token.id = token.impersonatedBy;
+          token.sessionVersion = admin?.sessionVersion ?? 0;
+          token.impersonatedBy = undefined;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       const currentUser = await prisma.user.findUnique({
         where: { id: token.id as string },
-        select: { sessionVersion: true },
+        select: { sessionVersion: true, suspended: true },
       });
 
       const demoExpired =
@@ -137,15 +233,26 @@ export const authOptions: NextAuthOptions = {
         typeof token.demoExpires === "number" &&
         Date.now() > token.demoExpires;
 
-      // Session was revoked (sessionVersion bumped), the user no longer exists, or
-      // this was a demo session that hit its absolute time limit — drop the user from
-      // the session so auth guards treat this as signed out.
-      if (!currentUser || currentUser.sessionVersion !== token.sessionVersion || demoExpired) {
+      // Session was revoked (sessionVersion bumped), the user no longer exists, this
+      // was a demo session that hit its absolute time limit, or a super-admin has
+      // suspended the account — drop the user from the session so auth guards treat
+      // this as signed out. A suspension takes effect on this account's very next
+      // request since every request re-runs this callback.
+      if (
+        !currentUser ||
+        currentUser.sessionVersion !== token.sessionVersion ||
+        demoExpired ||
+        currentUser.suspended
+      ) {
         return { ...session, user: undefined } as unknown as typeof session;
       }
 
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.isSuperAdmin = token.impersonatedBy
+          ? false
+          : (token.isSuperAdmin ?? false);
+        session.user.impersonatedBy = token.impersonatedBy;
       }
       return session;
     },
@@ -155,7 +262,9 @@ export const authOptions: NextAuthOptions = {
     async createUser({ user }) {
       if (!user.id) return;
       const base = user.email?.split("@")[0] ?? user.id.slice(0, 8);
-      const slug = `${base}-${user.id.slice(-6)}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+      const slug = `${base}-${user.id.slice(-6)}`
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, "-");
       const workspace = await prisma.workspace.create({
         data: { name: `${user.name ?? "My"} Workspace`, slug },
         select: { id: true },
@@ -169,7 +278,12 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (!user.id || account?.provider !== "google") return;
       await prisma.loginEvent.create({
-        data: { userId: user.id, type: "google", ip: "Unknown", browser: "Unknown" },
+        data: {
+          userId: user.id,
+          type: "google",
+          ip: "Unknown",
+          browser: "Unknown",
+        },
       });
     },
   },

@@ -1,0 +1,157 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { LogOut, Mail, Ban, Trash2, ShieldAlert } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import {
+  forceLogoutUserAction,
+  sendPasswordResetUserAction,
+  grantPlanAction,
+  suspendUserAction,
+  deleteUserAction,
+} from "@/features/admin/actions/admin-users.actions";
+
+type Plan = "free" | "starter" | "pro" | "lifetime";
+
+export function UserActionsPanel({
+  userId,
+  isSuperAdmin,
+  suspended,
+  currentPlan,
+}: {
+  userId: string;
+  isSuperAdmin: boolean;
+  suspended: boolean;
+  currentPlan: Plan;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [plan, setPlan] = useState<Plan>(currentPlan);
+
+  if (isSuperAdmin) {
+    return (
+      <div className="mt-6 flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-950 p-4 text-sm text-zinc-500">
+        <ShieldAlert className="h-4 w-4" />
+        This account is a super-admin — actions are disabled here to prevent one admin from acting on another.
+      </div>
+    );
+  }
+
+  function handlePlanChange(next: Plan) {
+    setPlan(next);
+    startTransition(async () => {
+      const result = await grantPlanAction(userId, next);
+      if (result.success) {
+        toast.success(result.message);
+        router.refresh();
+      } else {
+        toast.error(result.message);
+        setPlan(currentPlan);
+      }
+    });
+  }
+
+  async function handleForceLogout() {
+    const result = await forceLogoutUserAction(userId);
+    if (result.success) toast.success(result.message);
+    else toast.error(result.message);
+  }
+
+  async function handleSendReset() {
+    const result = await sendPasswordResetUserAction(userId);
+    if (result.success) toast.success(result.message);
+    else toast.error(result.message);
+  }
+
+  async function handleToggleSuspend() {
+    const result = await suspendUserAction(userId, !suspended);
+    if (result.success) {
+      toast.success(result.message);
+      router.refresh();
+    } else {
+      toast.error(result.message);
+    }
+  }
+
+  async function handleDelete() {
+    const result = await deleteUserAction(userId);
+    if (result.success) {
+      toast.success(result.message);
+      router.push("/admin/users");
+    } else {
+      toast.error(result.message);
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-xl border border-white/10 bg-zinc-950 p-4">
+      <h2 className="text-sm font-semibold text-zinc-100">Admin actions</h2>
+
+      <div className="mt-3 flex items-center gap-3">
+        <span className="text-sm text-zinc-400">Plan</span>
+        <Select value={plan} disabled={isPending} onValueChange={(v) => handlePlanChange(v as Plan)}>
+          <SelectTrigger className="w-40 border-white/10 bg-zinc-900 text-zinc-100">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="free">Free</SelectItem>
+            <SelectItem value="starter">Starter</SelectItem>
+            <SelectItem value="pro">Pro</SelectItem>
+            <SelectItem value="lifetime">Lifetime</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-xs text-zinc-600">Manual override — bypasses Stripe</span>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={handleForceLogout} className="gap-1.5 text-foreground">
+          <LogOut className="h-3.5 w-3.5" />
+          Force logout
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleSendReset} className="gap-1.5 text-foreground">
+          <Mail className="h-3.5 w-3.5" />
+          Send password reset
+        </Button>
+        <ConfirmDialog
+          trigger={
+            <Button variant="outline" size="sm" className="gap-1.5 text-foreground">
+              <Ban className="h-3.5 w-3.5" />
+              {suspended ? "Unsuspend" : "Suspend"}
+            </Button>
+          }
+          title={suspended ? "Unsuspend this user?" : "Suspend this user?"}
+          description={
+            suspended
+              ? "They'll immediately regain access to their account."
+              : "They'll be signed out and blocked from signing back in until unsuspended."
+          }
+          confirmLabel={suspended ? "Unsuspend" : "Suspend"}
+          variant={suspended ? "default" : "destructive"}
+          onConfirm={handleToggleSuspend}
+        />
+        <ConfirmDialog
+          trigger={
+            <Button variant="destructive" size="sm" className="gap-1.5">
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete account
+            </Button>
+          }
+          title="Delete this user permanently?"
+          description="This deletes the account and all of its links, campaigns, and domains. This cannot be undone."
+          confirmLabel="Delete permanently"
+          onConfirm={handleDelete}
+        />
+      </div>
+    </div>
+  );
+}
