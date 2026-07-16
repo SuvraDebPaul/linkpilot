@@ -13,6 +13,8 @@ import {
   Clock,
   Webhook,
   ToggleLeft,
+  Settings,
+  BarChart3,
 } from "lucide-react";
 import { AdminNavItem } from "./admin-nav-item";
 
@@ -21,6 +23,7 @@ const mainNav = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/workspaces", label: "Workspaces", icon: Building2 },
   { href: "/admin/billing", label: "Billing", icon: CreditCard },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 const moderationNav = [
@@ -32,6 +35,7 @@ const systemNav = [
   { href: "/admin/system/cron-jobs", label: "Cron Jobs", icon: Clock },
   { href: "/admin/system/webhooks", label: "Webhooks", icon: Webhook },
   { href: "/admin/system/flags", label: "Feature Flags", icon: ToggleLeft },
+  { href: "/admin/config", label: "Site Settings", icon: Settings },
 ];
 
 function NavGroup({ label, items }: { label: string; items: typeof mainNav }) {

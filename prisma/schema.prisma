@@ -315,6 +315,34 @@ model BlockedDomain {
   createdAt DateTime @default(now())
 }
 
+// Freeform internal notes a super-admin leaves on a user or workspace —
+// support-team context ("waiting on refund confirmation", "flagged for
+// review") that isn't part of either record's own data. resolved doubles as
+// a lightweight follow-up flag instead of a separate ticketing model.
+// authorUserId is a plain reference (no FK), matching AdminAuditLog.
+model AdminNote {
+  id           String   @id @default(cuid())
+  targetType   String // "User" | "Workspace"
+  targetId     String
+  authorUserId String?
+  note         String
+  resolved     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([targetType, targetId])
+}
+
+// Simple string key/value config an admin can edit without a deploy — e.g.
+// the site-wide announcement banner or the support contact email shown in
+// the footer. Deliberately just strings (JSON-encode if a value needs
+// structure), same spirit as FeatureFlag but for values instead of booleans.
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
 // ─── Reusable templates ─────────────────────────────────────────────────────
 
 model GeoTemplate {

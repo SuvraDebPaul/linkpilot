@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { getUserDetail } from "@/server/queries/admin-users.queries";
+import { getNotes } from "@/server/queries/admin-notes.queries";
 import { UserActionsPanel } from "@/components/admin/user-actions-panel";
 import { UserBillingPanel } from "@/components/admin/user-billing-panel";
+import { NotesPanel } from "@/components/admin/notes-panel";
 
 function currentPlan(u: {
   lifetimeAccess: boolean;
@@ -20,7 +22,7 @@ function currentPlan(u: {
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await getUserDetail(id);
+  const [user, notes] = await Promise.all([getUserDetail(id), getNotes("User", id)]);
   if (!user) notFound();
 
   return (
@@ -94,6 +96,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           </ul>
         )}
       </div>
+
+      <NotesPanel targetType="User" targetId={user.id} notes={notes} />
 
       <UserBillingPanel
         userId={user.id}

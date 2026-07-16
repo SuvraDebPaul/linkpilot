@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import { getWorkspaceDetail } from "@/server/queries/admin-workspaces.queries";
+import { getNotes } from "@/server/queries/admin-notes.queries";
 import { WorkspaceActionsPanel } from "@/components/admin/workspace-actions-panel";
+import { NotesPanel } from "@/components/admin/notes-panel";
 
 export default async function AdminWorkspaceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const workspace = await getWorkspaceDetail(id);
+  const [workspace, notes] = await Promise.all([getWorkspaceDetail(id), getNotes("Workspace", id)]);
   if (!workspace) notFound();
 
   return (
@@ -58,6 +60,8 @@ export default async function AdminWorkspaceDetailPage({ params }: { params: Pro
           </ul>
         )}
       </div>
+
+      <NotesPanel targetType="Workspace" targetId={workspace.id} notes={notes} />
 
       <WorkspaceActionsPanel
         workspaceId={workspace.id}

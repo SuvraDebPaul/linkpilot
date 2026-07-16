@@ -9,8 +9,9 @@ import {
 } from "lucide-react";
 
 import { Logo } from "@/components/shared/logo";
+import { getSiteSetting } from "@/lib/site-settings";
 
-const columns = [
+const staticColumns = [
   {
     title: "Product",
     icon: Link2,
@@ -29,18 +30,23 @@ const columns = [
       { label: "Dashboard", href: "/dashboard" },
     ],
   },
-  {
-    title: "Support",
-    icon: LifeBuoy,
-    links: [
-      { label: "Contact us", href: "/contact" },
-      { label: "FAQ", href: "/#faq" },
-      { label: "Email us", href: "mailto:hello@linkpilot.app" },
-    ],
-  },
 ];
 
-export function PublicFooter() {
+export async function PublicFooter() {
+  const supportEmail = await getSiteSetting("supportEmail", "hello@linkpilot.app");
+  const columns = [
+    ...staticColumns,
+    {
+      title: "Support",
+      icon: LifeBuoy,
+      links: [
+        { label: "Contact us", href: "/contact" },
+        { label: "FAQ", href: "/#faq" },
+        { label: "Email us", href: `mailto:${supportEmail}` },
+      ],
+    },
+  ];
+
   return (
     <footer className="relative overflow-hidden border-t border-slate-200/80 bg-slate-50 dark:border-slate-800/80 dark:bg-slate-950">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_0%,rgba(20,184,166,0.10),transparent_32%),radial-gradient(circle_at_85%_100%,rgba(59,130,246,0.08),transparent_32%)]" />
@@ -57,13 +63,13 @@ export function PublicFooter() {
             </p>
 
             <Link
-              href="mailto:hello@linkpilot.app"
+              href={`mailto:${supportEmail}`}
               className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-primary dark:text-slate-400"
             >
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Mail className="h-4 w-4" />
               </span>
-              hello@linkpilot.app
+              {supportEmail}
             </Link>
 
             <span className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
