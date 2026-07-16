@@ -13,7 +13,7 @@ type ActionResult = { success: boolean; message: string };
 // A super-admin can act on any regular user, but never on another super-admin —
 // there's exactly one admin tier for now, so this is the only guardrail keeping
 // one admin from locking out or impersonating another.
-async function assertNotAdmin(userId: string) {
+export async function assertNotAdmin(userId: string) {
   const target = await prisma.user.findUnique({ where: { id: userId }, select: { isSuperAdmin: true } });
   if (target?.isSuperAdmin) throw new Error("You can't perform this action on another super-admin.");
 }

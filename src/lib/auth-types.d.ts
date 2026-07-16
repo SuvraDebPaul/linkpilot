@@ -13,6 +13,9 @@ declare module "next-auth" {
       // admin's own user id, so the UI can show "Viewing as X" and the
       // impersonation can be ended and attributed correctly.
       impersonatedBy?: string;
+      // When the current impersonation session started (ms epoch) — used to
+      // report a duration when the admin ends it.
+      impersonationStartedAt?: number;
     };
   }
 }
@@ -25,5 +28,6 @@ declare module "next-auth/jwt" {
     demoExpires?: number;
     isSuperAdmin?: boolean;
     impersonatedBy?: string;
+    impersonationStartedAt?: number;
   }
 }

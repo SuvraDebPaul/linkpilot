@@ -202,21 +202,36 @@ export const authOptions: NextAuthOptions = {
         ) {
           const target = await prisma.user.findUnique({
             where: { id: update.impersonateUserId },
-            select: { id: true, sessionVersion: true, isSuperAdmin: true },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              sessionVersion: true,
+              isSuperAdmin: true,
+            },
           });
           if (target && !target.isSuperAdmin) {
             token.impersonatedBy = token.id;
+            token.impersonationStartedAt = Date.now();
             token.id = target.id;
+            token.name = target.name;
+            token.email = target.email;
+            token.picture = target.image;
             token.sessionVersion = target.sessionVersion;
           }
         } else if (update.endImpersonation && token.impersonatedBy) {
           const admin = await prisma.user.findUnique({
             where: { id: token.impersonatedBy },
-            select: { sessionVersion: true },
+            select: { name: true, email: true, image: true, sessionVersion: true },
           });
           token.id = token.impersonatedBy;
+          token.name = admin?.name;
+          token.email = admin?.email;
+          token.picture = admin?.image;
           token.sessionVersion = admin?.sessionVersion ?? 0;
           token.impersonatedBy = undefined;
+          token.impersonationStartedAt = undefined;
         }
       }
 
@@ -253,6 +268,7 @@ export const authOptions: NextAuthOptions = {
           ? false
           : (token.isSuperAdmin ?? false);
         session.user.impersonatedBy = token.impersonatedBy;
+        session.user.impersonationStartedAt = token.impersonationStartedAt;
       }
       return session;
     },

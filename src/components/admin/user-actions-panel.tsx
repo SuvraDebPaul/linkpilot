@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Mail, Ban, Trash2, ShieldAlert } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { LogOut, Mail, Ban, Trash2, ShieldAlert, UserCog } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,7 @@ import {
   suspendUserAction,
   deleteUserAction,
 } from "@/features/admin/actions/admin-users.actions";
+import { impersonateUserAction } from "@/features/admin/actions/impersonation.actions";
 
 type Plan = "free" | "starter" | "pro" | "lifetime";
 
@@ -35,8 +37,10 @@ export function UserActionsPanel({
   currentPlan: Plan;
 }) {
   const router = useRouter();
+  const { update } = useSession();
   const [isPending, startTransition] = useTransition();
   const [plan, setPlan] = useState<Plan>(currentPlan);
+  const [isImpersonating, setIsImpersonating] = useState(false);
 
   if (isSuperAdmin) {
     return (
@@ -83,6 +87,25 @@ export function UserActionsPanel({
     }
   }
 
+  async function handleImpersonate() {
+    setIsImpersonating(true);
+    try {
+      const result = await impersonateUserAction(userId);
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+      // Re-signs the JWT cookie in place (see auth.ts's jwt callback,
+      // trigger === "update") — this is the actual identity switch;
+      // impersonateUserAction above only checked permission and audit-logged it.
+      await update({ impersonateUserId: userId });
+      toast.success(result.message);
+      router.push("/dashboard");
+    } finally {
+      setIsImpersonating(false);
+    }
+  }
+
   async function handleDelete() {
     const result = await deleteUserAction(userId);
     if (result.success) {
@@ -114,6 +137,19 @@ export function UserActionsPanel({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
+        <ConfirmDialog
+          trigger={
+            <Button size="sm" className="gap-1.5" disabled={isImpersonating}>
+              <UserCog className="h-3.5 w-3.5" />
+              Impersonate
+            </Button>
+          }
+          title="Impersonate this user?"
+          description="You'll be signed in as this user on your next page load. This is heavily audit-logged, and you can end it anytime from the banner shown while impersonating."
+          confirmLabel="Start impersonating"
+          variant="default"
+          onConfirm={handleImpersonate}
+        />
         <Button variant="outline" size="sm" onClick={handleForceLogout} className="gap-1.5 text-foreground">
           <LogOut className="h-3.5 w-3.5" />
           Force logout

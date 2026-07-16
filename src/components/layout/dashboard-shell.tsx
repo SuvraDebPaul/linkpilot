@@ -1,6 +1,7 @@
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/layout/dashboard-topbar";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
+import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { Logo } from "@/components/shared/logo";
 import { RouteTransition } from "@/components/shared/route-transition";
 import type { ActionItem } from "@/server/queries/notifications.queries";
@@ -22,6 +23,7 @@ export function DashboardShell({
     <div className="fixed inset-0 flex overflow-hidden bg-muted">
       <DashboardSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
       <div className="flex flex-1 flex-col overflow-hidden">
+        <ImpersonationBanner />
         <div className="flex h-16 items-center border-b border-border bg-card px-4 lg:hidden">
           <MobileSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
           <div className="ml-3">

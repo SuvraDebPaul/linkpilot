@@ -23,6 +23,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ]);
   const workspaces = memberships.map((m) => ({ id: m.workspace.id, name: m.workspace.name, role: m.role }));
 
+  // A super-admin can suspend a whole workspace (ToS violations, abuse) without
+  // deleting its data — every member is blocked out until it's unsuspended.
+  const activeMembership = memberships.find((m) => m.workspace.id === activeWorkspaceId);
+  if (activeMembership?.workspace.suspended) redirect("/workspace-suspended");
+
   const actionItems = activeWorkspaceId ? await getActionItems(session.user.id, activeWorkspaceId) : [];
 
   return (

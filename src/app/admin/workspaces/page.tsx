@@ -1,0 +1,84 @@
+import Link from "next/link";
+import { Ban } from "lucide-react";
+import { getWorkspacesList } from "@/server/queries/admin-workspaces.queries";
+import { UserSearchBox } from "@/components/admin/user-search-box";
+
+export default async function AdminWorkspacesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const { q, page } = await searchParams;
+  const { workspaces, total, pageSize } = await getWorkspacesList(q, page ? Number(page) : 1);
+
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold text-zinc-100">Workspaces</h1>
+      <p className="mt-1 text-sm text-zinc-500">{total} total</p>
+
+      <div className="mt-4 max-w-sm">
+        <UserSearchBox defaultValue={q ?? ""} />
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-zinc-950 text-xs uppercase tracking-wide text-zinc-500">
+            <tr>
+              <th className="px-4 py-3 font-medium">Workspace</th>
+              <th className="px-4 py-3 font-medium">Owner</th>
+              <th className="px-4 py-3 font-medium">Members</th>
+              <th className="px-4 py-3 font-medium">Links</th>
+              <th className="px-4 py-3 font-medium">Created</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5 bg-zinc-900/50">
+            {workspaces.map((w) => (
+              <tr key={w.id} className="hover:bg-white/5">
+                <td className="px-4 py-3">
+                  <Link href={`/admin/workspaces/${w.id}`} className="block">
+                    <p className="font-medium text-zinc-100">{w.name}</p>
+                    <p className="text-xs text-zinc-500">{w.slug}</p>
+                  </Link>
+                </td>
+                <td className="px-4 py-3 text-zinc-300">
+                  {w.members[0] ? (
+                    <>
+                      <p>{w.members[0].user.name ?? "—"}</p>
+                      <p className="text-xs text-zinc-500">{w.members[0].user.email}</p>
+                    </>
+                  ) : (
+                    <span className="text-amber-400">No owner</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-zinc-300">{w._count.members}</td>
+                <td className="px-4 py-3 text-zinc-300">{w._count.links}</td>
+                <td className="px-4 py-3 text-zinc-500">{w.createdAt.toLocaleDateString()}</td>
+                <td className="px-4 py-3">
+                  {w.suspended && (
+                    <span className="flex w-fit items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-400">
+                      <Ban className="h-3 w-3" /> Suspended
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {workspaces.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
+                  No workspaces found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {total > pageSize && (
+        <div className="mt-4 flex items-center gap-2 text-sm text-zinc-500">
+          Page {page ? Number(page) : 1} of {Math.ceil(total / pageSize)}
+        </div>
+      )}
+    </div>
+  );
+}
