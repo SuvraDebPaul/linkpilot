@@ -29,5 +29,9 @@ declare module "next-auth/jwt" {
     isSuperAdmin?: boolean;
     impersonatedBy?: string;
     impersonationStartedAt?: number;
+    // The LoginEvent row created at sign-in for this specific session — lets a
+    // super-admin revoke just this one device/session (see /admin/users/[id]),
+    // independent of the account-wide sessionVersion-based "force logout".
+    loginEventId?: string;
   }
 }

@@ -157,11 +157,17 @@ model LoginEvent {
   id     String @id @default(cuid())
   userId String
 
-  type    String // "credentials" | "google" | "registration"
+  type    String // "credentials" | "google" | "registration" | "demo"
   ip      String?
   country String?
   city    String?
   browser String?
+
+  // Set by a super-admin to sign out this one specific session/device,
+  // independent of User.sessionVersion (which revokes every session at once).
+  // Only meaningful for the login event whose id ended up in that session's
+  // own JWT (token.loginEventId) — see auth.ts.
+  revoked Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

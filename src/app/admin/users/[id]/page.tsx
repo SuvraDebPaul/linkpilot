@@ -4,6 +4,7 @@ import { getNotes } from "@/server/queries/admin-notes.queries";
 import { UserActionsPanel } from "@/components/admin/user-actions-panel";
 import { UserBillingPanel } from "@/components/admin/user-billing-panel";
 import { NotesPanel } from "@/components/admin/notes-panel";
+import { LoginActivityList } from "@/components/admin/login-activity-list";
 
 function currentPlan(u: {
   lifetimeAccess: boolean;
@@ -81,20 +82,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
       <div className="mt-6 rounded-xl border border-white/10 bg-zinc-950 p-4">
         <h2 className="text-sm font-semibold text-zinc-100">Recent login activity</h2>
-        {user.loginEvents.length === 0 ? (
-          <p className="mt-2 text-sm text-zinc-500">No login events recorded.</p>
-        ) : (
-          <ul className="mt-2 space-y-1.5 text-sm">
-            {user.loginEvents.map((e, i) => (
-              <li key={i} className="flex items-center justify-between text-zinc-400">
-                <span>
-                  {e.type} · {e.browser} · {e.ip}
-                </span>
-                <span className="text-xs text-zinc-600">{e.createdAt.toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <LoginActivityList userId={user.id} events={user.loginEvents} />
       </div>
 
       <NotesPanel targetType="User" targetId={user.id} notes={notes} />
@@ -107,6 +95,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
       <UserActionsPanel
         userId={user.id}
+        email={user.email}
         isSuperAdmin={user.isSuperAdmin}
         suspended={user.suspended}
         currentPlan={currentPlan(user)}

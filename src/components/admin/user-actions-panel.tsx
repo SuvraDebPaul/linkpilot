@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { TypedConfirmDialog } from "@/components/shared/typed-confirm-dialog";
 import {
   forceLogoutUserAction,
   sendPasswordResetUserAction,
@@ -27,11 +28,13 @@ type Plan = "free" | "starter" | "pro" | "lifetime";
 
 export function UserActionsPanel({
   userId,
+  email,
   isSuperAdmin,
   suspended,
   currentPlan,
 }: {
   userId: string;
+  email: string;
   isSuperAdmin: boolean;
   suspended: boolean;
   currentPlan: Plan;
@@ -175,7 +178,7 @@ export function UserActionsPanel({
           variant={suspended ? "default" : "destructive"}
           onConfirm={handleToggleSuspend}
         />
-        <ConfirmDialog
+        <TypedConfirmDialog
           trigger={
             <Button variant="destructive" size="sm" className="gap-1.5">
               <Trash2 className="h-3.5 w-3.5" />
@@ -184,6 +187,7 @@ export function UserActionsPanel({
           }
           title="Delete this user permanently?"
           description="This deletes the account and all of its links, campaigns, and domains. This cannot be undone."
+          confirmText={email}
           confirmLabel="Delete permanently"
           onConfirm={handleDelete}
         />

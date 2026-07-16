@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { CreditCard } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { TypedConfirmDialog } from "@/components/shared/typed-confirm-dialog";
 import { cancelSubscriptionAction, refundLatestChargeAction } from "@/features/admin/actions/admin-billing.actions";
 
 export function UserBillingPanel({
@@ -48,7 +48,7 @@ export function UserBillingPanel({
       </h2>
       <div className="mt-3 flex flex-wrap gap-2">
         {hasSubscription && (
-          <ConfirmDialog
+          <TypedConfirmDialog
             trigger={
               <Button variant="destructive" size="sm">
                 Cancel subscription
@@ -56,12 +56,13 @@ export function UserBillingPanel({
             }
             title="Cancel this user's Stripe subscription?"
             description="This cancels it immediately in Stripe and downgrades the account to Free. This cannot be undone from here."
+            confirmText="CANCEL"
             confirmLabel="Cancel subscription"
             onConfirm={handleCancel}
           />
         )}
         {hasStripeCustomer && (
-          <ConfirmDialog
+          <TypedConfirmDialog
             trigger={
               <Button variant="destructive" size="sm">
                 Refund latest charge
@@ -69,6 +70,7 @@ export function UserBillingPanel({
             }
             title="Refund this customer's most recent charge?"
             description="This issues a real refund through Stripe for the most recent charge on file. This cannot be undone."
+            confirmText="REFUND"
             confirmLabel="Refund"
             onConfirm={handleRefund}
           />

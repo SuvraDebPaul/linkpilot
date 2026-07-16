@@ -36,6 +36,35 @@ export async function forceLogoutUserAction(userId: string): Promise<ActionResul
   }
 }
 
+// Revokes one specific session/device (via its LoginEvent), independent of
+// forceLogoutUserAction above, which invalidates every session at once.
+export async function revokeLoginEventAction(loginEventId: string, userId: string): Promise<ActionResult> {
+  try {
+    const { adminId } = await requireSuperAdmin();
+    await assertNotAdmin(userId);
+
+    const loginEvent = await prisma.loginEvent.findUnique({
+      where: { id: loginEventId },
+      select: { userId: true },
+    });
+    if (!loginEvent || loginEvent.userId !== userId) {
+      return { success: false, message: "Session not found." };
+    }
+
+    await prisma.loginEvent.update({ where: { id: loginEventId }, data: { revoked: true } });
+
+    await logAdminAction(adminId, "user.revoke_session", {
+      targetType: "User",
+      targetId: userId,
+      metadata: { loginEventId },
+    });
+    revalidatePath(`/admin/users/${userId}`);
+    return { success: true, message: "Session revoked." };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : "Something went wrong." };
+  }
+}
+
 export async function sendPasswordResetUserAction(userId: string): Promise<ActionResult> {
   try {
     const { adminId } = await requireSuperAdmin();

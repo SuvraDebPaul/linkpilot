@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAdminAuditLog } from "@/server/queries/admin-audit.queries";
 import { AuditLogFilters } from "@/components/admin/audit-log-filters";
+import { getAuditSeverity } from "@/lib/audit-severity";
 
 function targetHref(targetType: string | null, targetId: string | null) {
   if (!targetType || !targetId) return null;
@@ -8,6 +9,12 @@ function targetHref(targetType: string | null, targetId: string | null) {
   if (targetType === "Workspace") return `/admin/workspaces/${targetId}`;
   return null;
 }
+
+const SEVERITY_CLASSES = {
+  destructive: "bg-red-500/15 text-red-400",
+  high: "bg-amber-500/15 text-amber-400",
+  normal: "bg-zinc-800 text-zinc-300",
+} as const;
 
 export default async function AdminAuditLogPage({
   searchParams,
@@ -49,7 +56,13 @@ export default async function AdminAuditLogPage({
                     {log.createdAt.toLocaleString()}
                   </td>
                   <td className="px-4 py-3 text-zinc-300">{log.actorEmail ?? "—"}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-zinc-200">{log.action}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 font-mono text-xs ${SEVERITY_CLASSES[getAuditSeverity(log.action)]}`}
+                    >
+                      {log.action}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-zinc-300">
                     {href ? (
                       <Link href={href} className="text-teal-400 hover:underline">

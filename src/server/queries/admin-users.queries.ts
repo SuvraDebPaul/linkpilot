@@ -66,7 +66,7 @@ export async function getUserDetail(userId: string) {
         },
       },
       loginEvents: {
-        select: { type: true, ip: true, browser: true, createdAt: true },
+        select: { id: true, type: true, ip: true, browser: true, createdAt: true, revoked: true },
         orderBy: { createdAt: "desc" },
         take: 10,
       },

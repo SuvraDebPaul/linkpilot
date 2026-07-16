@@ -99,7 +99,7 @@ export const authOptions: NextAuthOptions = {
         // login-event/rate-limit bookkeping for an account that can't use it.
         if (user.suspended) return null;
 
-        await prisma.loginEvent.create({
+        const loginEvent = await prisma.loginEvent.create({
           data: { userId: user.id, type: "credentials", ip, browser },
         });
 
@@ -108,6 +108,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           image: user.image,
+          loginEventId: loginEvent.id,
         };
       },
     }),
@@ -134,7 +135,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (!demoUser?.isDemoAccount) return null;
 
-        await prisma.loginEvent.create({
+        const loginEvent = await prisma.loginEvent.create({
           data: {
             userId: demoUser.id,
             type: "demo",
@@ -148,6 +149,7 @@ export const authOptions: NextAuthOptions = {
           name: demoUser.name,
           email: demoUser.email,
           image: demoUser.image,
+          loginEventId: loginEvent.id,
         };
       },
     }),
@@ -155,17 +157,31 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // Credentials sign-in already rejects suspended accounts in authorize() above;
     // this additionally covers Google OAuth, which skips authorize() entirely.
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       if (!user.id) return true;
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
         select: { suspended: true },
       });
-      return !dbUser?.suspended;
+      if (dbUser?.suspended) return false;
+
+      // Google OAuth has no authorize() step, so the login event is created
+      // here instead — this callback runs before jwt(), unlike events.signIn
+      // (which fires too late to hand the new event's id forward), so
+      // mutating `user` here is what makes it reach jwt()'s `user` param.
+      if (account?.provider === "google") {
+        const loginEvent = await prisma.loginEvent.create({
+          data: { userId: user.id, type: "google", ip: "Unknown", browser: "Unknown" },
+        });
+        (user as { loginEventId?: string }).loginEventId = loginEvent.id;
+      }
+
+      return true;
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.loginEventId = (user as { loginEventId?: string }).loginEventId;
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           select: {
@@ -248,16 +264,27 @@ export const authOptions: NextAuthOptions = {
         typeof token.demoExpires === "number" &&
         Date.now() > token.demoExpires;
 
+      // Per-device revocation: only this one session's own LoginEvent, unlike
+      // sessionVersion below which invalidates every session for the user at once.
+      const loginEventRevoked = token.loginEventId
+        ? (await prisma.loginEvent.findUnique({
+            where: { id: token.loginEventId },
+            select: { revoked: true },
+          }))?.revoked
+        : false;
+
       // Session was revoked (sessionVersion bumped), the user no longer exists, this
-      // was a demo session that hit its absolute time limit, or a super-admin has
-      // suspended the account — drop the user from the session so auth guards treat
-      // this as signed out. A suspension takes effect on this account's very next
-      // request since every request re-runs this callback.
+      // was a demo session that hit its absolute time limit, a super-admin has
+      // suspended the account, or this specific device/session was individually
+      // revoked — drop the user from the session so auth guards treat this as
+      // signed out. A suspension takes effect on this account's very next request
+      // since every request re-runs this callback.
       if (
         !currentUser ||
         currentUser.sessionVersion !== token.sessionVersion ||
         demoExpired ||
-        currentUser.suspended
+        currentUser.suspended ||
+        loginEventRevoked
       ) {
         return { ...session, user: undefined } as unknown as typeof session;
       }
@@ -287,19 +314,6 @@ export const authOptions: NextAuthOptions = {
       });
       await prisma.workspaceMember.create({
         data: { userId: user.id, workspaceId: workspace.id, role: "OWNER" },
-      });
-    },
-    // OAuth sign-ins skip authorize(), so log them here instead. No request object is
-    // available in this event in NextAuth v4, so IP/browser stay "Unknown" for these.
-    async signIn({ user, account }) {
-      if (!user.id || account?.provider !== "google") return;
-      await prisma.loginEvent.create({
-        data: {
-          userId: user.id,
-          type: "google",
-          ip: "Unknown",
-          browser: "Unknown",
-        },
       });
     },
   },

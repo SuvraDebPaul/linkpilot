@@ -65,6 +65,7 @@ export default async function AdminWorkspaceDetailPage({ params }: { params: Pro
 
       <WorkspaceActionsPanel
         workspaceId={workspace.id}
+        slug={workspace.slug}
         suspended={workspace.suspended}
         members={workspace.members.map((m) => ({
           userId: m.user.id,
