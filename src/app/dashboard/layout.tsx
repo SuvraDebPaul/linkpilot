@@ -4,11 +4,18 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { getUserWorkspaces, getActiveWorkspaceId } from "@/server/queries/workspace.queries";
 import { getActionItems } from "@/server/queries/notifications.queries";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
+
+  // Super-admins keep access during maintenance mode so they can actually turn
+  // it back off from /admin/system/flags.
+  if (!session.user.isSuperAdmin && (await isFeatureEnabled("maintenanceMode", false))) {
+    redirect("/maintenance");
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/server/db/prisma";
 import { sendMonthlyAccountReportEmail } from "@/lib/email";
+import { runCronJob } from "@/server/services/cron-log.service";
 
 export async function GET(req: Request) {
   if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -14,6 +15,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: true, sent: 0, skipped: 0, reason: "not first of month" });
   }
 
+  return runCronJob("monthly-account-reports", () => sendMonthlyReports(now));
+}
+
+async function sendMonthlyReports(now: Date) {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   const users = await prisma.user.findMany({

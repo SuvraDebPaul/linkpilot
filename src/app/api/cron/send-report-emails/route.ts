@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getCampaignsForReportEmail } from "@/server/queries/campaign.queries";
 import { sendCampaignReportEmail } from "@/lib/email";
 import { prisma } from "@/server/db/prisma";
+import { runCronJob } from "@/server/services/cron-log.service";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://linkpilot.app";
 
@@ -12,6 +13,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  return runCronJob("send-report-emails", sendReportEmails);
+}
+
+async function sendReportEmails() {
   const now = new Date();
   const dayOfWeek = now.getUTCDay();   // 0 = Sunday, 1 = Monday
   const dayOfMonth = now.getUTCDate(); // 1–31

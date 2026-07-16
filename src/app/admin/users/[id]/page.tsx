@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getUserDetail } from "@/server/queries/admin-users.queries";
 import { UserActionsPanel } from "@/components/admin/user-actions-panel";
+import { UserBillingPanel } from "@/components/admin/user-billing-panel";
 
 function currentPlan(u: {
   lifetimeAccess: boolean;
@@ -93,6 +94,12 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           </ul>
         )}
       </div>
+
+      <UserBillingPanel
+        userId={user.id}
+        hasSubscription={Boolean(user.stripeSubscriptionId)}
+        hasStripeCustomer={Boolean(user.stripeCustomerId)}
+      />
 
       <UserActionsPanel
         userId={user.id}

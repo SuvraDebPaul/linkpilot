@@ -124,8 +124,19 @@ export async function POST(req: Request) {
     }
   } catch (err) {
     console.error("[stripe webhook]", err);
+    await prisma.webhookEventLog.create({
+      data: {
+        eventType: event.type,
+        status: "error",
+        errorMessage: err instanceof Error ? err.message : String(err),
+      },
+    });
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
+
+  await prisma.webhookEventLog.create({
+    data: { eventType: event.type, status: "success" },
+  });
 
   return NextResponse.json({ received: true });
 }

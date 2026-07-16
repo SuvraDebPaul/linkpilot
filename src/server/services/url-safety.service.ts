@@ -1,3 +1,5 @@
+import { prisma } from "@/server/db/prisma";
+
 function isPrivateHostname(hostname: string): boolean {
   const h = hostname.toLowerCase().replace(/^\[|\]$/g, "");
 
@@ -34,4 +36,20 @@ export function validateSafeUrl(value: string) {
   }
 
   return url.toString();
+}
+
+// Checked separately from validateSafeUrl (which is synchronous) since this
+// needs a DB lookup against BlockedDomain, maintained from /admin/moderation.
+// A hostname matches if it equals a blocked entry exactly, or is a subdomain
+// of one (blocking "evil.com" also blocks "sub.evil.com").
+export async function assertDomainNotBlocked(value: string) {
+  const hostname = new URL(value).hostname.toLowerCase();
+
+  const blocked = await prisma.blockedDomain.findMany({ select: { domain: true } });
+  const match = blocked.find(
+    (b) => hostname === b.domain || hostname.endsWith(`.${b.domain}`),
+  );
+  if (match) {
+    throw new Error(`Links to ${match.domain} are not allowed.`);
+  }
 }

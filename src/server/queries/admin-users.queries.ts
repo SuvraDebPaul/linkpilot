@@ -54,6 +54,7 @@ export async function getUserDetail(userId: string) {
       stripePriceId: true,
       stripeCurrentPeriodEnd: true,
       stripeCustomerId: true,
+      stripeSubscriptionId: true,
       totalLinksCreated: true,
       totalCampaignsCreated: true,
       createdAt: true,

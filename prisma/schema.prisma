@@ -261,6 +261,60 @@ model AdminAuditLog {
   @@index([createdAt])
 }
 
+// One row per scheduled cron run (see the 5 routes under src/app/api/cron) —
+// lets /admin/system/cron-jobs show whether each job is actually running on
+// schedule instead of only finding out when someone notices missing emails.
+model CronRunLog {
+  id        String   @id @default(cuid())
+  jobName   String
+  status    String // "success" | "error"
+  message   String?
+  durationMs Int?
+  createdAt DateTime @default(now())
+
+  @@index([jobName, createdAt])
+}
+
+// One row per Stripe webhook event received — lets /admin/system/webhooks
+// surface delivery/handling health (including payment failures) without
+// having to cross-reference the Stripe dashboard.
+model WebhookEventLog {
+  id           String   @id @default(cuid())
+  provider     String   @default("stripe")
+  eventType    String
+  status       String // "success" | "error"
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([status])
+}
+
+// Simple on/off switches an admin can flip without a deploy — e.g.
+// maintenanceMode, signupsEnabled. Deliberately just a key/bool/description,
+// no targeting rules or percentage rollouts, since this is an operator kill
+// switch, not an experimentation platform.
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  enabled     Boolean  @default(false)
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
+// Domains new links are not allowed to redirect to (phishing/spam/abuse) —
+// enforced in link.service.ts alongside the existing validateSafeUrl check.
+// createdBy is a plain reference (no FK), matching AdminAuditLog/WorkspaceAuditLog.
+model BlockedDomain {
+  id        String   @id @default(cuid())
+  domain    String   @unique
+  reason    String?
+  createdBy String?
+  createdAt DateTime @default(now())
+}
+
 // ─── Reusable templates ─────────────────────────────────────────────────────
 
 model GeoTemplate {

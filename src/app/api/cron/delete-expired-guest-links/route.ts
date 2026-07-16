@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { deleteExpiredGuestLinks } from "@/server/services/cleanup.service";
+import { runCronJob } from "@/server/services/cron-log.service";
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const result = await deleteExpiredGuestLinks();
+  const result = await runCronJob("delete-expired-guest-links", () => deleteExpiredGuestLinks());
 
   return NextResponse.json({
     success: true,

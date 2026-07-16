@@ -1,15 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import { ShieldAlert, LayoutDashboard, Users, Building2, ScrollText } from "lucide-react";
+import {
+  ShieldAlert,
+  LayoutDashboard,
+  Users,
+  Building2,
+  ScrollText,
+  CreditCard,
+  Link2Off,
+  ShieldBan,
+  Clock,
+  Webhook,
+  ToggleLeft,
+} from "lucide-react";
 import { AdminNavItem } from "./admin-nav-item";
 
-const adminNav = [
+const mainNav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/workspaces", label: "Workspaces", icon: Building2 },
-  { href: "/admin/audit-log", label: "Audit Log", icon: ScrollText },
+  { href: "/admin/billing", label: "Billing", icon: CreditCard },
 ];
+
+const moderationNav = [
+  { href: "/admin/moderation/links", label: "Links", icon: Link2Off },
+  { href: "/admin/moderation/blocklist", label: "Blocklist", icon: ShieldBan },
+];
+
+const systemNav = [
+  { href: "/admin/system/cron-jobs", label: "Cron Jobs", icon: Clock },
+  { href: "/admin/system/webhooks", label: "Webhooks", icon: Webhook },
+  { href: "/admin/system/flags", label: "Feature Flags", icon: ToggleLeft },
+];
+
+function NavGroup({ label, items }: { label: string; items: typeof mainNav }) {
+  return (
+    <div className="mt-6">
+      <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+        {label}
+      </p>
+      <div className="space-y-0.5">
+        {items.map((item) => (
+          <AdminNavItem key={item.href} {...item} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Deliberately dark regardless of the site's own light/dark theme toggle — an
 // admin acting with full override power over every user's data should never
@@ -24,10 +62,13 @@ export function AdminSidebar() {
 
       <nav className="flex-1 overflow-y-auto px-3 py-5">
         <div className="space-y-0.5">
-          {adminNav.map((item) => (
+          {mainNav.map((item) => (
             <AdminNavItem key={item.href} {...item} />
           ))}
         </div>
+        <NavGroup label="Moderation" items={moderationNav} />
+        <NavGroup label="System" items={systemNav} />
+        <NavGroup label="Compliance" items={[{ href: "/admin/audit-log", label: "Audit Log", icon: ScrollText }]} />
       </nav>
 
       <div className="border-t border-white/10 px-5 py-3">

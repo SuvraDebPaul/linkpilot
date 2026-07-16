@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/server/db/prisma";
 import { checkDomainCname } from "@/server/services/domain-verification.service";
+import { runCronJob } from "@/server/services/cron-log.service";
 
 // Verified domains are trusted forever otherwise — if a customer lets their
 // CNAME lapse or repoints it, this catches it instead of leaving a stale
@@ -13,6 +14,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
 
+  return runCronJob("reverify-domains", reverifyDomains);
+}
+
+async function reverifyDomains() {
   const domains = await prisma.customDomain.findMany({
     where: { status: "VERIFIED" },
     select: { id: true, domain: true },
