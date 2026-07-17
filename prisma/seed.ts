@@ -30,6 +30,10 @@ const DEMO_EMAIL = "demo@linkpilot.com";
 const DEMO_PASSWORD = "linkpilot@demo";
 const LINK_PASSWORD = "demo1234"; // unlocks every password-protected demo link
 
+const SUPER_ADMIN_EMAIL = "suvra.deb.paul@gmail.com";
+const SUPER_ADMIN_PASSWORD = "Admin123456@";
+const SUPER_ADMIN_NAME = "Suvra Deb Paul";
+
 const TEAM_EMAILS = [
   "alex.rivera@demo.linkpilot.dev",
   "jordan.lee@demo.linkpilot.dev",
@@ -304,11 +308,37 @@ async function cleanupExisting() {
   await prisma.user.deleteMany({ where: { email: { in: TEAM_EMAILS } } });
 }
 
+// The one real (non-demo) account this seed manages — the platform's sole
+// super-admin. Upserted rather than delete+recreate like the demo data, since
+// it's a real login a real person uses, not disposable presentation data.
+async function seedSuperAdmin() {
+  const passwordHash = await bcrypt.hash(SUPER_ADMIN_PASSWORD, 12);
+  await prisma.user.upsert({
+    where: { email: SUPER_ADMIN_EMAIL },
+    create: {
+      id: id(),
+      name: SUPER_ADMIN_NAME,
+      email: SUPER_ADMIN_EMAIL,
+      password: passwordHash,
+      emailVerified: new Date(),
+      onboardingCompleted: true,
+      isSuperAdmin: true,
+    },
+    update: {
+      isSuperAdmin: true,
+    },
+  });
+  console.log(
+    `Created super admin: ${SUPER_ADMIN_EMAIL} / ${SUPER_ADMIN_PASSWORD}`,
+  );
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────
 
 async function main() {
   console.log("Seeding LinkPilot demo data…\n");
   await cleanupExisting();
+  await seedSuperAdmin();
 
   // 1. Demo user — lifetime Pro access
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
@@ -651,8 +681,9 @@ async function main() {
     // A fixed pool of fake visitors reused across clicks, so "unique visitors"
     // (distinct ipHash) comes out to a realistic ~60% of total clicks instead
     // of every click looking like a brand-new visitor.
-    const visitorPool = Array.from({ length: Math.max(50, Math.round(target * 0.6)) }, () =>
-      crypto.randomUUID(),
+    const visitorPool = Array.from(
+      { length: Math.max(50, Math.round(target * 0.6)) },
+      () => crypto.randomUUID(),
     );
 
     const clickRows: Array<{
