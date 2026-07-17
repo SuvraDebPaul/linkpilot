@@ -1,10 +1,10 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
 export function FinalCta() {
   return (
-    <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
+    <section className="bg-background px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-primary/90 px-8 py-16 text-center sm:px-12 lg:px-20">
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
@@ -21,7 +21,7 @@ export function FinalCta() {
             <Button
               asChild
               size="lg"
-              className="h-12 bg-primary/100 px-8 text-base font-semibold text-white hover:bg-primary/60"
+              className="h-12 bg-primary px-8 text-base font-semibold text-primary-foreground hover:bg-primary/90"
             >
               <Link href="/register">Get started free</Link>
             </Button>

@@ -1,4 +1,4 @@
-﻿import { Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 // TODO: Replace placeholder quotes with verified customer testimonials before launch.
 const testimonials = [
@@ -8,7 +8,7 @@ const testimonials = [
     name: "Sarah K.",
     role: "Freelance Marketing Consultant",
     initial: "S",
-    color: "bg-primary/100",
+    color: "bg-primary",
   },
   {
     quote:
@@ -40,13 +40,13 @@ function Stars() {
 
 export function TestimonialsSection() {
   return (
-    <section className="border-b border-slate-200 bg-white px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
+    <section className="border-b border-border bg-background px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             What people say
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Freelancers and agencies who stopped guessing.
           </h2>
         </div>
@@ -55,11 +55,11 @@ export function TestimonialsSection() {
           {testimonials.map(({ quote, name, role, initial, color }) => (
             <figure
               key={name}
-              className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 dark:shadow-none"
+              className="flex flex-col rounded-2xl border border-border bg-muted/30 p-7 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lg"
             >
               <Stars />
               <blockquote className="mt-5 flex-1">
-                <p className="text-sm leading-7 text-slate-700 dark:text-slate-300">&ldquo;{quote}&rdquo;</p>
+                <p className="text-sm leading-7 text-foreground/80">&ldquo;{quote}&rdquo;</p>
               </blockquote>
               <figcaption className="mt-6 flex items-center gap-3">
                 <div
@@ -69,8 +69,8 @@ export function TestimonialsSection() {
                   {initial}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-950 dark:text-white">{name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{role}</p>
+                  <p className="text-sm font-semibold text-foreground">{name}</p>
+                  <p className="text-xs text-muted-foreground">{role}</p>
                 </div>
               </figcaption>
             </figure>
@@ -78,7 +78,7 @@ export function TestimonialsSection() {
         </div>
 
         {/* Stat strip */}
-        <div className="mt-14 grid grid-cols-2 gap-6 rounded-2xl border border-slate-200 bg-slate-50 p-8 sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="mt-14 grid grid-cols-2 gap-6 rounded-2xl border border-border bg-muted/30 p-8 sm:grid-cols-4">
           {[
             { stat: "60 sec", label: "to your first tracked link" },
             { stat: "$0",     label: "to get started — free forever" },
@@ -86,8 +86,8 @@ export function TestimonialsSection() {
             { stat: "$5/mo",  label: "Starter plan — less than a coffee" },
           ].map(({ stat, label }) => (
             <div key={label} className="text-center">
-              <p className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">{stat}</p>
-              <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{label}</p>
+              <p className="text-3xl font-black tracking-tight text-foreground">{stat}</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{label}</p>
             </div>
           ))}
         </div>
