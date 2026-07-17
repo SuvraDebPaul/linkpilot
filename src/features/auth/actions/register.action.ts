@@ -7,12 +7,19 @@ import { headers } from "next/headers";
 import { prisma } from "@/server/db/prisma";
 import { registerSchema } from "@/features/auth/schemas/auth.schema";
 import { sendVerificationEmail } from "@/lib/email";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 type RegisterResult =
   | { success: true; message: string }
   | { success: false; message: string; fieldErrors?: Record<string, string[]> };
 
 export async function registerAction(input: unknown): Promise<RegisterResult> {
+  // Missing flag row means "not configured" — defaults to enabled since
+  // signups are on by default and this is a manual kill switch, not an opt-in.
+  if (!(await isFeatureEnabled("signupsEnabled", true))) {
+    return { success: false, message: "New signups are temporarily disabled. Please check back soon." };
+  }
+
   const parsed = registerSchema.safeParse(input);
 
   if (!parsed.success) {

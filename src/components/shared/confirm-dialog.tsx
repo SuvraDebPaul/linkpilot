@@ -13,8 +13,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 type ConfirmDialogProps = {
   trigger: ReactNode;
@@ -65,7 +63,7 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
-            className={cn(buttonVariants({ variant }))}
+            variant={variant}
             onClick={handleConfirm}
             disabled={isPending}
           >

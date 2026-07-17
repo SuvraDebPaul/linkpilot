@@ -8,12 +8,17 @@ import {
   sendOnboardingDay3Email,
   sendOnboardingDay7Email,
 } from "@/lib/email";
+import { runCronJob } from "@/server/services/cron-log.service";
 
 export async function GET(req: Request) {
   if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
 
+  return runCronJob("onboarding-emails", sendOnboardingEmails);
+}
+
+async function sendOnboardingEmails() {
   const now = new Date();
   const results = { day1: 0, day3: 0, day7: 0, errors: 0 };
 

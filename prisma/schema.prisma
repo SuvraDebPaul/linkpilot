@@ -52,6 +52,17 @@ model User {
   // input, which would otherwise make LinkPilot an open redirector.
   isDemoAccount Boolean @default(false)
 
+  // Platform owner/operator — grants access to /admin and everything in it.
+  // Deliberately a single flag (not a role enum) since there's exactly one
+  // admin tier for now; see AdminAuditLog for the accountability trail every
+  // admin action must leave behind.
+  isSuperAdmin Boolean @default(false)
+
+  // Set by a super-admin to immediately block all access (ToS violations,
+  // abuse, etc) without deleting the account or its data.
+  suspended   Boolean   @default(false)
+  suspendedAt DateTime?
+
   // Preferences
   theme                    String    @default("auto") // "light" | "dark" | "auto"
   monthlyReportEnabled     Boolean   @default(false)
@@ -146,11 +157,17 @@ model LoginEvent {
   id     String @id @default(cuid())
   userId String
 
-  type    String // "credentials" | "google" | "registration"
+  type    String // "credentials" | "google" | "registration" | "demo"
   ip      String?
   country String?
   city    String?
   browser String?
+
+  // Set by a super-admin to sign out this one specific session/device,
+  // independent of User.sessionVersion (which revokes every session at once).
+  // Only meaningful for the login event whose id ended up in that session's
+  // own JWT (token.loginEventId) — see auth.ts.
+  revoked Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -200,6 +217,11 @@ model Workspace {
   campaignTemplates CampaignTemplate[]
   auditLogs         WorkspaceAuditLog[]
 
+  // Set by a super-admin to immediately block all member access (ToS
+  // violations, abuse) without deleting the workspace or its data.
+  suspended   Boolean   @default(false)
+  suspendedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -221,6 +243,110 @@ model WorkspaceAuditLog {
 
   @@index([workspaceId])
   @@index([createdAt])
+}
+
+// Accountability trail for every action taken from the super-admin panel
+// (/admin) — force logout, plan grants, suspensions, deletions, impersonation
+// start/end, etc. actorUserId is a plain reference (no FK), matching
+// WorkspaceAuditLog, so the trail survives even if the admin account is later
+// removed. targetType + targetId identify what the action was performed on
+// (e.g. "User" / user id, "Workspace" / workspace id) without a real FK,
+// since the target may belong to any of several different models.
+model AdminAuditLog {
+  id          String  @id @default(cuid())
+  actorUserId String?
+  action      String // e.g. "user.force_logout", "user.impersonate_start"
+  targetType  String? // e.g. "User", "Workspace"
+  targetId    String?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
+
+// One row per scheduled cron run (see the 5 routes under src/app/api/cron) —
+// lets /admin/system/cron-jobs show whether each job is actually running on
+// schedule instead of only finding out when someone notices missing emails.
+model CronRunLog {
+  id        String   @id @default(cuid())
+  jobName   String
+  status    String // "success" | "error"
+  message   String?
+  durationMs Int?
+  createdAt DateTime @default(now())
+
+  @@index([jobName, createdAt])
+}
+
+// One row per Stripe webhook event received — lets /admin/system/webhooks
+// surface delivery/handling health (including payment failures) without
+// having to cross-reference the Stripe dashboard.
+model WebhookEventLog {
+  id           String   @id @default(cuid())
+  provider     String   @default("stripe")
+  eventType    String
+  status       String // "success" | "error"
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([status])
+}
+
+// Simple on/off switches an admin can flip without a deploy — e.g.
+// maintenanceMode, signupsEnabled. Deliberately just a key/bool/description,
+// no targeting rules or percentage rollouts, since this is an operator kill
+// switch, not an experimentation platform.
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  enabled     Boolean  @default(false)
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
+// Domains new links are not allowed to redirect to (phishing/spam/abuse) —
+// enforced in link.service.ts alongside the existing validateSafeUrl check.
+// createdBy is a plain reference (no FK), matching AdminAuditLog/WorkspaceAuditLog.
+model BlockedDomain {
+  id        String   @id @default(cuid())
+  domain    String   @unique
+  reason    String?
+  createdBy String?
+  createdAt DateTime @default(now())
+}
+
+// Freeform internal notes a super-admin leaves on a user or workspace —
+// support-team context ("waiting on refund confirmation", "flagged for
+// review") that isn't part of either record's own data. resolved doubles as
+// a lightweight follow-up flag instead of a separate ticketing model.
+// authorUserId is a plain reference (no FK), matching AdminAuditLog.
+model AdminNote {
+  id           String   @id @default(cuid())
+  targetType   String // "User" | "Workspace"
+  targetId     String
+  authorUserId String?
+  note         String
+  resolved     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([targetType, targetId])
+}
+
+// Simple string key/value config an admin can edit without a deploy — e.g.
+// the site-wide announcement banner or the support contact email shown in
+// the footer. Deliberately just strings (JSON-encode if a value needs
+// structure), same spirit as FeatureFlag but for values instead of booleans.
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Reusable templates ─────────────────────────────────────────────────────

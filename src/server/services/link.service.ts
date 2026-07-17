@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 
 import { generateShortCode, isReservedSlug, counterToSlug, shortCodeLengthForStyle, type SlugStyle } from "@/lib/slug";
-import { validateSafeUrl } from "@/server/services/url-safety.service";
+import { validateSafeUrl, assertDomainNotBlocked } from "@/server/services/url-safety.service";
 import { enforceDemoRedirect } from "@/server/services/demo-guard.service";
 import { prisma } from "@/server/db/prisma";
 import type { CreateLinkInput, UpdateLinkInput } from "@/features/links/schemas/link.schema";
@@ -77,6 +77,7 @@ export async function createLinkService(params: {
   const slugStyle = (workspaceDefaults?.slugStyle ?? "random") as SlugStyle;
 
   const safeUrl = validateSafeUrl(await enforceDemoRedirect(userId, input.originalUrl));
+  await assertDomainNotBlocked(safeUrl);
   const shortCode = await generateUniqueShortCode(workspaceId, slugStyle, input.customSlug || undefined);
 
   const password = input.password?.trim();

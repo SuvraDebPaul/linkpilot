@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/logo";
+import type { PlanTier } from "@/lib/subscription";
 import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
 import { DashboardNavItem } from "./dashboard-nav-item";
 import { DashboardNavGroup } from "./dashboard-nav-group";
@@ -44,9 +45,11 @@ type WorkspaceOption = { id: string; name: string; role: string };
 export function MobileSidebar({
   workspaces,
   activeWorkspaceId,
+  plan,
 }: {
   workspaces: WorkspaceOption[];
   activeWorkspaceId: string | null;
+  plan: PlanTier;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -81,7 +84,7 @@ export function MobileSidebar({
 
             {/* Workspace switcher */}
             <div className="px-3 pt-3">
-              <WorkspaceSwitcher workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
+              <WorkspaceSwitcher workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} plan={plan} />
             </div>
 
             {/* Nav */}
@@ -106,11 +109,6 @@ export function MobileSidebar({
                 </div>
               </nav>
             </SidebarHighlightProvider>
-
-            {/* Footer */}
-            <div className="border-t border-border px-5 py-3">
-              <p className="text-[10px] text-muted-foreground/50">LinkPilot · v1.0</p>
-            </div>
           </aside>
         </>
       )}

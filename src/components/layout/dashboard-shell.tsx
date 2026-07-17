@@ -1,9 +1,12 @@
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/layout/dashboard-topbar";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
+import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { Logo } from "@/components/shared/logo";
 import { RouteTransition } from "@/components/shared/route-transition";
+import { AnnouncementBanner } from "@/components/shared/announcement-banner";
 import type { ActionItem } from "@/server/queries/notifications.queries";
+import type { PlanTier } from "@/lib/subscription";
 
 type WorkspaceOption = { id: string; name: string; role: string };
 
@@ -12,18 +15,22 @@ export function DashboardShell({
   workspaces,
   activeWorkspaceId,
   actionItems,
+  plan,
 }: {
   children: React.ReactNode;
   workspaces: WorkspaceOption[];
   activeWorkspaceId: string | null;
   actionItems: ActionItem[];
+  plan: PlanTier;
 }) {
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-muted">
-      <DashboardSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
+      <DashboardSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} plan={plan} />
       <div className="flex flex-1 flex-col overflow-hidden">
+        <AnnouncementBanner />
+        <ImpersonationBanner />
         <div className="flex h-16 items-center border-b border-border bg-card px-4 lg:hidden">
-          <MobileSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
+          <MobileSidebar workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} plan={plan} />
           <div className="ml-3">
             <Logo />
           </div>
