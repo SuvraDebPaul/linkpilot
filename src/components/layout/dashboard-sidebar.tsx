@@ -1,6 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/shared/logo";
+import type { PlanTier } from "@/lib/subscription";
 import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
 import { DashboardNavItem } from "./dashboard-nav-item";
 import { DashboardNavGroup } from "./dashboard-nav-group";
@@ -41,9 +42,11 @@ type WorkspaceOption = { id: string; name: string; role: string };
 export function DashboardSidebar({
   workspaces,
   activeWorkspaceId,
+  plan,
 }: {
   workspaces: WorkspaceOption[];
   activeWorkspaceId: string | null;
+  plan: PlanTier;
 }) {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[background-color,border-color] duration-300 lg:flex">
@@ -54,7 +57,7 @@ export function DashboardSidebar({
 
       {/* Workspace switcher */}
       <div className="px-3 pt-3">
-        <WorkspaceSwitcher workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
+        <WorkspaceSwitcher workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} plan={plan} />
       </div>
 
       {/* Nav */}
@@ -74,11 +77,6 @@ export function DashboardSidebar({
           </div>
         </nav>
       </SidebarHighlightProvider>
-
-      {/* Footer version badge */}
-      <div className="border-t border-border px-5 py-3">
-        <p className="text-[10px] text-muted-foreground/50">LinkPilot · v1.0</p>
-      </div>
     </aside>
   );
 }

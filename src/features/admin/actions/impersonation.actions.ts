@@ -4,9 +4,8 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
-import { requireSuperAdmin } from "@/lib/admin-guard";
+import { requireSuperAdmin, assertNotAdmin } from "@/lib/admin-guard";
 import { logAdminAction } from "@/server/services/admin-audit.service";
-import { assertNotAdmin } from "@/features/admin/actions/admin-users.actions";
 
 type ActionResult = { success: boolean; message: string };
 

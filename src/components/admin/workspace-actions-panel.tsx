@@ -66,12 +66,12 @@ export function WorkspaceActionsPanel({
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-white/10 bg-zinc-950 p-4">
-      <h2 className="text-sm font-semibold text-zinc-100">Admin actions</h2>
+    <div className="mt-6 rounded-xl border border-border bg-card p-4">
+      <h2 className="text-sm font-semibold text-foreground">Admin actions</h2>
 
       <div className="mt-3 flex items-center gap-2">
         <Select value={transferTo} onValueChange={setTransferTo}>
-          <SelectTrigger className="w-64 border-white/10 bg-zinc-900 text-zinc-100">
+          <SelectTrigger className="w-64 border-border bg-background text-foreground">
             <SelectValue placeholder="Transfer ownership to…" />
           </SelectTrigger>
           <SelectContent>

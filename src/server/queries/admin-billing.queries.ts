@@ -1,13 +1,5 @@
 import { prisma } from "@/server/db/prisma";
-
-const STARTER_PRICE_IDS = [
-  process.env.STRIPE_STARTER_PRICE_ID,
-  process.env.STRIPE_STARTER_YEARLY_PRICE_ID,
-].filter(Boolean) as string[];
-const PRO_PRICE_IDS = [
-  process.env.STRIPE_PRO_PRICE_ID,
-  process.env.STRIPE_PRO_YEARLY_PRICE_ID,
-].filter(Boolean) as string[];
+import { STARTER_PRICE_IDS, PRO_PRICE_IDS } from "@/lib/subscription";
 
 export async function getBillingOverview() {
   const now = new Date();

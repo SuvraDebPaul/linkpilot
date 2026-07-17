@@ -39,19 +39,19 @@ export function AuditLogFilters({
         }}
         className="relative"
       >
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={action}
           onChange={(e) => setAction(e.target.value)}
           placeholder="Filter by action, e.g. user.suspend…"
-          className="w-72 border-white/10 bg-zinc-950 pl-9 text-zinc-100 placeholder:text-zinc-600"
+          className="w-72 border-border bg-card pl-9 text-foreground placeholder:text-muted-foreground"
         />
       </form>
       <Select
         value={defaultTargetType || "all"}
         onValueChange={(v) => apply(action, v)}
       >
-        <SelectTrigger className="w-44 border-white/10 bg-zinc-950 text-zinc-100">
+        <SelectTrigger className="w-44 border-border bg-card text-foreground">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

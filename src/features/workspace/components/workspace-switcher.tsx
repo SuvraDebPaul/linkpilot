@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "@/lib/toast";
-import { Check, ChevronsUpDown, Plus, Building2 } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Building2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { canCreateWorkspace, PLAN_LIMITS, type PlanTier } from "@/lib/plans";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,15 +42,32 @@ const ICON_ACCENTS = [
 export function WorkspaceSwitcher({
   workspaces,
   activeWorkspaceId,
+  plan,
 }: {
   workspaces: WorkspaceOption[];
   activeWorkspaceId: string | null;
+  plan: PlanTier;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
   const [isPending, setIsPending] = useState(false);
 
   const active = workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0];
+  const ownedCount = workspaces.filter((w) => w.role === "OWNER").length;
+  const atLimit = !canCreateWorkspace(plan, ownedCount);
+
+  function handleCreateSelect(e: Event) {
+    e.preventDefault();
+    if (atLimit) {
+      toast.error(
+        plan === "pro"
+          ? `You've reached the ${PLAN_LIMITS.pro.workspaces}-workspace limit.`
+          : "Upgrade to Pro to create additional workspaces.",
+      );
+      return;
+    }
+    setCreateOpen(true);
+  }
 
   async function switchTo(workspaceId: string) {
     if (workspaceId === activeWorkspaceId) return;
@@ -124,15 +143,19 @@ export function WorkspaceSwitcher({
             );
           })}
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="gap-2 py-2"
-            onSelect={(e) => { e.preventDefault(); setCreateOpen(true); }}
-          >
+          <DropdownMenuItem className="gap-2 py-2" onSelect={handleCreateSelect}>
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/40 bg-transparent text-muted-foreground">
-              <Plus className="h-3.5 w-3.5" />
+              {atLimit ? <Lock className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
             </span>
-            <span className="text-muted-foreground">Create workspace</span>
+            <span className="text-muted-foreground">
+              {atLimit ? "Create workspace — upgrade to Pro" : "Create workspace"}
+            </span>
           </DropdownMenuItem>
+          {atLimit && plan !== "pro" && (
+            <DropdownMenuItem asChild className="justify-center py-1.5 text-xs text-primary">
+              <Link href="/dashboard/settings/billing">Upgrade plan</Link>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

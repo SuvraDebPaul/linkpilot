@@ -47,7 +47,7 @@ export function UserActionsPanel({
 
   if (isSuperAdmin) {
     return (
-      <div className="mt-6 flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-950 p-4 text-sm text-zinc-500">
+      <div className="mt-6 flex items-center gap-2 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
         <ShieldAlert className="h-4 w-4" />
         This account is a super-admin — actions are disabled here to prevent one admin from acting on another.
       </div>
@@ -120,13 +120,13 @@ export function UserActionsPanel({
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-white/10 bg-zinc-950 p-4">
-      <h2 className="text-sm font-semibold text-zinc-100">Admin actions</h2>
+    <div className="mt-6 rounded-xl border border-border bg-card p-4">
+      <h2 className="text-sm font-semibold text-foreground">Admin actions</h2>
 
       <div className="mt-3 flex items-center gap-3">
-        <span className="text-sm text-zinc-400">Plan</span>
+        <span className="text-sm text-muted-foreground">Plan</span>
         <Select value={plan} disabled={isPending} onValueChange={(v) => handlePlanChange(v as Plan)}>
-          <SelectTrigger className="w-40 border-white/10 bg-zinc-900 text-zinc-100">
+          <SelectTrigger className="w-40 border-border bg-background text-foreground">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -136,7 +136,7 @@ export function UserActionsPanel({
             <SelectItem value="lifetime">Lifetime</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-xs text-zinc-600">Manual override — bypasses Stripe</span>
+        <span className="text-xs text-muted-foreground">Manual override — bypasses Stripe</span>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">

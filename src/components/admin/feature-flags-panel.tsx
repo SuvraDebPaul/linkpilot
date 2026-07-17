@@ -63,9 +63,9 @@ export function FeatureFlagsPanel({ flags }: { flags: Flag[] }) {
 
   return (
     <div>
-      <div className="overflow-hidden rounded-xl border border-white/10">
+      <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-950 text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="bg-card text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-medium">Key</th>
               <th className="px-4 py-3 font-medium">Description</th>
@@ -73,11 +73,11 @@ export function FeatureFlagsPanel({ flags }: { flags: Flag[] }) {
               <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 bg-zinc-900/50">
+          <tbody className="divide-y divide-border bg-muted/50">
             {flags.map((flag) => (
               <tr key={flag.key}>
-                <td className="px-4 py-3 font-mono text-xs text-zinc-100">{flag.key}</td>
-                <td className="px-4 py-3 text-zinc-400">{flag.description ?? "—"}</td>
+                <td className="px-4 py-3 font-mono text-xs text-foreground">{flag.key}</td>
+                <td className="px-4 py-3 text-muted-foreground">{flag.description ?? "—"}</td>
                 <td className="px-4 py-3">
                   <Switch
                     checked={flag.enabled}
@@ -87,7 +87,7 @@ export function FeatureFlagsPanel({ flags }: { flags: Flag[] }) {
                 <td className="px-4 py-3">
                   <ConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="icon-sm" className="text-zinc-500 hover:text-red-400">
+                      <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-red-400">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     }
@@ -101,7 +101,7 @@ export function FeatureFlagsPanel({ flags }: { flags: Flag[] }) {
             ))}
             {flags.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-zinc-500">
+                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
                   No flags yet.
                 </td>
               </tr>
@@ -112,21 +112,21 @@ export function FeatureFlagsPanel({ flags }: { flags: Flag[] }) {
 
       <form onSubmit={handleCreate} className="mt-4 flex items-end gap-2">
         <div>
-          <label className="text-xs text-zinc-500">Key</label>
+          <label className="text-xs text-muted-foreground">Key</label>
           <Input
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
             placeholder="e.g. maintenanceMode"
-            className="w-56 border-white/10 bg-zinc-950 text-zinc-100 placeholder:text-zinc-600"
+            className="w-56 border-border bg-card text-foreground placeholder:text-muted-foreground"
           />
         </div>
         <div>
-          <label className="text-xs text-zinc-500">Description</label>
+          <label className="text-xs text-muted-foreground">Description</label>
           <Input
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
             placeholder="Optional"
-            className="w-64 border-white/10 bg-zinc-950 text-zinc-100 placeholder:text-zinc-600"
+            className="w-64 border-border bg-card text-foreground placeholder:text-muted-foreground"
           />
         </div>
         <Button type="submit" size="sm" className="gap-1.5" disabled={isCreating || !newKey.trim()}>

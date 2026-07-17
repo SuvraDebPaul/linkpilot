@@ -6,8 +6,8 @@ export default async function AdminBlocklistPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Domain Blocklist</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-2xl font-semibold text-foreground">Domain Blocklist</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         New links to these domains (or any subdomain of them) are rejected at creation time.
       </p>
 

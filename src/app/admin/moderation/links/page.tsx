@@ -12,16 +12,16 @@ export default async function AdminLinksModerationPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Links</h1>
-      <p className="mt-1 text-sm text-zinc-500">{total} total, across every workspace</p>
+      <h1 className="text-2xl font-semibold text-foreground">Links</h1>
+      <p className="mt-1 text-sm text-muted-foreground">{total} total, across every workspace</p>
 
       <div className="mt-4 max-w-sm">
         <UserSearchBox defaultValue={q ?? ""} />
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+      <div className="mt-4 overflow-hidden rounded-xl border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-950 text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="bg-card text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-medium">Short code</th>
               <th className="px-4 py-3 font-medium">Destination</th>
@@ -31,15 +31,15 @@ export default async function AdminLinksModerationPage({
               <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 bg-zinc-900/50">
+          <tbody className="divide-y divide-border bg-muted/50">
             {links.map((link) => (
               <tr key={link.id}>
-                <td className="px-4 py-3 font-mono text-xs text-zinc-100">{link.shortCode}</td>
-                <td className="max-w-xs truncate px-4 py-3 text-zinc-400" title={link.originalUrl}>
+                <td className="px-4 py-3 font-mono text-xs text-foreground">{link.shortCode}</td>
+                <td className="max-w-xs truncate px-4 py-3 text-muted-foreground" title={link.originalUrl}>
                   {link.originalUrl}
                 </td>
-                <td className="px-4 py-3 text-zinc-400">{link.workspace.name}</td>
-                <td className="px-4 py-3 text-zinc-500">{link.createdAt.toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-muted-foreground">{link.workspace.name}</td>
+                <td className="px-4 py-3 text-muted-foreground">{link.createdAt.toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   {link.isActive ? (
                     <span className="text-emerald-400">Active</span>
@@ -54,7 +54,7 @@ export default async function AdminLinksModerationPage({
             ))}
             {links.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                   No links found.
                 </td>
               </tr>
@@ -64,7 +64,7 @@ export default async function AdminLinksModerationPage({
       </div>
 
       {total > pageSize && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-zinc-500">
+        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
           Page {page ? Number(page) : 1} of {Math.ceil(total / pageSize)}
         </div>
       )}

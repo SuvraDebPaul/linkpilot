@@ -14,8 +14,8 @@ export default async function AdminConfigPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Site Settings</h1>
-      <p className="mt-1 text-sm text-zinc-500">Config an admin can change without a deploy.</p>
+      <h1 className="text-2xl font-semibold text-foreground">Site Settings</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Config an admin can change without a deploy.</p>
 
       <div className="mt-4 max-w-xl">
         <SiteSettingsPanel

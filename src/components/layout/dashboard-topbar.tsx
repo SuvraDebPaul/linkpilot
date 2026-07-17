@@ -21,6 +21,7 @@ import {
   UserPlus,
   Link2,
   CheckCheck,
+  ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -269,6 +270,14 @@ export function DashboardTopbar({ actionItems = [] }: { actionItems?: ActionItem
                 Profile & Settings
               </Link>
             </DropdownMenuItem>
+            {session?.user?.isSuperAdmin && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin" className="cursor-pointer text-red-500 focus:text-red-500">
+                  <ShieldAlert className="mr-2 h-4 w-4" />
+                  Admin Panel
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer text-destructive focus:text-destructive"

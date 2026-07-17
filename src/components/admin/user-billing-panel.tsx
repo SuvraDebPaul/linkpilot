@@ -41,8 +41,8 @@ export function UserBillingPanel({
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-white/10 bg-zinc-950 p-4">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
+    <div className="mt-6 rounded-xl border border-border bg-card p-4">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <CreditCard className="h-4 w-4" />
         Billing
       </h2>

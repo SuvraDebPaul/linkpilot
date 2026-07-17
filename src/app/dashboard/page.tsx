@@ -66,6 +66,8 @@ export default async function DashboardPage() {
         totalLinks={stats.totalLinks}
         totalCampaigns={stats.totalCampaigns}
         totalClicks={stats.totalClicks}
+        plan={plan}
+        isSuperAdmin={session.user.isSuperAdmin ?? false}
       />
     );
   }

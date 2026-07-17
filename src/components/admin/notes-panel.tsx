@@ -68,8 +68,8 @@ export function NotesPanel({
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-white/10 bg-zinc-950 p-4">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
+    <div className="mt-6 rounded-xl border border-border bg-card p-4">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <StickyNote className="h-4 w-4" />
         Internal notes
       </h2>
@@ -79,7 +79,7 @@ export function NotesPanel({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Leave a note for whoever handles this next…"
-          className="border-white/10 bg-zinc-900 text-zinc-100 placeholder:text-zinc-600"
+          className="border-border bg-background text-foreground placeholder:text-muted-foreground"
           rows={2}
         />
         <Button size="sm" className="mt-2" onClick={handleAdd} disabled={isAdding || !draft.trim()}>
@@ -88,16 +88,16 @@ export function NotesPanel({
       </div>
 
       {notes.length === 0 ? (
-        <p className="mt-4 text-sm text-zinc-500">No notes yet.</p>
+        <p className="mt-4 text-sm text-muted-foreground">No notes yet.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {notes.map((n) => (
             <li
               key={n.id}
-              className={`rounded-lg border border-white/5 p-3 text-sm ${n.resolved ? "opacity-50" : ""}`}
+              className={`rounded-lg border border-border/50 p-3 text-sm ${n.resolved ? "opacity-50" : ""}`}
             >
-              <p className={`text-zinc-200 ${n.resolved ? "line-through" : ""}`}>{n.note}</p>
-              <div className="mt-2 flex items-center justify-between text-xs text-zinc-500">
+              <p className={`text-foreground ${n.resolved ? "line-through" : ""}`}>{n.note}</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                 <span>
                   {n.authorEmail ?? "—"} · {n.createdAt.toLocaleString()}
                 </span>
@@ -105,7 +105,7 @@ export function NotesPanel({
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="text-zinc-500 hover:text-emerald-400"
+                    className="text-muted-foreground hover:text-emerald-400"
                     onClick={() => handleToggleResolve(n.id, !n.resolved)}
                     title={n.resolved ? "Reopen" : "Mark resolved"}
                   >
@@ -113,7 +113,7 @@ export function NotesPanel({
                   </Button>
                   <ConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="icon-xs" className="text-zinc-500 hover:text-red-400">
+                      <Button variant="ghost" size="icon-xs" className="text-muted-foreground hover:text-red-400">
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     }

@@ -23,7 +23,7 @@ export function AdminNavItem({ href, label, icon: Icon, exact }: AdminNavItemPro
         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
         isActive
           ? "bg-red-500/15 text-red-400"
-          : "text-zinc-400 hover:bg-white/5 hover:text-zinc-100",
+          : "text-muted-foreground hover:bg-accent hover:text-foreground",
       )}
     >
       <Icon className="h-[18px] w-[18px] shrink-0" />

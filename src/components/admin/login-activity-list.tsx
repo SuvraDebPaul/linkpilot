@@ -30,18 +30,18 @@ export function LoginActivityList({ userId, events }: { userId: string; events: 
   }
 
   if (events.length === 0) {
-    return <p className="mt-2 text-sm text-zinc-500">No login events recorded.</p>;
+    return <p className="mt-2 text-sm text-muted-foreground">No login events recorded.</p>;
   }
 
   return (
     <ul className="mt-2 space-y-1.5 text-sm">
       {events.map((e) => (
-        <li key={e.id} className="flex items-center justify-between text-zinc-400">
+        <li key={e.id} className="flex items-center justify-between text-muted-foreground">
           <span className={e.revoked ? "line-through opacity-50" : ""}>
             {e.type} · {e.browser} · {e.ip}
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-600">{e.createdAt.toLocaleString()}</span>
+            <span className="text-xs text-muted-foreground">{e.createdAt.toLocaleString()}</span>
             {e.revoked ? (
               <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-400">
                 Revoked
@@ -49,7 +49,7 @@ export function LoginActivityList({ userId, events }: { userId: string; events: 
             ) : (
               <ConfirmDialog
                 trigger={
-                  <Button variant="ghost" size="icon-xs" className="text-zinc-500 hover:text-red-400">
+                  <Button variant="ghost" size="icon-xs" className="text-muted-foreground hover:text-red-400">
                     <ShieldOff className="h-3.5 w-3.5" />
                   </Button>
                 }

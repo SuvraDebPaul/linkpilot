@@ -5,6 +5,7 @@ import { prisma } from "@/server/db/prisma";
 import { getUserWorkspaces, getActiveWorkspaceId } from "@/server/queries/workspace.queries";
 import { getActionItems } from "@/server/queries/notifications.queries";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { getUserPlan } from "@/lib/subscription";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -24,9 +25,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!user?.onboardingCompleted) redirect("/onboarding");
 
-  const [memberships, activeWorkspaceId] = await Promise.all([
+  const [memberships, activeWorkspaceId, plan] = await Promise.all([
     getUserWorkspaces(session.user.id),
     getActiveWorkspaceId(session.user.id),
+    getUserPlan(session.user.id),
   ]);
   const workspaces = memberships.map((m) => ({ id: m.workspace.id, name: m.workspace.name, role: m.role }));
 
@@ -38,7 +40,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const actionItems = activeWorkspaceId ? await getActionItems(session.user.id, activeWorkspaceId) : [];
 
   return (
-    <DashboardShell workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} actionItems={actionItems}>
+    <DashboardShell workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} actionItems={actionItems} plan={plan}>
       {children}
     </DashboardShell>
   );

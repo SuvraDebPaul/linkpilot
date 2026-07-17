@@ -1,24 +1,16 @@
 import Link from "next/link";
 import { DollarSign, Users, Crown } from "lucide-react";
 import { getBillingOverview, getPayingUsers } from "@/server/queries/admin-billing.queries";
+import { classifyPriceId } from "@/lib/subscription";
 import { StatCard } from "@/components/admin/stat-card";
 import { UserSearchBox } from "@/components/admin/user-search-box";
 
-function planLabel(u: {
-  lifetimeAccess: boolean;
-  stripePriceId: string | null;
-  stripeCurrentPeriodEnd: Date | null;
-}) {
+// getPayingUsers already filters to lifetimeAccess or a still-current
+// subscription, so no expiry check is needed here — just label what's there.
+function planLabel(u: { lifetimeAccess: boolean; stripePriceId: string | null }) {
   if (u.lifetimeAccess) return "Lifetime";
-  if ([process.env.STRIPE_PRO_PRICE_ID, process.env.STRIPE_PRO_YEARLY_PRICE_ID].includes(u.stripePriceId ?? ""))
-    return "Pro";
-  if (
-    [process.env.STRIPE_STARTER_PRICE_ID, process.env.STRIPE_STARTER_YEARLY_PRICE_ID].includes(
-      u.stripePriceId ?? "",
-    )
-  )
-    return "Starter";
-  return "—";
+  const tier = classifyPriceId(u.stripePriceId);
+  return tier ? tier[0].toUpperCase() + tier.slice(1) : "—";
 }
 
 export default async function AdminBillingPage({
@@ -31,8 +23,8 @@ export default async function AdminBillingPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Billing & Revenue</h1>
-      <p className="mt-1 text-sm text-zinc-500">Manual overrides live on each user&apos;s own page.</p>
+      <h1 className="text-2xl font-semibold text-foreground">Billing & Revenue</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Manual overrides live on each user&apos;s own page.</p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Est. MRR" value={`$${overview.mrrEstimate.toLocaleString()}`} icon={DollarSign} />
@@ -45,33 +37,33 @@ export default async function AdminBillingPage({
         <UserSearchBox defaultValue={q ?? ""} />
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+      <div className="mt-4 overflow-hidden rounded-xl border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-950 text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="bg-card text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-medium">User</th>
               <th className="px-4 py-3 font-medium">Plan</th>
               <th className="px-4 py-3 font-medium">Renews / expires</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 bg-zinc-900/50">
+          <tbody className="divide-y divide-border bg-muted/50">
             {payingUsers.map((u) => (
-              <tr key={u.id} className="hover:bg-white/5">
+              <tr key={u.id} className="hover:bg-accent">
                 <td className="px-4 py-3">
                   <Link href={`/admin/users/${u.id}`} className="block">
-                    <p className="font-medium text-zinc-100">{u.name ?? "—"}</p>
-                    <p className="text-xs text-zinc-500">{u.email}</p>
+                    <p className="font-medium text-foreground">{u.name ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">{u.email}</p>
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-zinc-300">{planLabel(u)}</td>
-                <td className="px-4 py-3 text-zinc-500">
+                <td className="px-4 py-3 text-foreground">{planLabel(u)}</td>
+                <td className="px-4 py-3 text-muted-foreground">
                   {u.stripeCurrentPeriodEnd ? u.stripeCurrentPeriodEnd.toLocaleDateString() : "—"}
                 </td>
               </tr>
             ))}
             {payingUsers.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-zinc-500">
+                <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">
                   No paying users found.
                 </td>
               </tr>

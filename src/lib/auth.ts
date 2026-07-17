@@ -256,7 +256,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       const currentUser = await prisma.user.findUnique({
         where: { id: token.id as string },
-        select: { sessionVersion: true, suspended: true },
+        select: { sessionVersion: true, suspended: true, isSuperAdmin: true },
       });
 
       const demoExpired =
@@ -291,9 +291,13 @@ export const authOptions: NextAuthOptions = {
 
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.isSuperAdmin = token.impersonatedBy
-          ? false
-          : (token.isSuperAdmin ?? false);
+        // Read from the DB, not the cached token claim — token.isSuperAdmin was
+        // only ever set once, at initial sign-in, so it would keep showing an
+        // admin as an admin even after that flag was later revoked, until they
+        // next logged in. currentUser is already re-fetched every request for
+        // the sessionVersion/suspended checks above, so this is free staleness
+        // protection the same way those already get.
+        session.user.isSuperAdmin = token.impersonatedBy ? false : (currentUser.isSuperAdmin ?? false);
         session.user.impersonatedBy = token.impersonatedBy;
         session.user.impersonationStartedAt = token.impersonationStartedAt;
       }

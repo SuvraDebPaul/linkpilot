@@ -6,8 +6,8 @@ export default async function AdminFeatureFlagsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Feature Flags</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-2xl font-semibold text-foreground">Feature Flags</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Manual kill switches. <span className="font-mono">maintenanceMode</span> and{" "}
         <span className="font-mono">signupsEnabled</span> are already wired into the app — create them here to
         use them.

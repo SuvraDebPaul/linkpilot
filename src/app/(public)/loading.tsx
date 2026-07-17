@@ -1,5 +1,5 @@
-import PaperPlaneLoader from "@/components/shared/PaperPlaneLoader";
+import { CoreSpinLoader } from "@/components/shared/core-spin-loader";
 
 export default function Loading() {
-  return <PaperPlaneLoader />;
+  return <CoreSpinLoader />;
 }

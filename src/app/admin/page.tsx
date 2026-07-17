@@ -7,8 +7,8 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Platform Dashboard</h1>
-      <p className="mt-1 text-sm text-zinc-500">A snapshot of LinkPilot right now.</p>
+      <h1 className="text-2xl font-semibold text-foreground">Platform Dashboard</h1>
+      <p className="mt-1 text-sm text-muted-foreground">A snapshot of LinkPilot right now.</p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard label="Total Users" value={stats.totalUsers} icon={Users} />

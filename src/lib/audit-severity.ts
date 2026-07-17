@@ -10,10 +10,18 @@ const DESTRUCTIVE_ACTIONS = new Set([
 const HIGH_ACTIONS = new Set([
   "user.suspend",
   "workspace.suspend",
+  "workspace.transfer_ownership",
   "blocklist.add",
   "link.disable",
+  // Both directions of a generic flag are "high" (unlike link/user/workspace
+  // suspension, where we know which direction is the disruptive one) since a
+  // flag's real-world meaning — and which state is "safe" — is arbitrary.
+  "flag.enable",
   "flag.disable",
-  "note.delete",
+  "user.grant_plan",
+  "user.impersonate_start",
+  "user.impersonate_end",
+  "user.revoke_session",
 ]);
 
 // Used both to color-code /admin/audit-log entries and to decide which

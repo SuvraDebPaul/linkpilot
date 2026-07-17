@@ -6,12 +6,12 @@ export default async function AdminCronJobsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Cron Jobs</h1>
-      <p className="mt-1 text-sm text-zinc-500">Last run status for each scheduled job.</p>
+      <h1 className="text-2xl font-semibold text-foreground">Cron Jobs</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Last run status for each scheduled job.</p>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+      <div className="mt-4 overflow-hidden rounded-xl border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-950 text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="bg-card text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-medium">Job</th>
               <th className="px-4 py-3 font-medium">Status</th>
@@ -20,13 +20,13 @@ export default async function AdminCronJobsPage() {
               <th className="px-4 py-3 font-medium">Message</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 bg-zinc-900/50">
+          <tbody className="divide-y divide-border bg-muted/50">
             {jobs.map(({ jobName, lastRun }) => (
               <tr key={jobName}>
-                <td className="px-4 py-3 font-mono text-xs text-zinc-200">{jobName}</td>
+                <td className="px-4 py-3 font-mono text-xs text-foreground">{jobName}</td>
                 <td className="px-4 py-3">
                   {!lastRun ? (
-                    <span className="flex items-center gap-1.5 text-zinc-500">
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
                       <HelpCircle className="h-4 w-4" /> Never run
                     </span>
                   ) : lastRun.status === "success" ? (
@@ -39,13 +39,13 @@ export default async function AdminCronJobsPage() {
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground">
                   {lastRun ? lastRun.createdAt.toLocaleString() : "—"}
                 </td>
-                <td className="px-4 py-3 text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground">
                   {lastRun?.durationMs != null ? `${lastRun.durationMs}ms` : "—"}
                 </td>
-                <td className="max-w-xs truncate px-4 py-3 text-xs text-zinc-500">
+                <td className="max-w-xs truncate px-4 py-3 text-xs text-muted-foreground">
                   {lastRun?.message ?? "—"}
                 </td>
               </tr>

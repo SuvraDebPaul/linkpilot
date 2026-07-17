@@ -60,17 +60,17 @@ export function SiteSettingsPanel({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-white/10 bg-zinc-950 p-4">
+      <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-zinc-100">Announcement Banner</h2>
+          <h2 className="text-sm font-semibold text-foreground">Announcement Banner</h2>
           <Switch checked={enabled} onCheckedChange={setEnabled} />
         </div>
-        <p className="mt-1 text-xs text-zinc-500">Shown at the top of the public site and dashboard.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Shown at the top of the public site and dashboard.</p>
         <Textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="e.g. Scheduled maintenance this Sunday, 2–3am UTC."
-          className="mt-3 border-white/10 bg-zinc-900 text-zinc-100 placeholder:text-zinc-600"
+          className="mt-3 border-border bg-background text-foreground placeholder:text-muted-foreground"
           rows={2}
         />
         <Button size="sm" className="mt-3" onClick={handleSaveBanner} disabled={isSavingBanner}>
@@ -78,14 +78,14 @@ export function SiteSettingsPanel({
         </Button>
       </div>
 
-      <div className="rounded-xl border border-white/10 bg-zinc-950 p-4">
-        <h2 className="text-sm font-semibold text-zinc-100">Support Email</h2>
-        <p className="mt-1 text-xs text-zinc-500">Shown in the public site footer instead of the default.</p>
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h2 className="text-sm font-semibold text-foreground">Support Email</h2>
+        <p className="mt-1 text-xs text-muted-foreground">Shown in the public site footer instead of the default.</p>
         <Input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="hello@linkpilot.app"
-          className="mt-3 w-72 border-white/10 bg-zinc-900 text-zinc-100 placeholder:text-zinc-600"
+          className="mt-3 w-72 border-border bg-background text-foreground placeholder:text-muted-foreground"
         />
         <Button size="sm" className="mt-3" onClick={handleSaveEmail} disabled={isSavingEmail}>
           Save email

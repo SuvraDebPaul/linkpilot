@@ -50,21 +50,21 @@ export function BlocklistPanel({ domains }: { domains: BlockedDomain[] }) {
     <div>
       <form onSubmit={handleAdd} className="flex items-end gap-2">
         <div>
-          <label className="text-xs text-zinc-500">Domain</label>
+          <label className="text-xs text-muted-foreground">Domain</label>
           <Input
             value={newDomain}
             onChange={(e) => setNewDomain(e.target.value)}
             placeholder="e.g. phishing-example.com"
-            className="w-64 border-white/10 bg-zinc-950 text-zinc-100 placeholder:text-zinc-600"
+            className="w-64 border-border bg-card text-foreground placeholder:text-muted-foreground"
           />
         </div>
         <div>
-          <label className="text-xs text-zinc-500">Reason</label>
+          <label className="text-xs text-muted-foreground">Reason</label>
           <Input
             value={newReason}
             onChange={(e) => setNewReason(e.target.value)}
             placeholder="Optional"
-            className="w-64 border-white/10 bg-zinc-950 text-zinc-100 placeholder:text-zinc-600"
+            className="w-64 border-border bg-card text-foreground placeholder:text-muted-foreground"
           />
         </div>
         <Button type="submit" size="sm" className="gap-1.5" disabled={isCreating || !newDomain.trim()}>
@@ -73,9 +73,9 @@ export function BlocklistPanel({ domains }: { domains: BlockedDomain[] }) {
         </Button>
       </form>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+      <div className="mt-4 overflow-hidden rounded-xl border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-950 text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="bg-card text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-medium">Domain</th>
               <th className="px-4 py-3 font-medium">Reason</th>
@@ -83,16 +83,16 @@ export function BlocklistPanel({ domains }: { domains: BlockedDomain[] }) {
               <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 bg-zinc-900/50">
+          <tbody className="divide-y divide-border bg-muted/50">
             {domains.map((d) => (
               <tr key={d.domain}>
-                <td className="px-4 py-3 font-mono text-xs text-zinc-100">{d.domain}</td>
-                <td className="px-4 py-3 text-zinc-400">{d.reason ?? "—"}</td>
-                <td className="px-4 py-3 text-zinc-500">{d.createdAt.toLocaleDateString()}</td>
+                <td className="px-4 py-3 font-mono text-xs text-foreground">{d.domain}</td>
+                <td className="px-4 py-3 text-muted-foreground">{d.reason ?? "—"}</td>
+                <td className="px-4 py-3 text-muted-foreground">{d.createdAt.toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   <ConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="icon-sm" className="text-zinc-500 hover:text-red-400">
+                      <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-red-400">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     }
@@ -107,7 +107,7 @@ export function BlocklistPanel({ domains }: { domains: BlockedDomain[] }) {
             ))}
             {domains.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-zinc-500">
+                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
                   No domains blocked.
                 </td>
               </tr>

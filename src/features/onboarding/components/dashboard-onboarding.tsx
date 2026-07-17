@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CreateLinkDialog } from "@/features/links/components/create-link-dialog";
+import { PLAN_LIMITS, type PlanTier } from "@/lib/subscription";
 
 type Step = {
   icon: React.ElementType;
@@ -19,9 +20,46 @@ type Props = {
   totalLinks: number;
   totalCampaigns: number;
   totalClicks: number;
+  plan: PlanTier;
+  isSuperAdmin: boolean;
 };
 
-export function DashboardOnboarding({ firstName, totalLinks, totalCampaigns, totalClicks }: Props) {
+function planWelcomeCopy(plan: PlanTier, isSuperAdmin: boolean) {
+  if (isSuperAdmin) {
+    return (
+      <>
+        Your <strong className="text-foreground">Pro</strong> account is ready for life —{" "}
+        <strong className="text-foreground">unlimited links</strong>,{" "}
+        <strong className="text-foreground">unlimited campaigns</strong>, and{" "}
+        <strong className="text-foreground">full analytics</strong> included.
+      </>
+    );
+  }
+
+  const limits = PLAN_LIMITS[plan];
+  const links = isFinite(limits.links) ? `${limits.links} links` : "unlimited links";
+  const campaigns = isFinite(limits.campaigns) ? `${limits.campaigns} campaigns` : "unlimited campaigns";
+  const analytics = plan === "free" ? "basic analytics" : "full analytics";
+  const planName = plan === "free" ? "free" : plan[0].toUpperCase() + plan.slice(1);
+
+  return (
+    <>
+      Your {planName} account is ready —{" "}
+      <strong className="text-foreground">{links}</strong>,{" "}
+      <strong className="text-foreground">{campaigns}</strong>, and{" "}
+      <strong className="text-foreground">{analytics}</strong> included.
+    </>
+  );
+}
+
+export function DashboardOnboarding({
+  firstName,
+  totalLinks,
+  totalCampaigns,
+  totalClicks,
+  plan,
+  isSuperAdmin,
+}: Props) {
   const steps: Step[] = [
     {
       icon: Link2,
@@ -81,10 +119,7 @@ export function DashboardOnboarding({ firstName, totalLinks, totalCampaigns, tot
               Welcome{firstName ? `, ${firstName}` : " to LinkPilot"}!
             </h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Your free account is ready —{" "}
-              <strong className="text-foreground">50 links</strong>,{" "}
-              <strong className="text-foreground">2 campaigns</strong>, and{" "}
-              <strong className="text-foreground">basic analytics</strong> included.
+              {planWelcomeCopy(plan, isSuperAdmin)}
             </p>
           </div>
           <div className="hidden shrink-0 text-right sm:block">
