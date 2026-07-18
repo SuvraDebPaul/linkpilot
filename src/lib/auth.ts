@@ -50,6 +50,24 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      // Google verifies email ownership, so it's safe to link a Google sign-in
+      // to an existing credentials account with the same email instead of
+      // rejecting it with OAuthAccountNotLinked.
+      allowDangerousEmailAccountLinking: true,
+      // Default profile() omits emailVerified entirely, which would leave a
+      // brand-new Google signup's User row with emailVerified: null — same as
+      // an unverified credentials signup, and blocked by the check in
+      // credentials' authorize() below. Google already confirmed the email,
+      // so map its email_verified claim straight through.
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          emailVerified: profile.email_verified ? new Date() : null,
+        };
+      },
     }),
     CredentialsProvider({
       name: "credentials",
@@ -77,6 +95,7 @@ export const authOptions: NextAuthOptions = {
             image: true,
             password: true,
             suspended: true,
+            emailVerified: true,
           },
         });
 
@@ -98,6 +117,15 @@ export const authOptions: NextAuthOptions = {
         // anyway, but rejecting here avoids issuing a token at all and skips the
         // login-event/rate-limit bookkeping for an account that can't use it.
         if (user.suspended) return null;
+
+        // Credentials signups must verify their email before they can reach the
+        // dashboard — Google accounts skip this since Google already confirmed
+        // ownership (see the profile() mapping on GoogleProvider above). Thrown
+        // here (rather than returning null) so the client can show a specific
+        // "verify your email" message instead of the generic invalid-credentials one.
+        if (!user.emailVerified) {
+          throw new Error("EmailNotVerified");
+        }
 
         const loginEvent = await prisma.loginEvent.create({
           data: { userId: user.id, type: "credentials", ip, browser },
@@ -157,44 +185,66 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // Credentials sign-in already rejects suspended accounts in authorize() above;
     // this additionally covers Google OAuth, which skips authorize() entirely.
-    async signIn({ user, account }) {
-      if (!user.id) return true;
+    // Looked up by email, not user.id: for a Google sign-in merging into an
+    // existing email (allowDangerousEmailAccountLinking), the adapter hasn't
+    // actually persisted the linked account/user yet when this callback runs,
+    // so user.id doesn't reliably resolve to a row in the database here.
+    async signIn({ user }) {
+      if (!user.email) return true;
       const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
+        where: { email: user.email },
         select: { suspended: true },
       });
       if (dbUser?.suspended) return false;
 
-      // Google OAuth has no authorize() step, so the login event is created
-      // here instead — this callback runs before jwt(), unlike events.signIn
-      // (which fires too late to hand the new event's id forward), so
-      // mutating `user` here is what makes it reach jwt()'s `user` param.
-      if (account?.provider === "google") {
-        const loginEvent = await prisma.loginEvent.create({
-          data: {
-            userId: user.id,
-            type: "google",
-            ip: "Unknown",
-            browser: "Unknown",
-          },
-        });
-        (user as { loginEventId?: string }).loginEventId = loginEvent.id;
-      }
-
       return true;
     },
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, account, trigger, session }) {
       if (user) {
-        token.id = user.id;
-        token.loginEventId = (user as { loginEventId?: string }).loginEventId;
+        // Same reasoning as signIn() above: look up by email rather than
+        // trusting user.id, which for a freshly-linked Google account may not
+        // yet correspond to a persisted row at this point in the OAuth flow.
         const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
+          where: user.email ? { email: user.email } : { id: user.id },
           select: {
+            id: true,
             sessionVersion: true,
             isDemoAccount: true,
             isSuperAdmin: true,
+            emailVerified: true,
           },
         });
+
+        token.id = dbUser?.id ?? user.id;
+
+        // Google OAuth has no authorize() step, so the login event is created
+        // here instead, once dbUser.id is confirmed to actually exist —
+        // creating it any earlier (e.g. in signIn()) risks a foreign-key
+        // violation for the reason above.
+        if (account?.provider === "google" && dbUser) {
+          // Covers linking Google onto a pre-existing, still-unverified
+          // credentials account — Google already confirmed the email, so
+          // there's no reason to keep making them click the emailed link too.
+          if (!dbUser.emailVerified) {
+            await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { emailVerified: new Date() },
+            });
+          }
+
+          const loginEvent = await prisma.loginEvent.create({
+            data: {
+              userId: dbUser.id,
+              type: "google",
+              ip: "Unknown",
+              browser: "Unknown",
+            },
+          });
+          token.loginEventId = loginEvent.id;
+        } else {
+          token.loginEventId = (user as { loginEventId?: string }).loginEventId;
+        }
+
         token.sessionVersion = dbUser?.sessionVersion ?? 0;
         token.isDemoAccount = dbUser?.isDemoAccount ?? false;
         token.isSuperAdmin = dbUser?.isSuperAdmin ?? false;
