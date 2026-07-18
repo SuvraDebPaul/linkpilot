@@ -18,7 +18,7 @@ const freePerks = [
 
 export default function RegisterPage() {
   return (
-    <div className="rounded-2xl border border-border bg-card px-8 py-10 shadow-sm">
+    <div className="rounded-2xl border border-border bg-background px-8 py-10 shadow-sm">
       <div className="mb-8 text-center">
         <p className="mb-3 font-mono text-[10px] tracking-widest text-primary">
           NEW PASSENGER · BOOKING
@@ -50,7 +50,10 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link
+          href="/login"
+          className="font-medium text-primary hover:underline"
+        >
           Sign in
         </Link>
       </p>

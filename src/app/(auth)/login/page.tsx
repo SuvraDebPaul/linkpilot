@@ -7,7 +7,8 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Sign in to your LinkPilot account to manage your links, campaigns, and analytics.",
+  description:
+    "Sign in to your LinkPilot account to manage your links, campaigns, and analytics.",
 };
 
 const accountIncludes = [
@@ -18,7 +19,7 @@ const accountIncludes = [
 
 export default function LoginPage() {
   return (
-    <div className="rounded-2xl border border-border bg-card px-8 py-10 shadow-sm">
+    <div className="rounded-2xl border border-border bg-background px-8 py-10 shadow-sm">
       <div className="mb-8 text-center">
         <p className="mb-3 font-mono text-[10px] tracking-widest text-primary">
           PASSENGER SIGN-IN
@@ -31,7 +32,10 @@ export default function LoginPage() {
         {/* What's inside chips */}
         <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5">
           {accountIncludes.map(({ icon: Icon, text }) => (
-            <span key={text} className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span
+              key={text}
+              className="flex items-center gap-1 text-xs text-muted-foreground"
+            >
               <Icon className="h-3 w-3 text-primary" />
               {text}
             </span>
@@ -46,7 +50,10 @@ export default function LoginPage() {
       <div className="mt-6 space-y-3">
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-primary hover:underline">
+          <Link
+            href="/register"
+            className="font-medium text-primary hover:underline"
+          >
             Create one free
           </Link>
         </p>
