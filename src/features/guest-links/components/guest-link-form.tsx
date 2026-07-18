@@ -96,10 +96,13 @@ export function GuestLinkForm({ onResult }: GuestLinkFormProps) {
   }
 
   return (
-    <Card className="h-full overflow-hidden border-border/80 bg-linear-to-br from-card to-background/40 shadow-2xl shadow-border/50 backdrop-blur">
-      <CardHeader className="border-b border-border/50 bg-linear-to-br from-card/40 to-background/40">
+    <Card className="h-full overflow-hidden border-border/80 bg-background/40 shadow-2xl shadow-border/50 backdrop-blur pt-0">
+      <CardHeader className="border-b border-border/80 bg-background pt-8">
         <div className="mb-2">
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
+          <Badge
+            variant="secondary"
+            className="bg-primary/10 text-primary px-4 py-3"
+          >
             No login required
           </Badge>
         </div>
@@ -168,7 +171,7 @@ export function GuestLinkForm({ onResult }: GuestLinkFormProps) {
             <FormError message={fieldErrors.expiryPreset?.[0]} />
           </div>
 
-          <div className="rounded-2xl border border-border bg-muted/50 p-4">
+          <div className="rounded-xl border border-border bg-background p-4">
             <div className="flex items-start gap-3">
               <Checkbox
                 id="enablePassword"
@@ -224,7 +227,7 @@ export function GuestLinkForm({ onResult }: GuestLinkFormProps) {
             Create free short link
           </LoadingButton>
 
-          <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+          <div className="rounded-xl border border-primary/40 bg-primary/10 p-4">
             <p className="text-xs font-semibold text-primary">
               Want permanent links with analytics?
             </p>

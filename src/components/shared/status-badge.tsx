@@ -1,4 +1,5 @@
 ﻿import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type StatusBadgeVariant =
   | "active"
@@ -11,6 +12,7 @@ type StatusBadgeVariant =
 type StatusBadgeProps = {
   label: string;
   variant?: StatusBadgeVariant;
+  className?: string;
 };
 
 const variantClassName: Record<StatusBadgeVariant, string> = {
@@ -22,9 +24,16 @@ const variantClassName: Record<StatusBadgeVariant, string> = {
   default: "border-border bg-card text-foreground",
 };
 
-export function StatusBadge({ label, variant = "default" }: StatusBadgeProps) {
+export function StatusBadge({
+  label,
+  variant = "default",
+  className,
+}: StatusBadgeProps) {
   return (
-    <Badge variant="outline" className={variantClassName[variant]}>
+    <Badge
+      variant="outline"
+      className={cn(variantClassName[variant], className)}
+    >
       {label}
     </Badge>
   );

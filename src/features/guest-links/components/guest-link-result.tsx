@@ -33,11 +33,19 @@ export function GuestLinkResult({ result }: GuestLinkResultProps) {
     <Card className="h-full border-emerald-200 bg-emerald-50/70 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/20">
       <CardContent className="p-5">
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <StatusBadge label="Temporary link ready" variant="active" />
-          <StatusBadge label="Guest link" variant="guest" />
+          <StatusBadge
+            label="Temporary link ready"
+            variant="active"
+            className="px-4 py-3"
+          />
+          <StatusBadge
+            label="Guest link"
+            variant="guest"
+            className="px-4 py-3"
+          />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="rounded-xl border border-border bg-background p-4">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Short URL
           </p>
@@ -52,7 +60,9 @@ export function GuestLinkResult({ result }: GuestLinkResultProps) {
             <CopyButton value={result.shortUrl} />
           </div>
 
-          <p className="mt-3 text-xs text-muted-foreground">Expires: {expiresAt}</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Expires: {expiresAt}
+          </p>
         </div>
 
         {result.qrCodeDataUrl ? (
@@ -89,7 +99,8 @@ export function GuestLinkResult({ result }: GuestLinkResultProps) {
           <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
             A free account gives you <strong>50 permanent links</strong>,{" "}
             <strong>2 campaigns</strong>, and{" "}
-            <strong>click & device analytics</strong> — all free, no card needed.
+            <strong>click & device analytics</strong> — all free, no card
+            needed.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button asChild size="sm">
