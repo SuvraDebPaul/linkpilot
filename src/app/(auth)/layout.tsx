@@ -8,22 +8,15 @@ const freeIncludes = [
   { icon: BarChart3, text: "Basic analytics — clicks, devices, and QR scans" },
 ];
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="min-h-screen bg-muted/40 lg:grid lg:grid-cols-[1fr_1fr]">
-
+    <div className="min-h-screen lg:grid lg:grid-cols-[1fr_1fr]">
       {/* Left panel — visible on lg+ */}
-      <div className="relative hidden flex-col justify-between overflow-hidden border-r border-border bg-card px-12 py-12 lg:flex xl:px-16">
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06]"
-          viewBox="0 0 500 800"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path d="M -20 120 C 150 60, 250 280, 480 180" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
-          <path d="M -20 620 C 180 700, 280 460, 480 600" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
-        </svg>
-
+      <div className="relative hidden flex-col justify-between overflow-hidden border-r border-border bg-background/40 px-12 py-12 lg:flex xl:px-16">
         <div className="relative">
           <Logo />
         </div>
@@ -55,7 +48,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/15">
                   <Icon className="h-4 w-4 text-primary" />
                 </div>
-                <span className="text-sm leading-6 text-foreground">{text}</span>
+                <span className="text-sm leading-6 text-foreground">
+                  {text}
+                </span>
               </li>
             ))}
           </ul>
@@ -63,9 +58,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="mt-10 border-t border-dashed border-border pt-5">
             <p className="text-sm leading-6 text-muted-foreground">
               Hit your free limits? Upgrade to{" "}
-              <span className="font-semibold text-foreground">Starter at $5/mo</span>{" "}
+              <span className="font-semibold text-foreground">
+                Starter at $5/mo
+              </span>{" "}
               for 500 links and 100 campaigns, or{" "}
-              <span className="font-semibold text-foreground">Pro at $10/mo</span>{" "}
+              <span className="font-semibold text-foreground">
+                Pro at $10/mo
+              </span>{" "}
               for unlimited everything and client-ready reports.
             </p>
           </div>
@@ -75,7 +74,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
             <CheckCircle2 className="h-3 w-3" />
           </span>
-          <p className="text-sm text-muted-foreground">No credit card required to get started</p>
+          <p className="text-sm text-muted-foreground">
+            No credit card required to get started
+          </p>
         </div>
       </div>
 
@@ -85,9 +86,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="mb-8 lg:hidden">
           <Logo />
         </div>
-        <div className="w-full max-w-md">{children}</div>
+        <div className="w-full max-w-lg">{children}</div>
       </div>
-
     </div>
   );
 }
