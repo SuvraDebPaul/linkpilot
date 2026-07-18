@@ -13,6 +13,7 @@ import { PasswordInput } from "@/components/shared/password-input";
 import { FieldError, FormError } from "@/components/shared/form-error";
 import { GoogleButton } from "@/features/auth/components/google-button";
 import { loginSchema } from "@/features/auth/schemas/auth.schema";
+import { resendVerificationAction } from "@/features/auth/actions/resend-verification.action";
 
 export function LoginForm() {
   const router = useRouter();
@@ -22,14 +23,26 @@ export function LoginForm() {
   const verified = searchParams.get("verified") === "1";
   const tokenError = searchParams.get("error");
 
+  const oauthErrorMessages: Record<string, string> = {
+    OAuthAccountNotLinked:
+      "That email is already registered. Sign in with your password, then link Google from account settings.",
+    AccessDenied: "Access denied. Please try again or use a different account.",
+    Configuration: "Sign-in is misconfigured. Please contact support.",
+  };
+  const oauthError = tokenError ? oauthErrorMessages[tokenError] : null;
+
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
+    setUnverifiedEmail(null);
+    setResendState("idle");
 
     const formData = new FormData(e.currentTarget);
     const raw = { email: formData.get("email"), password: formData.get("password") };
@@ -54,6 +67,11 @@ export function LoginForm() {
 
     setIsPending(false);
 
+    if (result?.error === "EmailNotVerified") {
+      setUnverifiedEmail(parsed.data.email);
+      return;
+    }
+
     if (result?.error) {
       setError("Invalid email or password.");
       return;
@@ -61,6 +79,13 @@ export function LoginForm() {
 
     router.push(callbackUrl);
     router.refresh();
+  }
+
+  async function handleResend() {
+    if (!unverifiedEmail) return;
+    setResendState("sending");
+    await resendVerificationAction(unverifiedEmail);
+    setResendState("sent");
   }
 
   return (
@@ -75,6 +100,11 @@ export function LoginForm() {
           Verification link has expired. Please register again.
         </p>
       )}
+      {oauthError && (
+        <p className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {oauthError}
+        </p>
+      )}
       <GoogleButton callbackUrl={callbackUrl} label="Sign in with Google" />
 
       <div className="flex items-center gap-3">
@@ -84,6 +114,23 @@ export function LoginForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {unverifiedEmail && (
+          <div className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            <p>Please verify your email before signing in. Check your inbox for the link we sent to {unverifiedEmail}.</p>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendState !== "idle"}
+              className="mt-1.5 font-medium underline underline-offset-2 disabled:no-underline disabled:opacity-70"
+            >
+              {resendState === "sent"
+                ? "Verification email sent — check your inbox"
+                : resendState === "sending"
+                  ? "Sending…"
+                  : "Resend verification email"}
+            </button>
+          </div>
+        )}
         <FormError message={error} />
 
         <div className="space-y-1.5">
