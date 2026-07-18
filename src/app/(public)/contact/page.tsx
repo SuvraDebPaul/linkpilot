@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Check, Mail, Rocket, Users, BarChart3, Globe2 } from "lucide-react";
 
 import { ContactForm } from "@/features/contact/components/contact-form";
@@ -69,8 +69,26 @@ export default function ContactPage() {
   return (
     <main>
       {/* Hero */}
-      <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="mx-auto max-w-7xl">
+      <section className="relative overflow-hidden border-b border-border bg-muted/30 px-4 py-20 sm:px-6 lg:px-8">
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07]"
+          viewBox="0 0 800 200"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M -20 40 C 200 0, 300 140, 500 60 S 750 20, 820 70" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
+          <path d="M -20 160 C 220 190, 320 60, 520 150 S 760 180, 820 130" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
+        </svg>
+
+        <div className="relative mx-auto max-w-7xl">
+          <div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-1.5 font-mono text-[10px] tracking-widest text-primary">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+            </span>
+            AGENCY DESK · CUSTOM SETUP
+          </div>
+
           <SectionHeading
             eyebrow="Agency plan"
             title="LinkPilot for agencies and teams."
@@ -82,15 +100,17 @@ export default function ContactPage() {
       </section>
 
       {/* Agency plan includes strip */}
-      <section className="border-b border-slate-200 bg-slate-950 px-4 py-10 sm:px-6 lg:px-8">
+      <section className="border-b border-border bg-slate-950 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <p className="mb-6 text-center text-sm font-semibold uppercase tracking-widest text-primary">
-            Agency plan includes
+          <p className="mb-6 text-center font-mono text-[10px] tracking-widest text-primary">
+            AGENCY MANIFEST
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {agencyIncludes.map((item) => (
               <div key={item} className="flex items-center gap-2.5 text-sm text-slate-300">
-                <Check className="h-4 w-4 shrink-0 text-primary" />
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                  <Check className="h-3 w-3" />
+                </span>
                 {item}
               </div>
             ))}
@@ -99,14 +119,14 @@ export default function ContactPage() {
       </section>
 
       {/* Main content */}
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 dark:bg-slate-950">
+      <section className="bg-background px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1.1fr]">
 
           {/* Left — why contact */}
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-slate-950 dark:text-white">Why agencies choose LinkPilot</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              <h2 className="text-xl font-bold text-foreground">Why agencies choose LinkPilot</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Pricing is custom and scales with your team. Fill in the form and we&apos;ll propose
                 a setup that fits your workflow.
               </p>
@@ -114,37 +134,40 @@ export default function ContactPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               {whyContact.map((item) => (
-                <Card key={item.title} className="border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                <Card key={item.title} className="border-border bg-card shadow-sm">
                   <CardContent className="p-5">
-                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/15">
                       <item.icon className="h-4 w-4 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-slate-950 dark:text-white">{item.title}</h3>
-                    <p className="mt-1.5 text-xs leading-5 text-slate-500 dark:text-slate-400">{item.description}</p>
+                    <h3 className="font-semibold text-foreground">{item.title}</h3>
+                    <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{item.description}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <Card className="border-primary/10 bg-gradient-to-br from-primary/5 via-white to-blue-50 shadow-sm dark:via-slate-900 dark:to-blue-500/10">
+            <Card className="border-primary/10 bg-gradient-to-br from-primary/5 via-card to-blue-500/10 shadow-sm">
               <CardContent className="p-5">
-                <div className="flex items-center gap-3 text-slate-950 dark:text-white">
-                  <Mail className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-3 text-foreground">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
+                    <Mail className="h-4 w-4" />
+                  </span>
                   <p className="font-semibold text-sm">Prefer to email directly?</p>
                 </div>
                 <p className="mt-2 text-sm font-medium text-primary">
                   {process.env.CONTACT_EMAIL ?? "hello@linkpilot.app"}
                 </p>
-                <p className="mt-1 text-xs text-slate-400">We usually respond within one business day.</p>
+                <p className="mt-1 text-xs text-muted-foreground">We usually respond within one business day.</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Right — form */}
-          <Card className="border-slate-200 bg-white shadow-xl shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+          <Card className="border-border bg-card shadow-xl shadow-black/5">
             <CardContent className="p-6 sm:p-8">
-              <h2 className="mb-1 text-lg font-bold text-slate-950 dark:text-white">Tell us about your team</h2>
-              <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">BOARDING FORM</p>
+              <h2 className="mb-1 text-lg font-bold text-foreground">Tell us about your team</h2>
+              <p className="mb-6 text-sm text-muted-foreground">
                 We&apos;ll get back to you with a custom plan and pricing.
               </p>
               <ContactForm />

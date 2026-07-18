@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -38,7 +38,7 @@ const plans = [
   },
   {
     name: "Starter",
-    badge: "Most popular",
+    badge: "MOST BOOKED",
     description: "Track every link you share — by channel, by campaign, by day. Stop guessing which channel drove the click.",
     monthly: { price: "$5", note: "per month" },
     yearly: { price: "$4", note: "per month, billed $48/yr" },
@@ -208,8 +208,8 @@ function CellValue({ val }: { val: boolean | string }) {
   if (val === true)
     return <Check className="mx-auto h-4 w-4 text-primary" />;
   if (val === false)
-    return <Minus className="mx-auto h-4 w-4 text-slate-300 dark:text-slate-700" />;
-  return <span className="text-slate-600 dark:text-slate-400">{val}</span>;
+    return <Minus className="mx-auto h-4 w-4 text-muted-foreground/40" />;
+  return <span className="text-muted-foreground">{val}</span>;
 }
 
 export function PricingPlans() {
@@ -218,14 +218,15 @@ export function PricingPlans() {
   return (
     <div className="space-y-20">
       {/* Toggle */}
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-3">
+        <p className="font-mono text-[10px] tracking-widest text-muted-foreground">BILLING CYCLE</p>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCycle("monthly")}
             className={`rounded-lg px-5 py-2.5 text-sm font-medium transition ${
               cycle === "monthly"
-                ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+                ? "bg-foreground text-background"
+                : "bg-muted text-muted-foreground hover:bg-accent"
             }`}
           >
             Monthly
@@ -234,12 +235,12 @@ export function PricingPlans() {
             onClick={() => setCycle("yearly")}
             className={`relative rounded-lg px-5 py-2.5 text-sm font-medium transition ${
               cycle === "yearly"
-                ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+                ? "bg-foreground text-background"
+                : "bg-muted text-muted-foreground hover:bg-accent"
             }`}
           >
             Yearly
-            <span className="absolute -top-2.5 -right-3 rounded-full bg-primary/100 px-1.5 py-0.5 text-[10px] font-bold text-white leading-none">
+            <span className="absolute -top-2.5 -right-3 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground leading-none">
               −20%
             </span>
           </button>
@@ -252,7 +253,7 @@ export function PricingPlans() {
       </div>
 
       {/* Guest shortener note */}
-      <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-center text-sm text-muted-foreground">
         Don&apos;t want to sign up yet?{" "}
         <Link href="/" className="font-medium text-primary hover:underline">
           Use the free homepage shortener
@@ -265,52 +266,66 @@ export function PricingPlans() {
         {plans.map((plan) => {
           const pricing = plan[cycle];
           const isCustom = pricing.price === "Custom";
+          const fareCode = plan.name.slice(0, 2).toUpperCase();
 
           return (
             <Card
               key={plan.name}
               className={
                 plan.featured
-                  ? "relative border-primary/30 bg-white shadow-xl shadow-primary/10/60 dark:bg-slate-900 dark:shadow-none"
+                  ? "relative border-primary/30 bg-card shadow-xl shadow-primary/10"
                   : plan.agency
-                    ? "border-slate-300 bg-slate-950 text-white shadow-sm dark:border-slate-700"
-                    : "border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
+                    ? "border-slate-700 bg-slate-950 text-white shadow-sm"
+                    : "border-border bg-card shadow-sm"
               }
             >
               <CardHeader className="pb-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <h2
-                    className={`text-xl font-bold ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}
+                    className={`text-xl font-bold ${plan.agency ? "text-white" : "text-foreground"}`}
                   >
                     {plan.name}
                   </h2>
-                  <Badge
-                    className={
-                      plan.featured
-                        ? "bg-primary/10 text-primary"
-                        : plan.agency
-                          ? "bg-slate-800 text-slate-300"
-                          : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                    }
-                  >
-                    {plan.badge}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    {plan.featured ? (
+                      <Badge className="bg-primary font-mono text-[10px] tracking-widest text-primary-foreground">
+                        {plan.badge}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        className={
+                          plan.agency
+                            ? "bg-slate-800 text-slate-300"
+                            : "bg-muted text-foreground"
+                        }
+                      >
+                        {plan.badge}
+                      </Badge>
+                    )}
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-[9px] font-bold ${
+                        plan.agency ? "border-slate-700 text-slate-300" : "border-border text-muted-foreground"
+                      }`}
+                    >
+                      {fareCode}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex items-baseline gap-1">
                   <span
-                    className={`text-4xl font-black tracking-tight ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}
+                    className={`text-4xl font-black tracking-tight ${plan.agency ? "text-white" : "text-foreground"}`}
                   >
                     {pricing.price}
                   </span>
                   {!isCustom && (
-                    <span className={`text-sm ${plan.agency ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>
+                    <span className={`text-sm ${plan.agency ? "text-slate-400" : "text-muted-foreground"}`}>
                       /mo
                     </span>
                   )}
                 </div>
 
-                <p className={`text-xs ${plan.agency ? "text-slate-400" : "text-slate-400"}`}>
+                <p className={`text-xs ${plan.agency ? "text-slate-400" : "text-muted-foreground"}`}>
                   {pricing.note}
                   {cycle === "yearly" && !isCustom && plan.name !== "Free" && (
                     <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
@@ -325,17 +340,17 @@ export function PricingPlans() {
                 )}
 
                 <p
-                  className={`mt-3 text-sm leading-6 ${plan.agency ? "text-slate-300" : "text-slate-500 dark:text-slate-400"}`}
+                  className={`mt-3 text-sm leading-6 ${plan.agency ? "text-slate-300" : "text-muted-foreground"}`}
                 >
                   {plan.description}
                 </p>
 
                 {plan.name === "Pro" && (
-                  <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-center dark:border-slate-800 dark:bg-slate-950/60">
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Your links look like</p>
+                  <div className="mt-4 rounded-xl border border-border bg-muted/40 p-3 text-center">
+                    <p className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">YOUR LINKS LOOK LIKE</p>
                     <div className="flex flex-col items-center gap-1.5">
-                      <code className="text-xs font-mono text-slate-400 line-through">lnkplt.co/xk92m</code>
-                      <span className="text-[10px] text-slate-300 dark:text-slate-600">↓</span>
+                      <code className="text-xs font-mono text-muted-foreground line-through">lnkplt.co/xk92m</code>
+                      <span className="text-[10px] text-muted-foreground/60">↓</span>
                       <code className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-mono font-semibold text-primary">go.yourclient.com/promo</code>
                     </div>
                   </div>
@@ -343,6 +358,11 @@ export function PricingPlans() {
               </CardHeader>
 
               <CardContent className="pt-0">
+                <div
+                  className={`mb-5 border-t border-dashed ${plan.agency ? "border-slate-700" : "border-border"}`}
+                  aria-hidden="true"
+                />
+
                 <Button
                   asChild
                   className={`w-full ${
@@ -363,18 +383,16 @@ export function PricingPlans() {
                 <div className="mt-6 space-y-2.5">
                   {plan.features.map((f) => (
                     <div key={f} className="flex items-start gap-2 text-sm">
-                      <Check
-                        className={`mt-0.5 h-4 w-4 shrink-0 ${plan.agency ? "text-primary" : "text-primary"}`}
-                      />
-                      <span className={plan.agency ? "text-slate-300" : "text-slate-700 dark:text-slate-300"}>
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span className={plan.agency ? "text-slate-300" : "text-foreground/80"}>
                         {f}
                       </span>
                     </div>
                   ))}
                   {plan.unavailable.map((f) => (
                     <div key={f} className="flex items-start gap-2 text-sm">
-                      <Minus className="mt-0.5 h-4 w-4 shrink-0 text-slate-300 dark:text-slate-700" />
-                      <span className="text-slate-400 dark:text-slate-600">{f}</span>
+                      <Minus className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" />
+                      <span className="text-muted-foreground/70">{f}</span>
                     </div>
                   ))}
                 </div>
@@ -386,26 +404,26 @@ export function PricingPlans() {
 
       {/* Comparison table */}
       <div>
-        <h2 className="mb-8 text-center text-2xl font-bold text-slate-950 dark:text-white">
+        <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
           Full feature comparison
         </h2>
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[780px] text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60">
+              <thead className="border-b border-border bg-muted/40">
                 <tr>
-                  <th className="px-6 py-4 font-semibold text-slate-950 dark:text-white">Feature</th>
+                  <th className="px-6 py-4 font-mono text-xs tracking-widest text-muted-foreground">FEATURE</th>
                   {["Free", "Starter", "Pro", "Agency"].map((h) => (
-                    <th key={h} className="px-6 py-4 text-center font-semibold text-slate-950 dark:text-white">
-                      {h}
+                    <th key={h} className="px-6 py-4 text-center font-mono text-xs tracking-widest text-muted-foreground">
+                      {h.toUpperCase()}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border">
                 {comparison.map((row) => (
-                  <tr key={row.feature} className="hover:bg-slate-50/60 dark:hover:bg-slate-950/40">
-                    <td className="px-6 py-3.5 font-medium text-slate-700 dark:text-slate-300">{row.feature}</td>
+                  <tr key={row.feature} className="hover:bg-muted/30">
+                    <td className="px-6 py-3.5 font-medium text-foreground/80">{row.feature}</td>
                     <td className="px-6 py-3.5 text-center"><CellValue val={row.free} /></td>
                     <td className="px-6 py-3.5 text-center"><CellValue val={row.starter} /></td>
                     <td className="px-6 py-3.5 text-center"><CellValue val={row.pro} /></td>

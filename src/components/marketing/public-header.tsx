@@ -1,8 +1,15 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, LayoutDashboard, Sun, Moon, MonitorSmartphone } from "lucide-react";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Sun,
+  Moon,
+  MonitorSmartphone,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, motion } from "motion/react";
@@ -62,16 +69,20 @@ export function PublicHeader() {
   }
 
   function cycleTheme() {
-    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
+    const next =
+      THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
     setTheme(next);
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/60 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-border/80 bg-background/60 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Logo />
 
-        <nav aria-label="Main navigation" className="hidden items-center gap-6 text-sm font-medium md:flex">
+        <nav
+          aria-label="Main navigation"
+          className="hidden items-center gap-6 text-sm font-medium md:flex"
+        >
           {navItems.map((item) => {
             const active = isActivePath(item.href);
 
@@ -80,10 +91,10 @@ export function PublicHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "transition hover:text-slate-950 dark:hover:text-white",
+                  "transition hover:text-foreground",
                   active
                     ? "border-b-2 border-b-primary bg-primary/10 px-3 py-2 text-primary"
-                    : "px-3 py-2 text-slate-600 dark:text-slate-400",
+                    : "px-3 py-2 text-muted-foreground",
                 )}
               >
                 {item.label}
@@ -100,7 +111,7 @@ export function PublicHeader() {
             onClick={cycleTheme}
             aria-label={`Theme: ${theme} (click to change)`}
             title={`Theme: ${theme} (click to change)`}
-            className="relative overflow-hidden text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+            className="relative overflow-hidden text-muted-foreground hover:text-foreground"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -144,7 +155,7 @@ export function PublicHeader() {
             onClick={cycleTheme}
             aria-label={`Theme: ${theme} (click to change)`}
             title={`Theme: ${theme} (click to change)`}
-            className="relative overflow-hidden text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+            className="relative overflow-hidden text-muted-foreground hover:text-foreground"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -173,7 +184,7 @@ export function PublicHeader() {
       </div>
 
       {isOpen ? (
-        <div className="border-t border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-950">
+        <div className="border-t border-border bg-background md:hidden">
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
             <nav aria-label="Mobile navigation" className="grid gap-2">
               {navItems.map((item) => {
@@ -188,7 +199,7 @@ export function PublicHeader() {
                       "rounded-xl px-3 py-2 text-sm font-medium transition",
                       active
                         ? "bg-primary/10 text-primary"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                   >
                     {item.label}
@@ -197,7 +208,7 @@ export function PublicHeader() {
               })}
             </nav>
 
-            <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+            <div className="mt-4 grid gap-2 border-t border-border pt-4">
               {isLoggedIn ? (
                 <Button asChild className="gap-2">
                   <Link href={APP_URL} onClick={() => setIsOpen(false)}>
@@ -206,7 +217,10 @@ export function PublicHeader() {
                 </Button>
               ) : (
                 <>
-                  <DemoDashboardButton className="w-full" label="Demo dashboard" />
+                  <DemoDashboardButton
+                    className="w-full"
+                    label="Demo dashboard"
+                  />
                   <Button asChild variant="outline">
                     <Link href="/login" onClick={() => setIsOpen(false)}>
                       Login

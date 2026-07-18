@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
@@ -20,6 +20,9 @@ export default function RegisterPage() {
   return (
     <div className="rounded-2xl border border-border bg-card px-8 py-10 shadow-sm">
       <div className="mb-8 text-center">
+        <p className="mb-3 font-mono text-[10px] tracking-widest text-primary">
+          NEW PASSENGER · BOOKING
+        </p>
         <h1 className="text-2xl font-bold text-foreground">
           Start your free account
         </h1>
@@ -34,7 +37,9 @@ export default function RegisterPage() {
               key={perk}
               className="flex items-center gap-1 text-xs text-muted-foreground"
             >
-              <CheckCircle2 className="h-3 w-3 text-primary" />
+              <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <CheckCircle2 className="h-2.5 w-2.5" />
+              </span>
               {perk}
             </span>
           ))}

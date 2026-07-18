@@ -1,0 +1,47 @@
+.boardingBtn {
+  position: relative;
+}
+
+.boardingBtn::before,
+.boardingBtn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: var(--background);
+  border-radius: 9999px;
+  transform: translateY(-50%);
+}
+
+.boardingBtn::before {
+  left: -5px;
+}
+
+.boardingBtn::after {
+  right: -5px;
+}
+
+.ticker {
+  display: inline-flex;
+  animation: scroll 26s linear infinite;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker {
+    animation: none;
+  }
+
+  .flightDot {
+    display: none;
+  }
+}

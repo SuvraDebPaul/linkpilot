@@ -30,7 +30,7 @@ export function GuestLinkResult({ result }: GuestLinkResultProps) {
   }).format(new Date(result.expiresAt));
 
   return (
-    <Card className="mt-6 border-emerald-200 bg-emerald-50/70 shadow-sm">
+    <Card className="h-full border-emerald-200 bg-emerald-50/70 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/20">
       <CardContent className="p-5">
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <StatusBadge label="Temporary link ready" variant="active" />

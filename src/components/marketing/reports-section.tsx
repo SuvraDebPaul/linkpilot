@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import {
   BarChart3,
   CheckCircle2,
@@ -20,72 +20,100 @@ const reportFeatures = [
   { icon: Share2, label: "Shareable report link — no login to view" },
 ];
 
+const barcodeWidths = [2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2];
+
 export function ReportsSection() {
   return (
-    <section className="border-b border-slate-200 bg-slate-50 px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/40">
+    <section className="border-b border-border bg-background/10 px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
-          {/* Left: mock report card */}
+          {/* Left: itinerary ticket */}
           <div className="order-2 lg:order-1">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-              {/* Report header */}
-              <div className="border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white px-6 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg shadow-black/5">
+              {/* Ticket header */}
+              <div className="bg-linear-to-br from-muted/50 to-card px-6 py-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                      Campaign report
+                    <p className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      CAMPAIGN ITINERARY
                     </p>
-                    <p className="mt-1 text-lg font-bold text-slate-950 dark:text-white">
+                    <p className="mt-1 text-lg font-bold text-foreground">
                       Summer Offer 2025
                     </p>
-                    <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                    <p className="mt-0.5 text-sm text-muted-foreground">
                       Jun 1 – Jun 30 · 6 links
                     </p>
                   </div>
                   <div className="rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-center">
-                    <p className="text-2xl font-black text-primary">2,847</p>
-                    <p className="text-xs text-primary">total clicks</p>
+                    <p className="text-2xl font-black tabular-nums text-primary">
+                      2,847
+                    </p>
+                    <p className="font-mono text-[10px] tracking-wide text-primary">
+                      TOTAL CLICKS
+                    </p>
                   </div>
                 </div>
               </div>
 
+              {/* Perforated tear line */}
+              <div className="flex items-center gap-2 px-6">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border bg-muted/60" />
+                <span className="h-px flex-1 border-t border-dashed border-border" />
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border bg-muted/60" />
+              </div>
+
               {/* Stat row */}
-              <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 dark:divide-slate-800 dark:border-slate-800">
+              <div className="grid grid-cols-3 divide-x divide-border">
                 {[
                   { label: "Unique visitors", value: "1,923" },
                   { label: "QR scans", value: "641" },
                   { label: "Top country", value: "United States" },
                 ].map((stat) => (
                   <div key={stat.label} className="px-5 py-4 text-center">
-                    <p className="text-base font-bold text-slate-950 dark:text-white">{stat.value}</p>
-                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{stat.label}</p>
+                    <p className="text-base font-bold tabular-nums text-foreground">
+                      {stat.value}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[10px] tracking-wide text-muted-foreground">
+                      {stat.label.toUpperCase()}
+                    </p>
                   </div>
                 ))}
               </div>
 
-              {/* Link performance */}
+              {/* Perforated tear line */}
+              <div className="flex items-center gap-2 px-6">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border bg-muted/60" />
+                <span className="h-px flex-1 border-t border-dashed border-border" />
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border bg-muted/60" />
+              </div>
+
+              {/* Link performance — flight legs */}
               <div className="px-6 py-5">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                  Link performance
+                <p className="mb-3 font-mono text-[10px] tracking-widest text-muted-foreground">
+                  LINK PERFORMANCE
                 </p>
                 <div className="space-y-3">
                   {[
-                    { name: "Summer sale landing page", clicks: 1240, pct: 100 },
+                    {
+                      name: "Summer sale landing page",
+                      clicks: 1240,
+                      pct: 100,
+                    },
                     { name: "Product catalogue PDF", clicks: 832, pct: 67 },
                     { name: "Event registration form", clicks: 421, pct: 34 },
                   ].map((link) => (
                     <div key={link.name}>
                       <div className="mb-1 flex items-center justify-between text-xs">
-                        <span className="font-medium text-slate-700 dark:text-slate-300">
+                        <span className="font-medium text-foreground/80">
                           {link.name}
                         </span>
-                        <span className="font-semibold text-slate-950 dark:text-white">
+                        <span className="font-semibold tabular-nums text-foreground">
                           {link.clicks.toLocaleString()}
                         </span>
                       </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                         <div
-                          className="h-full rounded-full bg-primary/100"
+                          className="h-full rounded-full bg-primary"
                           style={{ width: `${link.pct}%` }}
                         />
                       </div>
@@ -94,10 +122,26 @@ export function ReportsSection() {
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 bg-slate-50 px-6 py-3 dark:border-slate-800 dark:bg-slate-950/60">
-                <p className="text-xs text-slate-400">
+              {/* Ticket stub footer */}
+              <div className="flex items-center justify-between border-t border-border bg-muted/30 px-6 py-3">
+                <p className="text-xs text-muted-foreground">
                   Shared via public link · No login required
                 </p>
+                <div
+                  className="flex h-4 items-end gap-[1.5px]"
+                  aria-hidden="true"
+                >
+                  {barcodeWidths.map((w, i) => (
+                    <span
+                      key={i}
+                      className="bg-muted-foreground/40"
+                      style={{
+                        width: `${w}px`,
+                        height: i % 3 === 0 ? "100%" : "70%",
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -107,18 +151,21 @@ export function ReportsSection() {
             <p className="text-sm font-semibold uppercase tracking-widest text-primary">
               Client reporting
             </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               Share campaign reports clients actually understand
             </h2>
-            <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
-              Generate clean, shareable reports for every campaign. Send a link —
-              your client sees the performance without needing a login or a PDF
-              attachment.
+            <p className="mt-4 text-base leading-7 text-muted-foreground">
+              Generate clean, shareable reports for every campaign. Send a link
+              — your client sees the performance without needing a login or a
+              PDF attachment.
             </p>
 
             <ul className="mt-8 space-y-3">
               {reportFeatures.map((f) => (
-                <li key={f.label} className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+                <li
+                  key={f.label}
+                  className="flex items-center gap-3 text-sm text-foreground/80"
+                >
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
                   {f.label}
                 </li>
@@ -130,7 +177,9 @@ export function ReportsSection() {
                 <Link href="/register">Start your first campaign</Link>
               </Button>
             </div>
-            <p className="mt-3 text-xs text-slate-400">Shareable reports on Starter and Pro plans</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Shareable reports on Starter and Pro plans
+            </p>
           </div>
         </div>
       </div>

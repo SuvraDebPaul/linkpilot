@@ -1,0 +1,19 @@
+.marquee {
+  display: inline-flex;
+  animation: scroll 24s linear infinite reverse;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    animation: none;
+  }
+}

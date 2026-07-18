@@ -171,7 +171,12 @@ export const authOptions: NextAuthOptions = {
       // mutating `user` here is what makes it reach jwt()'s `user` param.
       if (account?.provider === "google") {
         const loginEvent = await prisma.loginEvent.create({
-          data: { userId: user.id, type: "google", ip: "Unknown", browser: "Unknown" },
+          data: {
+            userId: user.id,
+            type: "google",
+            ip: "Unknown",
+            browser: "Unknown",
+          },
         });
         (user as { loginEventId?: string }).loginEventId = loginEvent.id;
       }
@@ -239,7 +244,12 @@ export const authOptions: NextAuthOptions = {
         } else if (update.endImpersonation && token.impersonatedBy) {
           const admin = await prisma.user.findUnique({
             where: { id: token.impersonatedBy },
-            select: { name: true, email: true, image: true, sessionVersion: true },
+            select: {
+              name: true,
+              email: true,
+              image: true,
+              sessionVersion: true,
+            },
           });
           token.id = token.impersonatedBy;
           token.name = admin?.name;
@@ -267,10 +277,12 @@ export const authOptions: NextAuthOptions = {
       // Per-device revocation: only this one session's own LoginEvent, unlike
       // sessionVersion below which invalidates every session for the user at once.
       const loginEventRevoked = token.loginEventId
-        ? (await prisma.loginEvent.findUnique({
-            where: { id: token.loginEventId },
-            select: { revoked: true },
-          }))?.revoked
+        ? (
+            await prisma.loginEvent.findUnique({
+              where: { id: token.loginEventId },
+              select: { revoked: true },
+            })
+          )?.revoked
         : false;
 
       // Session was revoked (sessionVersion bumped), the user no longer exists, this
@@ -297,7 +309,9 @@ export const authOptions: NextAuthOptions = {
         // next logged in. currentUser is already re-fetched every request for
         // the sessionVersion/suspended checks above, so this is free staleness
         // protection the same way those already get.
-        session.user.isSuperAdmin = token.impersonatedBy ? false : (currentUser.isSuperAdmin ?? false);
+        session.user.isSuperAdmin = token.impersonatedBy
+          ? false
+          : (currentUser.isSuperAdmin ?? false);
         session.user.impersonatedBy = token.impersonatedBy;
         session.user.impersonationStartedAt = token.impersonationStartedAt;
       }

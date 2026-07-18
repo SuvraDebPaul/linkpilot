@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { ArrowRight, Check, Phone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -72,87 +72,127 @@ const plans = [
 
 export function HomePricingSection() {
   return (
-    <section className="border-b border-slate-200 bg-white px-4 py-20 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
+    <section className="border-b border-border bg-background/10 px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Pricing
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Start free. Pay for what you actually use.
           </h2>
-          <p className="mt-4 text-base text-slate-500 dark:text-slate-400">
-            Free account includes 50 links, 2 campaigns, and basic analytics — no card needed. Yearly plans save 20%.
+          <p className="mt-4 text-base text-muted-foreground">
+            Free account includes 50 links, 2 campaigns, and basic analytics —
+            no card needed. Yearly plans save 20%.
           </p>
         </div>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`rounded-2xl border p-6 ${
-                plan.featured
-                  ? "border-primary/30 bg-white shadow-xl shadow-primary/10/60 dark:bg-slate-900 dark:shadow-none"
-                  : plan.agency
-                    ? "border-slate-300 bg-slate-950 dark:border-slate-700"
-                    : "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60"
-              }`}
-            >
-              {plan.featured && (
-                <div className="mb-3 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white">
-                  Most popular
-                </div>
-              )}
-              <p className={`text-lg font-bold ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}>
-                {plan.name}
-              </p>
-              <p className={`mt-0.5 text-xs ${plan.agency ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>
-                {plan.tagline}
-              </p>
+          {plans.map((plan) => {
+            const fareCode = plan.name.slice(0, 2).toUpperCase();
 
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className={`text-3xl font-black ${plan.agency ? "text-white" : "text-slate-950 dark:text-white"}`}>
-                  {plan.monthly}
-                </span>
-                {plan.period && (
-                  <span className={`text-sm ${plan.agency ? "text-slate-400" : "text-slate-400"}`}>
-                    {plan.period}
-                  </span>
-                )}
-              </div>
-              {plan.yearly !== plan.monthly && plan.monthly !== "Custom" && (
-                <p className="mt-0.5 text-xs text-primary font-medium">
-                  {plan.yearly}/mo billed yearly · save 20%
-                </p>
-              )}
-
-              <ul className="mt-5 space-y-2">
-                {plan.items.map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm">
-                    <Check className={`h-3.5 w-3.5 shrink-0 ${plan.agency ? "text-primary" : "text-primary"}`} />
-                    <span className={plan.agency ? "text-slate-300" : "text-slate-600 dark:text-slate-400"}>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                asChild
-                className={`mt-6 w-full ${plan.agency ? "border-slate-700 bg-white text-slate-950 hover:bg-slate-100" : ""}`}
-                variant={plan.featured ? "default" : "outline"}
-                size="sm"
+            return (
+              <div
+                key={plan.name}
+                className={`rounded-2xl border p-6 transition duration-300 hover:-translate-y-1 ${
+                  plan.featured
+                    ? "border-primary/30 bg-card shadow-xl shadow-primary/10 hover:shadow-2xl hover:shadow-primary/15"
+                    : plan.agency
+                      ? "border-slate-700 bg-slate-950 hover:shadow-lg hover:shadow-black/20"
+                      : "border-border bg-muted/30 hover:border-primary/20 hover:bg-card hover:shadow-lg"
+                }`}
               >
-                <Link href={plan.href}>
-                  {plan.agency && <Phone className="mr-1.5 h-3.5 w-3.5" />}
-                  {plan.cta}
-                </Link>
-              </Button>
-            </div>
-          ))}
+                <div className="flex items-start justify-between gap-2">
+                  {plan.featured ? (
+                    <div className="inline-flex items-center rounded-full bg-primary px-2.5 py-1 font-mono text-[10px] font-semibold tracking-widest text-primary-foreground">
+                      MOST BOOKED
+                    </div>
+                  ) : (
+                    <span />
+                  )}
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border font-mono text-[10px] font-bold tracking-wide ${
+                      plan.agency
+                        ? "border-slate-700 text-slate-300"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {fareCode}
+                  </span>
+                </div>
+
+                <p
+                  className={`mt-3 text-lg font-bold ${plan.agency ? "text-white" : "text-foreground"}`}
+                >
+                  {plan.name}
+                </p>
+                <p
+                  className={`mt-0.5 text-xs ${plan.agency ? "text-slate-400" : "text-muted-foreground"}`}
+                >
+                  {plan.tagline}
+                </p>
+
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span
+                    className={`text-3xl font-black ${plan.agency ? "text-white" : "text-foreground"}`}
+                  >
+                    {plan.monthly}
+                  </span>
+                  {plan.period && (
+                    <span
+                      className={`text-sm ${plan.agency ? "text-slate-400" : "text-muted-foreground"}`}
+                    >
+                      {plan.period}
+                    </span>
+                  )}
+                </div>
+                {plan.yearly !== plan.monthly && plan.monthly !== "Custom" && (
+                  <p className="mt-0.5 text-xs text-primary font-medium">
+                    {plan.yearly}/mo billed yearly · save 20%
+                  </p>
+                )}
+
+                <ul className="mt-5 space-y-2">
+                  {plan.items.map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-sm">
+                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span
+                        className={
+                          plan.agency
+                            ? "text-slate-300"
+                            : "text-muted-foreground"
+                        }
+                      >
+                        {item}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div
+                  className={`my-5 border-t border-dashed ${plan.agency ? "border-slate-700" : "border-border"}`}
+                  aria-hidden="true"
+                />
+
+                <Button
+                  asChild
+                  className={`w-full ${plan.agency ? "border-slate-700 bg-white text-slate-950 hover:bg-slate-100" : ""}`}
+                  variant={plan.featured ? "default" : "outline"}
+                  size="sm"
+                >
+                  <Link href={plan.href}>
+                    {plan.agency && <Phone className="mr-1.5 h-3.5 w-3.5" />}
+                    {plan.cta}
+                  </Link>
+                </Button>
+              </div>
+            );
+          })}
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           Want to try without signing up?{" "}
-          <Link href="/" className="underline hover:text-slate-600 dark:hover:text-slate-300">
+          <Link href="/" className="underline hover:text-foreground">
             Use the free homepage shortener
           </Link>{" "}
           — no account, links expire in 7 days.
@@ -161,7 +201,7 @@ export function HomePricingSection() {
         <div className="mt-4 text-center">
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
             See full pricing & feature comparison
             <ArrowRight className="h-3.5 w-3.5" />
