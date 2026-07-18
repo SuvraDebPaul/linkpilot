@@ -2,6 +2,7 @@
 
 import { FaqSection } from "@/components/marketing/faq-section";
 import { FinalCta } from "@/components/marketing/final-cta";
+import { GuestShortenerSection } from "@/components/marketing/guest-shortener-section";
 import { HomePricingSection } from "@/components/marketing/home-pricing-section";
 import { PublicHero } from "@/components/marketing/public-hero";
 import { QrCampaignSection } from "@/components/marketing/qr-campaign-section";
@@ -78,9 +79,11 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* 1. Hero — value proposition + shortener form */}
+      {/* 1. Hero — flight-control value proposition */}
       <PublicHero />
-      {/* 2. Trust bar — quick-scan reassurance signals */}
+      {/* 2. Guest shortener — the actual free, no-signup tool */}
+      <GuestShortenerSection />
+      {/* 3. Trust bar — quick-scan reassurance signals */}
       <TrustBar />
       {/* 3. Who it's for — 3 buyer types */}
       <SeoContentSection />

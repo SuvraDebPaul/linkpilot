@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, LayoutDashboard, Sun, Moon, MonitorSmartphone } from "lucide-react";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Sun,
+  Moon,
+  MonitorSmartphone,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, motion } from "motion/react";
@@ -62,16 +69,20 @@ export function PublicHeader() {
   }
 
   function cycleTheme() {
-    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
+    const next =
+      THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
     setTheme(next);
   }
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/80 bg-background/60 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Logo />
 
-        <nav aria-label="Main navigation" className="hidden items-center gap-6 text-sm font-medium md:flex">
+        <nav
+          aria-label="Main navigation"
+          className="hidden items-center gap-6 text-sm font-medium md:flex"
+        >
           {navItems.map((item) => {
             const active = isActivePath(item.href);
 
@@ -206,7 +217,10 @@ export function PublicHeader() {
                 </Button>
               ) : (
                 <>
-                  <DemoDashboardButton className="w-full" label="Demo dashboard" />
+                  <DemoDashboardButton
+                    className="w-full"
+                    label="Demo dashboard"
+                  />
                   <Button asChild variant="outline">
                     <Link href="/login" onClick={() => setIsOpen(false)}>
                       Login

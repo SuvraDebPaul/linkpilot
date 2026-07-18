@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useState } from "react";
 import { AlertCircle, Link2, Lock, Timer } from "lucide-react";
@@ -26,21 +26,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { guestLinkExpiryOptions } from "@/features/guest-links/constants/guest-link.constants";
-import { GuestLinkResult } from "@/features/guest-links/components/guest-link-result";
 import type {
   CreateGuestLinkResponse,
   GuestLinkExpiryPreset,
 } from "@/features/guest-links/types/guest-link.types";
 import { toast } from "@/lib/toast";
 
-export function GuestLinkForm() {
+type GuestLinkFormProps = {
+  onResult?: (result: NonNullable<CreateGuestLinkResponse["data"]>) => void;
+};
+
+export function GuestLinkForm({ onResult }: GuestLinkFormProps) {
   const [originalUrl, setOriginalUrl] = useState("");
   const [expiryPreset, setExpiryPreset] = useState<GuestLinkExpiryPreset>("7d");
   const [enablePassword, setEnablePassword] = useState(false);
   const [password, setPassword] = useState("");
-  const [result, setResult] = useState<CreateGuestLinkResponse["data"] | null>(
-    null,
-  );
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<
     NonNullable<CreateGuestLinkResponse["fieldErrors"]>
@@ -53,7 +53,6 @@ export function GuestLinkForm() {
     setIsLoading(true);
     setError("");
     setFieldErrors({});
-    setResult(null);
 
     try {
       const response = await fetch("/api/guest-links", {
@@ -80,7 +79,7 @@ export function GuestLinkForm() {
         return;
       }
 
-      setResult(payload.data);
+      onResult?.(payload.data);
       toast.success("Temporary short link created successfully.");
       setOriginalUrl("");
       setPassword("");
@@ -97,8 +96,8 @@ export function GuestLinkForm() {
   }
 
   return (
-    <Card className="overflow-hidden border-border/80 bg-card/95 shadow-2xl shadow-border/50 backdrop-blur">
-      <CardHeader className="border-b border-border/50 bg-linear-to-br from-card to-muted/40">
+    <Card className="h-full overflow-hidden border-border/80 bg-linear-to-br from-card to-background/40 shadow-2xl shadow-border/50 backdrop-blur">
+      <CardHeader className="border-b border-border/50 bg-linear-to-br from-card/40 to-background/40">
         <div className="mb-2">
           <Badge variant="secondary" className="bg-primary/10 text-primary">
             No login required
@@ -236,8 +235,6 @@ export function GuestLinkForm() {
             </p>
           </div>
         </form>
-
-        {result ? <GuestLinkResult result={result} /> : null}
       </CardContent>
     </Card>
   );

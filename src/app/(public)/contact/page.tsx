@@ -69,8 +69,26 @@ export default function ContactPage() {
   return (
     <main>
       {/* Hero */}
-      <section className="border-b border-border bg-muted/30 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+      <section className="relative overflow-hidden border-b border-border bg-muted/30 px-4 py-20 sm:px-6 lg:px-8">
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07]"
+          viewBox="0 0 800 200"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M -20 40 C 200 0, 300 140, 500 60 S 750 20, 820 70" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
+          <path d="M -20 160 C 220 190, 320 60, 520 150 S 760 180, 820 130" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
+        </svg>
+
+        <div className="relative mx-auto max-w-7xl">
+          <div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-1.5 font-mono text-[10px] tracking-widest text-primary">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+            </span>
+            AGENCY DESK · CUSTOM SETUP
+          </div>
+
           <SectionHeading
             eyebrow="Agency plan"
             title="LinkPilot for agencies and teams."
@@ -84,13 +102,15 @@ export default function ContactPage() {
       {/* Agency plan includes strip */}
       <section className="border-b border-border bg-slate-950 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <p className="mb-6 text-center text-sm font-semibold uppercase tracking-widest text-primary">
-            Agency plan includes
+          <p className="mb-6 text-center font-mono text-[10px] tracking-widest text-primary">
+            AGENCY MANIFEST
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {agencyIncludes.map((item) => (
               <div key={item} className="flex items-center gap-2.5 text-sm text-slate-300">
-                <Check className="h-4 w-4 shrink-0 text-primary" />
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                  <Check className="h-3 w-3" />
+                </span>
                 {item}
               </div>
             ))}
@@ -116,7 +136,7 @@ export default function ContactPage() {
               {whyContact.map((item) => (
                 <Card key={item.title} className="border-border bg-card shadow-sm">
                   <CardContent className="p-5">
-                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/15">
                       <item.icon className="h-4 w-4 text-primary" />
                     </div>
                     <h3 className="font-semibold text-foreground">{item.title}</h3>
@@ -129,7 +149,9 @@ export default function ContactPage() {
             <Card className="border-primary/10 bg-gradient-to-br from-primary/5 via-card to-blue-500/10 shadow-sm">
               <CardContent className="p-5">
                 <div className="flex items-center gap-3 text-foreground">
-                  <Mail className="h-4 w-4 text-primary" />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
+                    <Mail className="h-4 w-4" />
+                  </span>
                   <p className="font-semibold text-sm">Prefer to email directly?</p>
                 </div>
                 <p className="mt-2 text-sm font-medium text-primary">
@@ -143,6 +165,7 @@ export default function ContactPage() {
           {/* Right — form */}
           <Card className="border-border bg-card shadow-xl shadow-black/5">
             <CardContent className="p-6 sm:p-8">
+              <p className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">BOARDING FORM</p>
               <h2 className="mb-1 text-lg font-bold text-foreground">Tell us about your team</h2>
               <p className="mb-6 text-sm text-muted-foreground">
                 We&apos;ll get back to you with a custom plan and pricing.

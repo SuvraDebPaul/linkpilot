@@ -7,7 +7,7 @@ import { AnnouncementBanner } from "@/components/shared/announcement-banner";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased">
+    <div className="min-h-screen text-foreground antialiased">
       <AnnouncementBanner />
       <PublicHeader />
       <RouteTransition>{children}</RouteTransition>

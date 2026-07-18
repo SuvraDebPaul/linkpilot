@@ -104,8 +104,26 @@ export default function FeaturesPage() {
   return (
     <main>
       {/* Hero */}
-      <section className="border-b border-border bg-muted/30 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+      <section className="relative overflow-hidden border-b border-border bg-muted/30 px-4 py-20 sm:px-6 lg:px-8">
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07]"
+          viewBox="0 0 800 200"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M -20 40 C 200 0, 300 140, 500 60 S 750 20, 820 70" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
+          <path d="M -20 160 C 220 190, 320 60, 520 150 S 760 180, 820 130" fill="none" stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 6" />
+        </svg>
+
+        <div className="relative mx-auto max-w-7xl">
+          <div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-1.5 font-mono text-[10px] tracking-widest text-primary">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+            </span>
+            6 FEATURES · 1 PLATFORM
+          </div>
+
           <SectionHeading
             eyebrow="Platform features"
             title="Every link you share should tell you something."
@@ -120,15 +138,18 @@ export default function FeaturesPage() {
       <section className="bg-background px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {corFeatures.map(({ icon: Icon, title, description }) => (
+            {corFeatures.map(({ icon: Icon, title, description }, i) => (
               <div
                 key={title}
-                className="group rounded-2xl border border-border bg-muted/30 p-7 transition duration-300 hover:-translate-y-1 hover:border-primary/20 hover:bg-card hover:shadow-lg"
+                className="group relative rounded-2xl border border-border bg-muted/30 p-7 transition duration-300 hover:-translate-y-1 hover:border-primary/20 hover:bg-card hover:shadow-lg"
               >
-                <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition group-hover:bg-primary group-hover:text-primary-foreground">
+                <span className="absolute right-5 top-5 font-mono text-[10px] text-muted-foreground/50">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/15 transition group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="h-5 w-5 text-primary group-hover:text-primary-foreground" />
                 </div>
-                <h3 className="text-base font-bold text-foreground">{title}</h3>
+                <h3 className="pr-5 text-base font-bold text-foreground">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
               </div>
             ))}
@@ -143,9 +164,12 @@ export default function FeaturesPage() {
             {/* Mock */}
             <div className="order-2 lg:order-1">
               <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                <div className="border-b border-border px-6 py-4">
-                  <p className="text-sm font-semibold text-foreground">QR code — Summer Flyer</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">lnkplt.co/summer-flyer</p>
+                <div className="flex items-center justify-between border-b border-border px-6 py-4">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">QR code — Summer Flyer</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">lnkplt.co/summer-flyer</p>
+                  </div>
+                  <span className="font-mono text-[10px] tracking-widest text-muted-foreground">SCAN LOG</span>
                 </div>
 
                 <div className="flex items-center gap-8 px-6 py-6">
@@ -184,9 +208,9 @@ export default function FeaturesPage() {
                       { label: "Top city", value: "London", sub: "38% of scans" },
                     ].map(({ label, value, sub }) => (
                       <div key={label} className="flex items-baseline justify-between gap-4">
-                        <span className="text-xs text-muted-foreground">{label}</span>
+                        <span className="font-mono text-[10px] tracking-wide text-muted-foreground">{label.toUpperCase()}</span>
                         <div className="text-right">
-                          <span className="text-sm font-bold text-foreground">{value}</span>
+                          <span className="text-sm font-bold tabular-nums text-foreground">{value}</span>
                           <span className="ml-1 text-xs text-muted-foreground">{sub}</span>
                         </div>
                       </div>
@@ -194,9 +218,9 @@ export default function FeaturesPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-border px-6 py-3">
+                <div className="border-t border-border bg-muted/30 px-6 py-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Device split</span>
+                    <span className="font-mono text-[10px] tracking-wide text-muted-foreground">DEVICE SPLIT</span>
                     <div className="flex gap-3">
                       <span className="flex items-center gap-1 text-muted-foreground">
                         <Smartphone className="h-3 w-3 text-primary"/> 74% mobile
@@ -284,16 +308,16 @@ export default function FeaturesPage() {
               <div className="border-b border-border bg-muted/40 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                      Campaign
+                    <p className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      CAMPAIGN
                     </p>
                     <p className="mt-0.5 text-base font-bold text-foreground">
                       Spring Product Launch
                     </p>
                   </div>
                   <div className="rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-center">
-                    <p className="text-xl font-black text-primary">2,290</p>
-                    <p className="text-xs text-primary">total clicks</p>
+                    <p className="text-xl font-black tabular-nums text-primary">2,290</p>
+                    <p className="font-mono text-[10px] tracking-wide text-primary">TOTAL CLICKS</p>
                   </div>
                 </div>
               </div>
@@ -305,14 +329,19 @@ export default function FeaturesPage() {
                   { channel: "Email newsletter", clicks: 391, pct: 46, color: "bg-violet-400" },
                   { channel: "Facebook Ad", clicks: 284, pct: 34, color: "bg-pink-400" },
                   { channel: "QR — Store flyer", clicks: 156, pct: 18, color: "bg-amber-400" },
-                ].map(({ channel, clicks, pct, color }) => (
-                  <div key={channel} className="py-3">
-                    <div className="mb-1.5 flex items-center justify-between text-xs">
-                      <span className="font-medium text-foreground/80">{channel}</span>
-                      <span className="font-semibold text-foreground">{clicks.toLocaleString()}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+                ].map(({ channel, clicks, pct, color }, i) => (
+                  <div key={channel} className="flex items-center gap-3 py-3">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border font-mono text-[9px] font-bold text-muted-foreground">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1.5 flex items-center justify-between text-xs">
+                        <span className="font-medium text-foreground/80">{channel}</span>
+                        <span className="font-semibold tabular-nums text-foreground">{clicks.toLocaleString()}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -339,8 +368,8 @@ export default function FeaturesPage() {
                 <div className="border-b border-border px-6 py-4">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-foreground">Analytics — last 30 days</p>
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                      Starter plan
+                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-primary">
+                      STARTER PLAN
                     </span>
                   </div>
                 </div>
@@ -352,16 +381,16 @@ export default function FeaturesPage() {
                     { label: "QR scans", value: "892", trend: "+61%" },
                   ].map(({ label, value, trend }) => (
                     <div key={label} className="px-4 py-4 text-center">
-                      <p className="text-lg font-bold text-foreground">{value}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+                      <p className="text-lg font-bold tabular-nums text-foreground">{value}</p>
+                      <p className="mt-0.5 font-mono text-[10px] tracking-wide text-muted-foreground">{label.toUpperCase()}</p>
                       <p className="mt-1 text-xs font-semibold text-primary">{trend}</p>
                     </div>
                   ))}
                 </div>
 
                 <div className="px-6 py-5">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    Device breakdown
+                  <p className="mb-3 font-mono text-[10px] tracking-widest text-muted-foreground">
+                    DEVICE BREAKDOWN
                   </p>
                   <div className="space-y-2.5">
                     {[
@@ -378,7 +407,7 @@ export default function FeaturesPage() {
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="w-8 text-xs font-semibold text-foreground">{pct}%</span>
+                        <span className="w-8 text-xs font-semibold tabular-nums text-foreground">{pct}%</span>
                       </div>
                     ))}
                   </div>
@@ -467,7 +496,7 @@ export default function FeaturesPage() {
             <div className="space-y-4">
               {/* Before */}
               <div className="rounded-2xl border border-border bg-muted/30 p-6">
-                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Free / Starter — generic link</p>
+                <p className="mb-4 font-mono text-[10px] tracking-widest text-muted-foreground">FREE / STARTER — GENERIC LINK</p>
                 <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-3.5 shadow-sm">
                   <div className="flex gap-1">
                     <span className="h-2.5 w-2.5 rounded-full bg-destructive/40" />
@@ -490,7 +519,9 @@ export default function FeaturesPage() {
 
               {/* After */}
               <div className="rounded-2xl border border-primary/20 bg-primary/10 p-6">
-                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary">Pro — your branded domain</p>
+                <p className="mb-4 flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-primary">
+                  <CheckCircle2 className="h-3 w-3" /> UPGRADE APPLIED — PRO
+                </p>
                 <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-card px-5 py-3.5 shadow-sm">
                   <div className="flex gap-1">
                     <span className="h-2.5 w-2.5 rounded-full bg-destructive/40" />
@@ -510,7 +541,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* How it works — flight route */}
       <section className="bg-background px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
@@ -520,13 +551,27 @@ export default function FeaturesPage() {
             align="center"
           />
 
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {/* Route line connecting the steps */}
+          <div className="mt-12 hidden items-center px-8 md:flex">
+            {steps.map((step, i) => (
+              <div key={step.n} className="flex flex-1 items-center last:flex-none">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-card font-mono text-xs font-bold text-primary">
+                  {step.n}
+                </div>
+                {i < steps.length - 1 && (
+                  <span className="mx-2 h-px flex-1 border-t border-dashed border-primary/30" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-5 md:mt-4 md:grid-cols-3">
             {steps.map(({ n, title, description }) => (
               <div
                 key={n}
                 className="relative overflow-hidden rounded-2xl border border-border bg-muted/30 p-7"
               >
-                <div className="mb-5 text-4xl font-black text-primary/15 select-none">{n}</div>
+                <div className="mb-5 text-4xl font-black text-primary/15 select-none md:hidden">{n}</div>
                 <h3 className="text-base font-bold text-foreground">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
               </div>

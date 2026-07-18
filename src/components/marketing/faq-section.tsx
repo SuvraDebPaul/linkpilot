@@ -28,7 +28,7 @@ export function FaqSection() {
           align="center"
         />
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="mt-12">
           <Card className="border-border bg-card shadow-xl shadow-black/5">
             <CardContent className="p-4 sm:p-6">
               <Accordion type="single" collapsible className="w-full">
@@ -38,16 +38,16 @@ export function FaqSection() {
                     value={`faq-${index}`}
                     className="border-border"
                   >
-                    <AccordionTrigger className="gap-4 py-5 text-left text-base font-semibold text-foreground hover:text-primary hover:no-underline">
+                    <AccordionTrigger className="group -mx-3 gap-4 rounded-xl px-3 py-5 text-left text-base font-semibold text-foreground transition hover:bg-accent/40 hover:text-primary hover:no-underline">
                       <span className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
-                          {index + 1}
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-mono text-sm font-bold text-primary transition group-data-[state=open]:bg-primary group-data-[state=open]:text-primary-foreground">
+                          {String(index + 1).padStart(2, "0")}
                         </span>
                         {faq.question}
                       </span>
                     </AccordionTrigger>
 
-                    <AccordionContent className="pb-5 pl-12 text-sm leading-7 text-muted-foreground sm:pl-[52px]">
+                    <AccordionContent className="pb-5 pl-12 text-sm leading-7 text-muted-foreground sm:pl-13">
                       {faq.answer}
                     </AccordionContent>
                   </AccordionItem>
@@ -55,53 +55,6 @@ export function FaqSection() {
               </Accordion>
             </CardContent>
           </Card>
-
-          <div className="space-y-5">
-            <Card className="border-primary/10 bg-gradient-to-br from-primary/5 via-card to-blue-500/10 shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card text-primary shadow-sm">
-                  <HelpCircle className="h-6 w-6" />
-                </div>
-
-                <h3 className="mt-5 text-xl font-bold text-foreground">
-                  Still have questions?
-                </h3>
-
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  Contact us for campaign link setup, branded short domains,
-                  analytics requirements, or agency workflow planning.
-                </p>
-
-                <Button asChild className="mt-6 w-full">
-                  <Link href="/contact">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Contact us
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border bg-card shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-
-                  <div>
-                    <h3 className="font-bold text-foreground">
-                      Safe temporary sharing
-                    </h3>
-
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                      Use expiry and password protection when sharing temporary
-                      links publicly.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </section>

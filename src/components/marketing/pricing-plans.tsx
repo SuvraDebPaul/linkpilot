@@ -38,7 +38,7 @@ const plans = [
   },
   {
     name: "Starter",
-    badge: "Most popular",
+    badge: "MOST BOOKED",
     description: "Track every link you share — by channel, by campaign, by day. Stop guessing which channel drove the click.",
     monthly: { price: "$5", note: "per month" },
     yearly: { price: "$4", note: "per month, billed $48/yr" },
@@ -218,7 +218,8 @@ export function PricingPlans() {
   return (
     <div className="space-y-20">
       {/* Toggle */}
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-3">
+        <p className="font-mono text-[10px] tracking-widest text-muted-foreground">BILLING CYCLE</p>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCycle("monthly")}
@@ -265,6 +266,7 @@ export function PricingPlans() {
         {plans.map((plan) => {
           const pricing = plan[cycle];
           const isCustom = pricing.price === "Custom";
+          const fareCode = plan.name.slice(0, 2).toUpperCase();
 
           return (
             <Card
@@ -284,17 +286,30 @@ export function PricingPlans() {
                   >
                     {plan.name}
                   </h2>
-                  <Badge
-                    className={
-                      plan.featured
-                        ? "bg-primary/10 text-primary"
-                        : plan.agency
-                          ? "bg-slate-800 text-slate-300"
-                          : "bg-muted text-foreground"
-                    }
-                  >
-                    {plan.badge}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    {plan.featured ? (
+                      <Badge className="bg-primary font-mono text-[10px] tracking-widest text-primary-foreground">
+                        {plan.badge}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        className={
+                          plan.agency
+                            ? "bg-slate-800 text-slate-300"
+                            : "bg-muted text-foreground"
+                        }
+                      >
+                        {plan.badge}
+                      </Badge>
+                    )}
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-[9px] font-bold ${
+                        plan.agency ? "border-slate-700 text-slate-300" : "border-border text-muted-foreground"
+                      }`}
+                    >
+                      {fareCode}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex items-baseline gap-1">
@@ -332,7 +347,7 @@ export function PricingPlans() {
 
                 {plan.name === "Pro" && (
                   <div className="mt-4 rounded-xl border border-border bg-muted/40 p-3 text-center">
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Your links look like</p>
+                    <p className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">YOUR LINKS LOOK LIKE</p>
                     <div className="flex flex-col items-center gap-1.5">
                       <code className="text-xs font-mono text-muted-foreground line-through">lnkplt.co/xk92m</code>
                       <span className="text-[10px] text-muted-foreground/60">↓</span>
@@ -343,6 +358,11 @@ export function PricingPlans() {
               </CardHeader>
 
               <CardContent className="pt-0">
+                <div
+                  className={`mb-5 border-t border-dashed ${plan.agency ? "border-slate-700" : "border-border"}`}
+                  aria-hidden="true"
+                />
+
                 <Button
                   asChild
                   className={`w-full ${
@@ -392,10 +412,10 @@ export function PricingPlans() {
             <table className="w-full min-w-[780px] text-left text-sm">
               <thead className="border-b border-border bg-muted/40">
                 <tr>
-                  <th className="px-6 py-4 font-semibold text-foreground">Feature</th>
+                  <th className="px-6 py-4 font-mono text-xs tracking-widest text-muted-foreground">FEATURE</th>
                   {["Free", "Starter", "Pro", "Agency"].map((h) => (
-                    <th key={h} className="px-6 py-4 text-center font-semibold text-foreground">
-                      {h}
+                    <th key={h} className="px-6 py-4 text-center font-mono text-xs tracking-widest text-muted-foreground">
+                      {h.toUpperCase()}
                     </th>
                   ))}
                 </tr>

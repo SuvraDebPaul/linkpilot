@@ -33,7 +33,10 @@ const staticColumns = [
 ];
 
 export async function PublicFooter() {
-  const supportEmail = await getSiteSetting("supportEmail", "hello@linkpilot.app");
+  const supportEmail = await getSiteSetting(
+    "supportEmail",
+    "hello@linkpilot.app",
+  );
   const columns = [
     ...staticColumns,
     {
@@ -48,9 +51,7 @@ export async function PublicFooter() {
   ];
 
   return (
-    <footer className="relative overflow-hidden border-t border-border/80 bg-muted/30">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_0%,rgba(20,184,166,0.10),transparent_32%),radial-gradient(circle_at_85%_100%,rgba(59,130,246,0.08),transparent_32%)]" />
-
+    <footer className="relative overflow-hidden border-t border-border/80 bg-background/20">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="flex flex-col items-start">
@@ -66,13 +67,13 @@ export async function PublicFooter() {
               href={`mailto:${supportEmail}`}
               className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-primary"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
                 <Mail className="h-4 w-4" />
               </span>
               {supportEmail}
             </Link>
 
-            <span className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            <span className="mt-6 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5" />
               Built for freelancers &amp; agencies
             </span>
@@ -81,7 +82,7 @@ export async function PublicFooter() {
           {columns.map((column) => (
             <div key={column.title}>
               <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
                   <column.icon className="h-4 w-4" />
                 </span>
                 <h3 className="text-sm font-semibold text-foreground">
@@ -105,12 +106,19 @@ export async function PublicFooter() {
           ))}
         </div>
 
-        <div className="mt-14 flex flex-col-reverse items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
+        {/* Perforated tear line — journey's end */}
+        <div className="mt-14 flex items-center gap-2" aria-hidden="true">
+          <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border bg-muted/60" />
+          <span className="h-px flex-1 border-t border-dashed border-border" />
+          <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border bg-muted/60" />
+        </div>
+
+        <div className="flex flex-col-reverse items-center justify-between gap-4 pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} LinkPilot. All rights reserved.
           </p>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="font-mono text-xs tracking-wide text-muted-foreground">
             Short links that stay in your control.
           </p>
         </div>
