@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -6,6 +7,8 @@ import { authOptions } from "@/lib/auth";
 import { getUserPlan, getUserUsage } from "@/lib/subscription";
 import { PageHeader } from "@/components/shared/page-header";
 import { BillingPanel } from "@/features/billing/components/billing-panel";
+
+export const metadata: Metadata = { title: "Billing" };
 
 export default async function BillingPage() {
   const session = await getServerSession(authOptions);

@@ -47,9 +47,13 @@ const navItems = [
 export function PublicHeader() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { status, update } = useSession();
+  const { data: session, status, update } = useSession();
   const { theme, setTheme } = useTheme();
-  const isLoggedIn = status === "authenticated";
+  // status is "authenticated" for any non-null session, but our session()
+  // callback intentionally returns a user-less session object (not null) for
+  // revoked/expired/demo-timed-out sessions — so status alone can't tell a
+  // real login from a stale one. session.user is the reliable signal.
+  const isLoggedIn = status === "authenticated" && !!session?.user;
   const ThemeIcon = THEME_ICON[theme];
 
   // Landing back on a public page can mean the proxy just force-logged-out a demo
