@@ -19,7 +19,7 @@ export default function LinkExpiredPage() {
 
         <CardContent>
           <p className="mb-6 text-sm text-muted-foreground">
-            The temporary short link is no longer active.
+            This short link is no longer active.
           </p>
 
           <Button asChild>

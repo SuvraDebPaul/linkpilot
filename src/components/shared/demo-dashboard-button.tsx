@@ -19,12 +19,15 @@ export function DemoDashboardButton({
   className?: string;
   label?: string;
 }) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const [loading, setLoading] = useState(false);
 
   // A real signed-in user shouldn't be able to demote themselves into the demo
   // account from a marketing page — only show this to signed-out visitors.
-  if (status !== "unauthenticated") return null;
+  // status alone isn't enough: our session() callback returns a user-less
+  // session object (not null) for revoked/expired/demo-timed-out sessions, so
+  // status stays "authenticated" even though nobody is really logged in.
+  if (status === "loading" || (status === "authenticated" && session?.user)) return null;
 
   async function handleClick() {
     setLoading(true);
